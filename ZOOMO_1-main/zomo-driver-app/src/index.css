@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  @apply bg-white text-black dark:bg-black dark:text-white;
+}
+
+.input {
+  @apply w-full px-4 py-3 rounded-md border 
+         border-gray-300 dark:border-white/20
+         bg-white dark:bg-black
+         text-black dark:text-white;
+}
+
+.btn {
+  @apply w-full py-3 rounded-md font-semibold
+         bg-black text-white
+         dark:bg-white dark:text-black;
+}
+
+.card {
+  @apply border rounded-xl p-4
+         border-gray-200 dark:border-white/10
+         bg-white dark:bg-black;
+}
+
+/* ===========================
+   DRIVER CONFIRM UI
+=========================== */
+
+/* MOBILE: Swipe only */
+@media (max-width: 768px) {
+  .click-confirm {
+    display: none;
+  }
+}
+
+/* DESKTOP: Button only */
+@media (min-width: 769px) {
+  .swipe-confirm {
+    display: none;
+  }
+}

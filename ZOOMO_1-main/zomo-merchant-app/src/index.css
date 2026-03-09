@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================= GLOBAL RESET ================= */
+
+* {
+  font-family: 'Poppins', sans-serif !important;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light mode */
+body {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+/* Dark mode */
+html.dark body {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* ================= ZOOMO INPUT SYSTEM ================= */
+
+.input-zoomo {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background-color: #f3f4f6;
+  color: #111827;
+  border: 1px solid transparent;
+  transition: background-color .2s, box-shadow .2s, border-color .2s;
+}
+
+html.dark .input-zoomo {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+.input-zoomo::placeholder {
+  color: #9ca3af;
+}
+
+html.dark .input-zoomo::placeholder {
+  color: #9ca3af;
+}
+
+.input-zoomo:focus {
+  outline: none;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(16,185,129,0.4);
+}
+
+html.dark .input-zoomo:focus {
+  background-color: #262626;
+  box-shadow: 0 0 0 2px rgba(16,185,129,0.4);
+}
+
+textarea.input-zoomo {
+  resize: none;
+}
+
+input[type="file"] {
+  color-scheme: light;
+}
+
+html.dark input[type="file"] {
+  color-scheme: dark;
+}
+
+/* ================= BUTTON SYSTEM ================= */
+
+.btn-zoomo {
+  @apply px-6 py-3 rounded-2xl font-semibold bg-emerald-600 text-white
+         hover:bg-emerald-700 transition;
+}
+
+.btn-ghost {
+  @apply px-6 py-3 rounded-2xl font-semibold border border-gray-300
+         dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10 transition;
+}

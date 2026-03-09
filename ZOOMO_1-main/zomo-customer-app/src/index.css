@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure full height */
+
+* {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+}
+
+/* Light mode */
+body {
+  background-color: #ffffff;
+}
+
+/* Dark mode */
+html.dark body {
+  background-color: #000000;
+}
+
+/* Prevent outer white margins */
+* {
+  box-sizing: border-box;
+}
+.input-zoomo {
+  @apply px-4 py-3 rounded-xl bg-gray-100 dark:bg-white/10 
+         text-black dark:text-white outline-none focus:ring-2 
+         focus:ring-emerald-500 border border-black/10 dark:border-white/10;
+}
