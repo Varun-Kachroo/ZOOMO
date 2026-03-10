@@ -10,13 +10,13 @@ export class PaymentsService {
 
   constructor(private prisma: PrismaService) {
     this.razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || 'rzp_secret_placeholder',
     });
 
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-      apiVersion: "2025-12-15.clover",
-    });
+    this.stripe = new Stripe(
+      process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder',
+    );
   }
 
   /* ===========================
@@ -145,8 +145,6 @@ export class PaymentsService {
         provider,
         paymentIntentId,
         method,
-
-        // ✅ REQUIRED RELATION
         order: {
           connect: { id: orderId },
         },
