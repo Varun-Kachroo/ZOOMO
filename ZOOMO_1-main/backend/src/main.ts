@@ -4,21 +4,28 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:5176',
+    // your current Vercel customer URL:
+    'https://zoomo-lxn1llzca-varun-kachroos-projects.vercel.app',
+  ];
+
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-      'http://localhost:5176',
-      process.env.CUSTOMER_APP_URL,
-      process.env.MERCHANT_APP_URL,
-      process.env.DRIVER_APP_URL,
-      process.env.ADMIN_APP_URL,
-    ].filter(Boolean),
+    origin: (origin, callback) => {
+      // allow tools like curl/Postman (no Origin header)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+    },
     credentials: true,
   });
 
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Backend running on port ${process.env.PORT ?? 3000}`);
 }
 bootstrap();
+
