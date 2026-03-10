@@ -10,7 +10,7 @@ async function bootstrap() {
     'http://localhost:5175',
     'http://localhost:5176',
     // your current Vercel customer URL:
-    'https://zoomo-lxn1llzca-varun-kachroos-projects.vercel.app',
+    'https://zoomo-lxn1l1zca-varun-kachroos-projects.vercel.app',
   ];
 
   app.enableCors({
