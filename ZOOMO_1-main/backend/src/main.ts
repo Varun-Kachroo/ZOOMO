@@ -12,6 +12,7 @@ async function bootstrap() {
     // your current Vercel customer URL:
     'https://zoomo-lxn1l1zca-varun-kachroos-projects.vercel.app',//main page for customer
     'https://zoomo-hc64.vercel.app',//merchant
+    'https://zoomo-7iqt.vercel.app',//driver
   ];
 
   app.enableCors({
