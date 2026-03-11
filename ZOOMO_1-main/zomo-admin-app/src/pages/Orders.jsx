@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AssignDriverModal from "../components/AssignDriverModal";
 import { getOrders } from "../services/adminApi";
-import { FiRefreshCw, FiUser, FiTruck } from "react-icons/fi";
+import { FiRefreshCw, FiTruck } from "react-icons/fi";
 
 const STATUS_COLORS = {
   PENDING: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -58,6 +58,7 @@ export default function Orders() {
                 <th className="px-6 py-4 text-gray-400 font-medium">Order ID</th>
                 <th className="px-6 py-4 text-gray-400 font-medium">Restaurant</th>
                 <th className="px-6 py-4 text-gray-400 font-medium">Customer</th>
+                <th className="px-6 py-4 text-gray-400 font-medium">Address</th>
                 <th className="px-6 py-4 text-gray-400 font-medium">Status</th>
                 <th className="px-6 py-4 text-gray-400 font-medium">Driver</th>
                 <th className="px-6 py-4 text-gray-400 font-medium">Action</th>
@@ -66,56 +67,75 @@ export default function Orders() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     Loading orders...
                   </td>
                 </tr>
               )}
               {!loading && orders.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     No orders found
                   </td>
                 </tr>
               )}
               {!loading && orders.map((order) => (
                 <tr key={order.id} className="border-t border-white/5 hover:bg-white/5 transition">
+
+                  {/* Order ID */}
                   <td className="px-6 py-4 text-gray-300 font-mono text-xs">
                     #{order.id?.slice(0, 8)}
                   </td>
+
+                  {/* ✅ FIXED: was order.restaurantName */}
                   <td className="px-6 py-4 text-white font-medium">
-                    {order.restaurantName || "—"}
+                    {order.restaurant?.name || "—"}
                   </td>
+
+                  {/* ✅ FIXED: customer name from nested user object */}
                   <td className="px-6 py-4 text-gray-400">
-                    {order.customerAddress || "—"}
+                    {order.user?.name || "—"}
                   </td>
+
+                  {/* ✅ FIXED: was order.customerAddress */}
+                  <td className="px-6 py-4 text-gray-400">
+                    {order.address
+                      ? `${order.address.street}, ${order.address.city}`
+                      : "—"}
+                  </td>
+
+                  {/* Status badge */}
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[order.status] || "bg-gray-500/10 text-gray-400 border-gray-500/20"}`}>
                       {order.status}
                     </span>
                   </td>
+
+                  {/* Driver */}
                   <td className="px-6 py-4">
                     {order.driverId ? (
                       <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
-                        <FiTruck size={13} /> Assigned
+                        <FiTruck size={13} /> {order.driver?.user?.name || "Assigned"}
                       </span>
                     ) : (
                       <span className="text-gray-500 text-xs">Unassigned</span>
                     )}
                   </td>
+
+                  {/* ✅ FIXED: only enable for READY_FOR_PICKUP unassigned orders */}
                   <td className="px-6 py-4">
                     <button
-                      disabled={!!order.driverId}
+                      disabled={!!order.driverId || order.status !== "READY_FOR_PICKUP"}
                       onClick={() => setSelectedOrder(order)}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-                        order.driverId
-                          ? "bg-white/5 text-gray-600 cursor-not-allowed"
-                          : "bg-emerald-600 text-white hover:bg-emerald-500"
-                      }`}
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${!order.driverId && order.status === "READY_FOR_PICKUP"
+                          ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                          : "bg-white/5 text-gray-600 cursor-not-allowed"
+                        }`}
                     >
                       {order.driverId ? "Assigned" : "Assign Driver"}
                     </button>
                   </td>
+
                 </tr>
               ))}
             </tbody>
@@ -133,3 +153,4 @@ export default function Orders() {
     </div>
   );
 }
+
