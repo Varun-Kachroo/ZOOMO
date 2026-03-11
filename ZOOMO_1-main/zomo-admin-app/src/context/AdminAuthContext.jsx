@@ -19,7 +19,7 @@ export function AdminAuthProvider({ children }) {
   async function login(email, password) {
     try {
       const res = await axios.post(
-        "http://localhost:3000/admin/auth/login",
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/admin/auth/login`,
         { email, password }
       );
 
