@@ -16,7 +16,7 @@ const PORTALS = [
     description:
       "Order food from your favourite restaurants. Track your delivery in real-time and enjoy hot meals at your doorstep.",
     buttonText: "Order Now",
-    href: "http://localhost:5173",
+    href: "https://zoomo-self.vercel.app/",
     gradient: "bg-gradient-to-br from-orange-500/30 to-red-500/30",
     badge: "For Customers",
   },
@@ -26,7 +26,7 @@ const PORTALS = [
     description:
       "Manage your restaurant, menu, and incoming orders. View analytics and keep your kitchen running smoothly.",
     buttonText: "Manage Restaurant",
-    href: "http://localhost:5174",
+    href: "https://zoomo-hc64.vercel.app",
     gradient: "bg-gradient-to-br from-emerald-500/30 to-teal-500/30",
     badge: "For Merchants",
   },
@@ -36,7 +36,7 @@ const PORTALS = [
     description:
       "Accept delivery requests, navigate to restaurants and customers, and track your daily earnings all in one place.",
     buttonText: "Start Delivering",
-    href: "http://localhost:5175",
+    href: "https://zoomo-7jgt.vercel.app/",
     gradient: "bg-gradient-to-br from-blue-500/30 to-indigo-500/30",
     badge: "For Drivers",
   },
@@ -46,7 +46,7 @@ const PORTALS = [
     description:
       "Full control over the platform. Manage users, restaurants, drivers, and orders from one powerful dashboard.",
     buttonText: "Open Admin Panel",
-    href: "http://localhost:5176",
+    href: "https://zoomo-bfu3.vercel.app/",
     gradient: "bg-gradient-to-br from-purple-500/30 to-pink-500/30",
     badge: "Admin Only",
   },
