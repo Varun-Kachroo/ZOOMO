@@ -46,7 +46,7 @@ function useLocalStorage(key, initialValue) {
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
+    } catch { }
   }, [key, value]);
 
   return [value, setValue];
@@ -54,7 +54,7 @@ function useLocalStorage(key, initialValue) {
 
 /* ============================== Landing ================================= */
 export default function ZoomoEatsLanding() {
- const { user } = useAuth();
+  const { user } = useAuth();
 
   const [dark, setDark] = useLocalStorage("ze_theme_dark", true);
   const [mode, setMode] = useState("Delivery");
@@ -259,7 +259,7 @@ function Navbar({ dark, setDark, mode, setMode, onProfileOpen, user }) {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-white/80 dark:bg-black/50 backdrop-blur">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        
+
         {/* Left: Logo + Delivery Modes */}
         <div className="flex items-center gap-3">
           <img
@@ -268,7 +268,7 @@ function Navbar({ dark, setDark, mode, setMode, onProfileOpen, user }) {
             alt="Zoomo Eats Logo"
             className="w-9 h-9 rounded-xl object-cover ring-1 ring-emerald-400/30"
           />
-          
+
           <div className="text-lg font-semibold dark:text-white">
             Zoomo <span className="text-emerald-500">Eats</span>
           </div>
@@ -279,11 +279,10 @@ function Navbar({ dark, setDark, mode, setMode, onProfileOpen, user }) {
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition ${
-                  mode === m
+                className={`px-3 py-1.5 rounded-lg text-xs transition ${mode === m
                     ? "bg-white dark:bg-black shadow text-gray-900 dark:text-white"
                     : "text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5"
-                }`}
+                  }`}
               >
                 {m}
               </button>
@@ -655,7 +654,6 @@ function RestCard({ r, mode }) {
   );
 }
 
-
 function OfferGrid({ offers }) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -735,7 +733,7 @@ function Footer() {
   return (
     <footer className="border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8">
-        
+
         {/* Logo + Tagline */}
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -757,7 +755,7 @@ function Footer() {
         {/* Company Section */}
         <div>
           <div className="font-semibold mb-3 dark:text-white">Company</div>
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 flex flex-col">
             <button type="button">About</button>
             <button type="button">Careers</button>
             <button type="button">Contact</button>
@@ -768,7 +766,7 @@ function Footer() {
         {/* Help Section */}
         <div>
           <div className="font-semibold mb-3 dark:text-white">Help</div>
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 flex flex-col">
             <button type="button">Support</button>
             <button type="button">FAQs</button>
             <button type="button">Partner with us</button>
@@ -790,19 +788,20 @@ function Footer() {
 
           <div className="font-semibold mb-3 dark:text-white">Newsletter</div>
 
-          <form onSubmit={handleSubscribe} className="flex gap-2">
+          {/* ✅ FIXED: newsletter form - no more tear */}
+          <form onSubmit={handleSubscribe} className="flex gap-2 w-full overflow-hidden">
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Your email"
-              className="flex-1 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 
+              className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 
                          text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none"
               required
             />
             <button
               type="submit"
-              className="px-3 py-2 rounded-xl bg-emerald-600 text-white"
+              className="shrink-0 px-3 py-2 rounded-xl bg-emerald-600 text-white whitespace-nowrap"
             >
               Subscribe
             </button>
@@ -826,7 +825,6 @@ function Footer() {
     </footer>
   );
 }
-
 
 export function ProfileDrawer({ open, setOpen }) {
   const { user, isAuthenticated } = useAuth();
@@ -853,7 +851,7 @@ export function ProfileDrawer({ open, setOpen }) {
     <div className="fixed inset-0 z-50 flex">
       {/* Drawer Panel */}
       <div className="w-full max-w-md ml-auto h-full bg-white dark:bg-black dark:text-white ring-1 ring-white/10 flex flex-col">
-        
+
         {/* Header */}
         <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
           <div className="font-semibold flex items-center gap-2">
@@ -1045,7 +1043,7 @@ function ChatWidget({ open, setOpen }) {
 
       {open && (
         <div className="w-96 rounded-3xl overflow-hidden ring-1 ring-white/10 bg-white/95 dark:bg-[#0b0f0c] dark:text-white shadow-2xl">
-          
+
           {/* Header */}
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -1062,7 +1060,7 @@ function ChatWidget({ open, setOpen }) {
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div className={`flex items-start gap-2 max-w-[80%] ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-                  
+
                   {m.role === "bot" && (
                     <img src="/zoomo-mascot.png" className="w-8 h-8 rounded-full flex-shrink-0" />
                   )}
@@ -1074,11 +1072,10 @@ function ChatWidget({ open, setOpen }) {
                   )}
 
                   <div
-                    className={`px-4 py-2 rounded-2xl ${
-                      m.role === "user"
+                    className={`px-4 py-2 rounded-2xl ${m.role === "user"
                         ? "bg-emerald-600 text-white"
                         : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200"
-                    }`}
+                      }`}
                   >
                     {m.text}
                   </div>
@@ -1136,4 +1133,3 @@ function ChatWidget({ open, setOpen }) {
     </div>
   );
 }
-
