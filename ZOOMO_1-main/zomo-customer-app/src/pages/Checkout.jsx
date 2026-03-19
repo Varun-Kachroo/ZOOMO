@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { useCart } from "../context/CartContext";
-import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { FiArrowLeft, FiMapPin, FiCheck } from "react-icons/fi";
+import { api } from "../services/api";
+import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { MascotLoader } from "./LandingPage";
 
 export default function Checkout() {
   const { cart, getSubtotal } = useCart();
@@ -11,251 +13,158 @@ export default function Checkout() {
 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [showAddressForm, setShowAddressForm] = useState(false);
-
-  const [form, setForm] = useState({
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "India",
-  });
-
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ street: "", city: "", state: "", zipCode: "", country: "India" });
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [placingOrder, setPlacingOrder] = useState(false);
+  const [placing, setPlacing] = useState(false);
 
-  /* ===========================
-     LOAD USER ADDRESSES
-  =========================== */
   useEffect(() => {
     async function load() {
       try {
         const res = await api.get("/addresses");
-
-        // ✅ WORKS FOR BOTH api styles
-        const list = Array.isArray(res) ? res : res?.data;
-
-        if (Array.isArray(list) && list.length > 0) {
-          setAddresses(list);
-          setSelectedAddress(
-            list.find((a) => a.isDefault)?.id || list[0].id
-          );
-        } else {
-          setAddresses([]);
-          setShowAddressForm(true);
-        }
-      } catch (err) {
-        console.error("Failed to load addresses:", err);
-        setShowAddressForm(true);
-      } finally {
-        setLoading(false);
-      }
+        const list = Array.isArray(res) ? res : res?.data ?? [];
+        setAddresses(list);
+        if (list.length > 0) setSelectedAddress(list[0].id);
+        else setShowForm(true);
+      } catch { setShowForm(true); }
+      finally { setLoading(false); }
     }
-
     load();
   }, []);
 
-  /* ===========================
-     SAVE ADDRESS
-  =========================== */
-  async function handleSaveAddress() {
-    if (
-      !form.street.trim() ||
-      !form.city.trim() ||
-      !form.state.trim() ||
-      !form.zipCode.trim()
-    ) {
-      return alert("Please fill all address fields.");
-    }
-
-    if (isNaN(form.zipCode)) {
-      return alert("Zip code must be a number.");
-    }
-
+  async function saveAddress() {
+    if (!form.street || !form.city || !form.state || !form.zipCode) return alert("Fill all fields");
     try {
       const res = await api.post("/addresses", form);
-
-      // ✅ normalize response
-      const newAddress = res?.data ?? res;
-
-      if (!newAddress?.id) {
-        throw new Error("Invalid address response");
-      }
-
-      setAddresses((prev) => [...prev, newAddress]);
-      setSelectedAddress(newAddress.id);
-      setShowAddressForm(false);
-
-      setForm({
-        street: "",
-        city: "",
-        state: "",
-        zipCode: "",
-        country: "India",
-      });
-    } catch (err) {
-      console.error("Failed to save address:", err);
-      alert("Error saving address.");
-    }
+      const addr = res?.data ?? res;
+      setAddresses(p => [...p, addr]);
+      setSelectedAddress(addr.id);
+      setShowForm(false);
+    } catch { alert("Failed to save address"); }
   }
 
-  /* ===========================
-     PLACE ORDER
-  =========================== */
   async function placeOrder() {
-    if (!selectedAddress) return alert("Please select an address.");
-    if (!paymentMethod) return alert("Please select a payment method.");
-    if (!cart || cart.items.length === 0) return;
-
-    setPlacingOrder(true);
-
+    if (!selectedAddress) return alert("Select a delivery address");
+    if (!paymentMethod) return alert("Select a payment method");
+    setPlacing(true);
     try {
-      const payload = {
+      await api.post("/orders", {
         restaurantId: cart.items[0].dish.restaurantId,
         addressId: selectedAddress,
-        items: cart.items.map((i) => ({
-          dishId: i.dish.id,
-          quantity: i.quantity,
-        })),
+        items: cart.items.map(i => ({ dishId: i.dish.id, quantity: i.quantity })),
         paymentMethod,
-      };
-
-      await api.post("/orders", payload);
-
-      alert("Order placed successfully!");
+      });
       navigate("/orders");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to place order.");
-    } finally {
-      setPlacingOrder(false);
-    }
+    } catch { alert("Failed to place order. Try again."); }
+    finally { setPlacing(false); }
   }
 
-  if (!cart || cart.items.length === 0) {
-    return <div className="p-6 text-center">Your cart is empty.</div>;
-  }
+  if (loading) return <MascotLoader text="Loading checkout..." />;
+  if (placing) return <MascotLoader text="Placing your order... 🍔" />;
 
-  if (loading) {
-    return <div className="p-4">Loading checkout...</div>;
-  }
+  const subtotal = getSubtotal();
+  const delivery = 29;
+  const tax = Math.round(subtotal * 0.05);
+  const total = subtotal + delivery + tax;
 
   return (
-    <div className="p-4 max-w-3xl mx-auto text-black dark:text-white">
-      <h1 className="text-3xl font-bold mb-4">Checkout</h1>
+    <div className="min-h-screen bg-black text-white pb-10">
+      <div className="max-w-2xl mx-auto px-4 py-6">
 
-      {/* ================= ADDRESS ================= */}
-      <div className="mb-6 p-4 bg-white dark:bg-black/30 rounded-2xl shadow">
-        <h2 className="text-xl font-semibold mb-3">Delivery Address</h2>
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
+            <FiArrowLeft />
+          </button>
+          <h1 className="text-2xl font-bold">Checkout</h1>
+        </div>
 
-        {showAddressForm ? (
-          <div className="grid gap-3">
-            {["street", "city", "state", "zipCode"].map((field) => (
-              <input
-                key={field}
-                placeholder={field[0].toUpperCase() + field.slice(1)}
-                className="px-4 py-3 rounded-xl bg-gray-100 dark:bg-white/10 text-black dark:text-white"
-                value={form[field]}
-                onChange={(e) =>
-                  setForm({ ...form, [field]: e.target.value })
-                }
-              />
-            ))}
+        {/* Address */}
+        <Section title="Delivery Address">
+          {!showForm && addresses.map(a => (
+            <label key={a.id} className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${selectedAddress === a.id ? "border-emerald-500 bg-emerald-500/10" : "border-white/10 bg-white/5"}`}>
+              <input type="radio" checked={selectedAddress === a.id} onChange={() => setSelectedAddress(a.id)} className="mt-1 accent-emerald-600" />
+              <div>
+                <FiMapPin className="text-emerald-500 inline mr-1" size={13} />
+                <span className="text-white text-sm font-medium">{a.street}</span>
+                <p className="text-gray-400 text-xs mt-0.5">{a.city}, {a.state} - {a.zipCode}</p>
+              </div>
+            </label>
+          ))}
 
-            <div className="flex gap-3">
-              <button
-                onClick={handleSaveAddress}
-                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl"
-              >
-                Save Address
-              </button>
+          {showForm && (
+            <div className="space-y-3">
+              {["street", "city", "state", "zipCode"].map(f => (
+                <input
+                  key={f}
+                  placeholder={f[0].toUpperCase() + f.slice(1)}
+                  value={form[f]}
+                  onChange={e => setForm({ ...form, [f]: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                />
+              ))}
+              <div className="flex gap-3">
+                <button onClick={saveAddress} className="flex-1 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition">Save Address</button>
+                {addresses.length > 0 && <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm">Cancel</button>}
+              </div>
+            </div>
+          )}
 
-              <button
-                onClick={() => setShowAddressForm(false)}
-                className="flex-1 py-3 bg-gray-300 dark:bg-white/20 rounded-xl"
-              >
-                Cancel
-              </button>
+          {!showForm && (
+            <button onClick={() => setShowForm(true)} className="text-emerald-500 text-sm hover:underline">+ Add new address</button>
+          )}
+        </Section>
+
+        {/* Payment */}
+        <Section title="Payment Method">
+          {[
+            { id: "COD", label: "Cash on Delivery", sub: "Pay when your order arrives" },
+            { id: "ONLINE", label: "Online Payment", sub: "Coming soon", disabled: true },
+          ].map(p => (
+            <label key={p.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${p.disabled ? "opacity-40 cursor-not-allowed" : ""} ${paymentMethod === p.id ? "border-emerald-500 bg-emerald-500/10" : "border-white/10 bg-white/5"}`}>
+              <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id} onChange={() => !p.disabled && setPaymentMethod(p.id)} className="accent-emerald-600" />
+              <div>
+                <p className="text-white text-sm font-medium">{p.label}</p>
+                <p className="text-gray-400 text-xs">{p.sub}</p>
+              </div>
+            </label>
+          ))}
+        </Section>
+
+        {/* Summary */}
+        <Section title="Order Summary">
+          {cart.items.map(i => (
+            <div key={i.id} className="flex justify-between text-sm text-gray-300">
+              <span>{i.dish.name} × {i.quantity}</span>
+              <span>₹{i.dish.price * i.quantity}</span>
+            </div>
+          ))}
+          <div className="border-t border-white/10 pt-3 space-y-1 text-sm text-gray-400">
+            <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
+            <div className="flex justify-between"><span>Delivery</span><span>₹{delivery}</span></div>
+            <div className="flex justify-between"><span>Tax (5%)</span><span>₹{tax}</span></div>
+            <div className="flex justify-between text-white font-bold text-base pt-2 border-t border-white/10">
+              <span>Total</span><span>₹{total}</span>
             </div>
           </div>
-        ) : (
-          <>
-            {addresses.map((addr) => (
-              <label
-                key={addr.id}
-                className="flex gap-3 p-4 border border-gray-300 dark:border-white/20 rounded-xl mb-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  checked={selectedAddress === addr.id}
-                  onChange={() => setSelectedAddress(addr.id)}
-                />
+        </Section>
 
-                <div>
-                  <p className="font-semibold">
-                    {addr.street}
-                  </p>
-                  <p className="text-sm opacity-70">
-                    {addr.city}, {addr.state} - {addr.zipCode}
-                  </p>
-                </div>
-              </label>
-            ))}
-
-            <button
-              onClick={() => setShowAddressForm(true)}
-              className="text-emerald-600 underline text-sm"
-            >
-              + Add new address
-            </button>
-          </>
-        )}
+        <button
+          onClick={placeOrder}
+          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-[0.99]"
+        >
+          Place Order · ₹{total}
+        </button>
       </div>
+    </div>
+  );
+}
 
-      {/* ================= PAYMENT ================= */}
-      <div className="mb-6 p-4 bg-white dark:bg-black/30 rounded-2xl shadow">
-        <h2 className="text-xl font-semibold mb-2">Payment Method</h2>
-
-        <label className="block p-3 border rounded-xl mb-2 cursor-pointer">
-          <input
-            type="radio"
-            name="payment"
-            onChange={() => setPaymentMethod("COD")}
-          />
-          <span className="ml-2">Cash on Delivery</span>
-        </label>
-
-        <label className="block p-3 border rounded-xl opacity-50 cursor-not-allowed">
-          <input type="radio" disabled />
-          <span className="ml-2">Online Payment (Coming Soon)</span>
-        </label>
-      </div>
-
-      {/* ================= SUMMARY ================= */}
-      <div className="mb-6 p-4 bg-white dark:bg-black/30 rounded-2xl shadow">
-        <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
-
-        {cart.items.map((i) => (
-          <div key={i.id} className="flex justify-between mb-2">
-            <span>{i.dish.name} × {i.quantity}</span>
-            <span>₹{i.dish.price * i.quantity}</span>
-          </div>
-        ))}
-
-        <div className="flex justify-between text-xl font-bold mt-3">
-          <span>Total</span>
-          <span>₹{getSubtotal()}</span>
-        </div>
-      </div>
-
-      <button
-        onClick={placeOrder}
-        disabled={placingOrder}
-        className="w-full bg-emerald-600 text-white py-3 rounded-xl text-lg"
-      >
-        {placingOrder ? "Placing Order..." : "Place Order"}
-      </button>
+function Section({ title, children }) {
+  return (
+    <div className="mb-5 p-5 rounded-2xl bg-[#111] border border-white/10 space-y-3">
+      <h3 className="font-semibold text-white">{title}</h3>
+      {children}
     </div>
   );
 }

@@ -1,170 +1,105 @@
+import { useNavigate } from "react-router-dom";
+import { FiArrowLeft, FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { useCart } from "../context/CartContext";
-import { Link, useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import ThemeContext from "../context/ThemeContext";
+import { MascotLoader } from "./LandingPage";
 
 export default function Cart() {
-  const {
-    cart,
-    loading,
-    decreaseQuantity,
-    increaseQuantity,
-    removeItem,
-    getSubtotal,
-    restaurantConflict,
-    confirmReplaceCart,
-    cancelReplaceCart,
-  } = useCart();
-
   const navigate = useNavigate();
-  const { dark } = useContext(ThemeContext); // ✅ Using theme context
+  const { cart, loading, increaseQuantity, decreaseQuantity, removeItem, getSubtotal, restaurantConflict, confirmReplaceCart, cancelReplaceCart } = useCart();
 
-  const pageBg = dark ? "bg-black" : "bg-[#f8fffb]";
+  if (loading) return <MascotLoader text="Loading cart..." />;
 
-  if (loading)
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${pageBg} text-gray-600 dark:text-gray-300`}>
-        Loading your cart...
-      </div>
-    );
+  if (!cart || cart.items.length === 0) return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center px-4">
+      <img src="/zoomo-mascot.png" alt="" className="w-28 opacity-60 mb-5 animate-float" />
+      <h2 className="text-2xl font-bold text-white mb-2">Your cart is empty</h2>
+      <p className="text-gray-500 text-sm mb-6">Add some delicious food to get started!</p>
+      <button onClick={() => navigate("/restaurants")} className="px-6 py-3 rounded-2xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition">
+        Browse Restaurants
+      </button>
+    </div>
+  );
 
-  if (!cart || cart.items.length === 0) {
-    return (
-      <div className={`min-h-screen flex flex-col items-center justify-center ${pageBg} px-6 text-center`}>
-        <img src="/empty-cart.png" className="w-40 opacity-90 mb-4" />
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Your Cart is Empty
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Start adding delicious food to your cart 🍕
-        </p>
-        <Link
-          to="/restaurants"
-          className="px-5 py-3 rounded-2xl bg-emerald-600 text-white 
-          hover:brightness-110 active:scale-95 transition shadow-lg"
-        >
-          Browse Restaurants
-        </Link>
-      </div>
-    );
-  }
+  const subtotal = getSubtotal();
+  const delivery = 29;
+  const tax = Math.round(subtotal * 0.05);
+  const total = subtotal + delivery + tax;
 
   return (
-    <div className={`min-h-screen ${pageBg} pt-24 pb-12 transition-colors`}>
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-6 text-gray-900 dark:text-white">
-          Your Cart 🛒
-        </h1>
+    <div className="min-h-screen bg-black text-white pb-8">
+      <div className="max-w-2xl mx-auto px-4 py-6">
 
-        <div className="space-y-5">
-          {cart.items.map((item) => (
-            <div
-              key={item.id}
-              className="
-              bg-white/90 dark:bg-black/40 backdrop-blur-xl 
-              rounded-3xl p-5 ring-1 ring-black/10 dark:ring-white/10 
-              shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] 
-              dark:shadow-[0_10px_40px_-12px_rgba(0,255,180,0.15)]
-              flex items-center justify-between transition"
-            >
-              {/* Dish info */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {item.dish.name}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300">₹{item.dish.price}</p>
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
+            <FiArrowLeft />
+          </button>
+          <h1 className="text-2xl font-bold text-white">Your Cart</h1>
+        </div>
+
+        {/* Items */}
+        <div className="space-y-3 mb-6">
+          {cart.items.map(item => (
+            <div key={item.id} className="flex items-center gap-4 p-4 rounded-2xl bg-[#111] border border-white/10">
+              <img
+                src={item.dish?.imageUrl || `https://source.unsplash.com/80x80/?food`}
+                alt={item.dish?.name}
+                className="w-16 h-16 rounded-xl object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-white text-sm truncate">{item.dish?.name}</h3>
+                <p className="text-emerald-400 text-sm font-bold mt-0.5">₹{item.dish?.price * item.quantity}</p>
               </div>
-
-              {/* Quantity controls */}
-              <div className="flex items-center gap-4">
-                <button
-                  className="
-                  w-9 h-9 rounded-xl 
-                  bg-gray-200 hover:bg-gray-300 
-                  dark:bg-white/10 dark:hover:bg-white/20
-                  hover:scale-110 active:scale-95 transition 
-                  grid place-content-center"
-                  onClick={() => decreaseQuantity(item)}
-                >
-                  <span className="text-xl">−</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => decreaseQuantity(item)} className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                  <FiMinus size={12} />
                 </button>
-
-                <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {item.quantity}
-                </span>
-
-                <button
-                  className="
-                  w-9 h-9 rounded-xl 
-                  bg-gray-200 hover:bg-gray-300 
-                  dark:bg-white/10 dark:hover:bg-white/20
-                  hover:scale-110 active:scale-95 transition 
-                  grid place-content-center"
-                  onClick={() => increaseQuantity(item)}
-                >
-                  <span className="text-xl">+</span>
+                <span className="text-white font-semibold text-sm w-4 text-center">{item.quantity}</span>
+                <button onClick={() => increaseQuantity(item)} className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white hover:bg-emerald-500 transition">
+                  <FiPlus size={12} />
                 </button>
               </div>
-
-              {/* Remove */}
-              <button
-                className="text-red-500 font-semibold hover:scale-105 transition"
-                onClick={() => removeItem(item.id)}
-              >
-                Remove
+              <button onClick={() => removeItem(item.id)} className="p-2 text-gray-600 hover:text-red-400 transition">
+                <FiTrash2 size={15} />
               </button>
             </div>
           ))}
         </div>
 
-        {/* Summary */}
-        <div
-          className="
-          mt-8 bg-white/90 dark:bg-black/40 backdrop-blur-xl 
-          rounded-3xl p-6 ring-1 ring-black/10 dark:ring-white/10 
-          shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)]
-          dark:shadow-[0_10px_40px_-12px_rgba(0,255,180,0.15)] transition"
-        >
-          <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white">
-            <span>Subtotal</span>
-            <span>₹{getSubtotal()}</span>
+        {/* Bill */}
+        <div className="p-5 rounded-2xl bg-[#111] border border-white/10 mb-5 space-y-3">
+          <h3 className="font-semibold text-white mb-3">Bill Details</h3>
+          {[
+            { label: "Subtotal", val: `₹${subtotal}` },
+            { label: "Delivery Fee", val: `₹${delivery}` },
+            { label: "Tax & charges (5%)", val: `₹${tax}` },
+          ].map(r => (
+            <div key={r.label} className="flex justify-between text-sm text-gray-400">
+              <span>{r.label}</span><span>{r.val}</span>
+            </div>
+          ))}
+          <div className="border-t border-white/10 pt-3 flex justify-between text-white font-bold">
+            <span>Total</span><span>₹{total}</span>
           </div>
-
-          <button
-            className="
-            mt-5 w-full py-4 rounded-2xl bg-emerald-600 text-white text-lg font-semibold
-            hover:brightness-110 active:scale-95 transition shadow-lg"
-            onClick={() => navigate("/checkout")}
-          >
-            Proceed to Checkout →
-          </button>
         </div>
+
+        <button
+          onClick={() => navigate("/checkout")}
+          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-[0.99]"
+        >
+          Proceed to Checkout · ₹{total}
+        </button>
       </div>
 
-      {/* Restaurant Conflict Modal */}
+      {/* Conflict Modal */}
       {restaurantConflict && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-black p-6 rounded-2xl shadow-xl text-center">
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-              Replace Cart?
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Your cart contains items from another restaurant. Adding this item
-              will reset your cart. Do you want to proceed?
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                onClick={cancelReplaceCart}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg"
-                onClick={confirmReplaceCart}
-              >
-                Confirm
-              </button>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-[#111] border border-white/10 rounded-3xl p-6 max-w-sm w-full text-center">
+            <h2 className="text-lg font-bold text-white mb-2">Replace Cart?</h2>
+            <p className="text-gray-400 text-sm mb-5">Your cart has items from another restaurant.</p>
+            <div className="flex gap-3">
+              <button onClick={cancelReplaceCart} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm">Cancel</button>
+              <button onClick={confirmReplaceCart} className="flex-1 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold">Replace</button>
             </div>
           </div>
         </div>

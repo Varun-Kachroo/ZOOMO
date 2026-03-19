@@ -1,184 +1,101 @@
-import { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 import { api } from "../services/api";
-import ThemeContext from "../context/ThemeContext";
+import { MascotLoader } from "./LandingPage";
+
+const STATUS_STYLE = {
+  PENDING: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
+  PREPARING: "text-orange-400 bg-orange-400/10 border-orange-400/20",
+  DELIVERED: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+  CANCELLED: "text-red-400 bg-red-400/10 border-red-400/20",
+};
 
 export default function OrderDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { dark } = useContext(ThemeContext);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await api.get(`/orders/${id}`);
-        setOrder(res);
-      } catch (err) {
-        console.error("Failed to load order:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    api.get(`/orders/${id}`)
+      .then(setOrder)
+      .catch(() => setOrder(null))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading)
-    return (
-      <div className={`p-6 ${dark ? "text-white" : "text-black"}`}>
-        Loading order details...
-      </div>
-    );
-
-  if (!order)
-    return (
-      <div className={`p-6 ${dark ? "text-white" : "text-black"}`}>
-        Order not found.
-      </div>
-    );
-
-  // Status colors
-  const statusColor = {
-    PENDING: "bg-yellow-500/20 text-yellow-500",
-    CONFIRMED: "bg-blue-500/20 text-blue-500",
-    PREPARING: "bg-orange-500/20 text-orange-500",
-    ON_THE_WAY: "bg-purple-500/20 text-purple-500",
-    DELIVERED: "bg-emerald-500/20 text-emerald-500",
-    CANCELLED: "bg-red-500/20 text-red-500",
-  };
+  if (loading) return <MascotLoader text="Loading order details..." />;
+  if (!order) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <p className="text-gray-500">Order not found</p>
+    </div>
+  );
 
   return (
-    <div
-      className={`min-h-screen px-4 py-24 transition-colors ${
-        dark ? "bg-black text-white" : "bg-[#f8fffb] text-black"
-      }`}
-    >
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Page Header */}
-        <h1 className="text-3xl font-bold">Order Details</h1>
-
-        {/* Order Summary Card */}
-        <div
-          className={`
-            p-6 rounded-2xl backdrop-blur-xl border shadow-lg
-            ${dark ? "bg-white/5 border-white/10" : "bg-white border-black/10"}
-          `}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-semibold">
-              Order #{order.id.slice(0, 6).toUpperCase()}
-            </h2>
-
-            <span
-              className={`px-3 py-1 rounded-xl text-sm font-semibold ${
-                statusColor[order.status]
-              }`}
-            >
-              {order.status.replace("_", " ")}
-            </span>
-          </div>
-
-          <p className="text-gray-700 dark:text-gray-300">
-            <strong>Restaurant:</strong> {order.restaurant?.name}
-          </p>
-
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Ordered on: {new Date(order.createdAt).toLocaleString()}
-          </p>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => navigate("/orders")} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
+            <FiArrowLeft />
+          </button>
+          <h1 className="text-xl font-bold">Order #{order.id.slice(0, 6).toUpperCase()}</h1>
+          <span className={`ml-auto text-xs px-3 py-1 rounded-xl border font-medium ${STATUS_STYLE[order.status] || "text-gray-400 bg-white/10 border-white/10"}`}>
+            {order.status}
+          </span>
         </div>
 
-        {/* Items List */}
-        <div
-          className={`
-            p-6 rounded-2xl backdrop-blur-xl border shadow-lg
-            ${dark ? "bg-white/5 border-white/10" : "bg-white border-black/10"}
-          `}
-        >
-          <h2 className="text-xl font-semibold mb-3">Items</h2>
+        <div className="space-y-4">
+          {/* Restaurant */}
+          <Card title="Restaurant">
+            <p className="text-white font-medium">{order.restaurant?.name}</p>
+            <p className="text-gray-400 text-xs mt-0.5">{new Date(order.createdAt).toLocaleString()}</p>
+          </Card>
 
-          <div className="space-y-3">
-            {order.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between py-3 border-b border-white/10"
-              >
-                <span>
-                  {item.dish.name} × {item.quantity}
-                </span>
-                <span className="font-semibold">
-                  ₹{item.dish.price * item.quantity}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Totals */}
-        <div
-          className={`
-            p-6 rounded-2xl backdrop-blur-xl border shadow-lg
-            ${dark ? "bg-white/5 border-white/10" : "bg-white border-black/10"}
-          `}
-        >
-          <h2 className="text-xl font-semibold mb-3">Bill Summary</h2>
-
-          <div className="space-y-2">
-            <p className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₹{order.subtotal}</span>
-            </p>
-
-            {order.deliveryFee && (
-              <p className="flex justify-between">
-                <span>Delivery Fee</span>
-                <span>₹{order.deliveryFee}</span>
-              </p>
-            )}
-
-            {order.tax && (
-              <p className="flex justify-between">
-                <span>Tax</span>
-                <span>₹{order.tax}</span>
-              </p>
-            )}
-
-            <div className="border-t border-white/10 my-2" />
-
-            <p className="flex justify-between text-lg font-bold">
-              <span>Total</span>
-              <span>₹{order.total}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Payment */}
-        <div
-          className={`
-            p-6 rounded-2xl backdrop-blur-xl border shadow-lg
-            ${dark ? "bg-white/5 border-white/10" : "bg-white border-black/10"}
-          `}
-        >
-          <h2 className="text-xl font-semibold mb-3">Payment</h2>
-
-          {order.payment ? (
-            <div className="space-y-1">
-              <p>
-                <strong>Method:</strong> {order.payment.provider}
-              </p>
-              <p>
-                <strong>Status:</strong> {order.payment.status}
-              </p>
-              <p>
-                <strong>Amount:</strong> ₹{order.payment.amount}
-              </p>
+          {/* Items */}
+          <Card title="Items Ordered">
+            <div className="space-y-2">
+              {order.items.map(item => (
+                <div key={item.id} className="flex justify-between text-sm">
+                  <span className="text-gray-300">{item.dish.name} × {item.quantity}</span>
+                  <span className="text-white font-medium">₹{item.dish.price * item.quantity}</span>
+                </div>
+              ))}
             </div>
-          ) : (
-            <p className="text-orange-500 font-medium">
-              Payment Pending (COD)
-            </p>
+          </Card>
+
+          {/* Bill */}
+          <Card title="Bill Summary">
+            <div className="space-y-2 text-sm text-gray-400">
+              {order.subtotal && <div className="flex justify-between"><span>Subtotal</span><span>₹{order.subtotal}</span></div>}
+              {order.deliveryFee && <div className="flex justify-between"><span>Delivery</span><span>₹{order.deliveryFee}</span></div>}
+              {order.tax && <div className="flex justify-between"><span>Tax</span><span>₹{order.tax}</span></div>}
+              <div className="flex justify-between text-white font-bold text-base border-t border-white/10 pt-2">
+                <span>Total</span><span>₹{order.total}</span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Payment */}
+          {order.payment && (
+            <Card title="Payment">
+              <div className="text-sm space-y-1 text-gray-300">
+                <div className="flex justify-between"><span>Method</span><span className="text-white">{order.payment.provider}</span></div>
+                <div className="flex justify-between"><span>Status</span><span className="text-emerald-400">{order.payment.status}</span></div>
+                <div className="flex justify-between"><span>Amount</span><span className="text-white">₹{order.payment.amount}</span></div>
+              </div>
+            </Card>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Card({ title, children }) {
+  return (
+    <div className="p-5 rounded-2xl bg-[#111] border border-white/10">
+      <h3 className="font-semibold text-white mb-3 text-sm">{title}</h3>
+      {children}
     </div>
   );
 }

@@ -1,1135 +1,471 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-// Particle Background
-import Particles from "react-tsparticles";
-import { loadSlim } from "tsparticles-slim";
-
-// Icons
-import {
-  FiSun,
-  FiMoon,
-  FiMapPin,
-  FiSearch,
-  FiUser,
-  FiLogIn,
-  FiUserPlus,
-  FiShoppingCart,
-  FiChevronLeft,
-  FiChevronRight,
-  FiX,
-  FiStar,
-  FiZap,
-  FiShield
-} from "react-icons/fi";
-
-// NEW API
+import { useNavigate } from "react-router-dom";
+import { FiSearch, FiMapPin, FiShoppingCart, FiUser, FiLogIn, FiUserPlus, FiX, FiStar, FiClock, FiTag } from "react-icons/fi";
 import { api } from "../services/api";
-
-// Auth
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
-/* ----------------------------- tiny helpers ----------------------------- */
-const prefersReduced = () => {
-  return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-};
-function useLocalStorage(key, initialValue) {
-  const [value, setValue] = useState(() => {
-    try {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : initialValue;
-    } catch {
-      return initialValue;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch { }
-  }, [key, value]);
-
-  return [value, setValue];
-}
-
-/* ============================== Landing ================================= */
-export default function ZoomoEatsLanding() {
-  const { user } = useAuth();
-
-  const [dark, setDark] = useLocalStorage("ze_theme_dark", true);
-  const [mode, setMode] = useState("Delivery");
-  const [query, setQuery] = useState("");
-  const [location, setLocation] = useState("");
-  const [tickerIndex, setTickerIndex] = useState(0);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [hoverXY, setHoverXY] = useState({ x: 0, y: 0 });
-
-  const [restaurants, setRestaurants] = useState([]);
-  const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const navigate = useNavigate();
-  const particlesInit = async (engine) => await loadSlim(engine);
-
-  // Headlines
-  const headlines = [
-    "Pickup, Dine-In, or Delivery.",
-    "Your cravings, delivered.",
-    "Zoom It. Eat It. Love It.",
-    "Fresh deals. Fresh vibes."
-  ];
-
-  const ticker = [
-    "25% off on first 3 orders",
-    "Wallet is live — 1-tap pay",
-    "Invite friends, get ₹150 credits",
-    "Free delivery above ₹199",
-    "Now serving in 45+ cities",
-  ];
-
-  const categories = [
-    "Popular", "Pizza", "Burgers", "Indian", "Street Food", "Beverages",
-    "Cafe", "Desserts", "Rolls", "Breakfast", "Healthy", "South Indian"
-  ];
-
-  // Fetch restaurants from backend
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await api.get("/restaurants");
-
-        const mapped = res.map((r) => ({
-          id: r.id,
-          name: r.name,
-          img: r.imageUrl || "https://source.unsplash.com/800x600/?food",
-          cuisine: r.cuisineType || "Various",
-          area: r.address || "Nearby",
-          rating: r.rating ?? 4.3,
-          eta: "25-40 min",
-          cost: 250,
-        }));
-
-        setRestaurants(mapped);
-      } catch (e) {
-        console.error("Backend error, loading fallback:", e);
-        setRestaurants([
-          { id: "1", name: "Fallback Pizza", cuisine: "Italian", rating: 4.5, eta: "30-45 min", img: "https://source.unsplash.com/800x600/?pizza", area: "City Center", cost: 250 },
-        ]);
-      }
-
-      setOffers([
-        { id: "o1", title: "Flat 50% Off", desc: "On top partners", code: "ZOOMO50", img: "https://source.unsplash.com/800x450/?food-offer" },
-        { id: "o2", title: "Buy 1 Get 1", desc: "Pizza & rolls", code: "BOGO", img: "https://source.unsplash.com/800x450/?pizza" },
-        { id: "o3", title: "Free Delivery", desc: "Above ₹199", code: "FREESHIP", img: "https://source.unsplash.com/800x450/?delivery" },
-      ]);
-
-      setLoading(false);
-    }
-    load();
-  }, []);
-
-  // Ticker auto-rotate
-  useEffect(() => {
-    const id = setInterval(() => setTickerIndex((i) => (i + 1) % ticker.length), 2400);
-    return () => clearInterval(id);
-  }, []);
-
-  // Apply dark mode class
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
-
-  // Search handler
-  function onSearch() {
-    const params = [];
-    if (mode) params.push(`mode=${mode.toLowerCase()}`);
-    if (query) params.push(`q=${encodeURIComponent(query)}`);
-    if (location) params.push(`loc=${encodeURIComponent(location)}`);
-    navigate(`/restaurants?${params.join("&")}`);
-  }
-
+/* ── Mascot Loader ── */
+export function MascotLoader({ text = "Loading..." }) {
   return (
-    <div className="relative min-h-screen bg-white dark:bg-black transition-colors">
-
-      {/* BG Particles */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <Particles
-          init={particlesInit}
-          options={{
-            fullScreen: { enable: false },
-            fpsLimit: 60,
-            background: { color: dark ? "#000" : "#fff" },
-            particles: {
-              number: { value: 90, density: { enable: true, area: 800 } },
-              color: { value: dark ? "#22c55e" : "#0ea5e9" },
-              size: { value: { min: 1, max: 3 } },
-              links: { enable: true, color: dark ? "#22c55e" : "#0ea5e9", opacity: 0.2 },
-              move: { enable: true, speed: 0.6 },
-            },
-          }}
-        />
+    <div className="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center gap-4">
+      <div className="relative">
+        <img src="/zoomo-mascot.png" alt="Loading" className="w-24 h-24 animate-float" />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-emerald-500/30 rounded-full blur-sm animate-pulse" />
       </div>
-      {/* ----------------------------- UI SECTIONS ----------------------------- */}
-      {/* ----------------------- Announcement ---- */}
-      <AnnouncementBar text={ticker[tickerIndex]} />
-
-      {/* Navbar */}
-      <Navbar
-        dark={dark}
-        setDark={setDark}
-        mode={mode}
-        setMode={setMode}
-        onProfileOpen={() => setProfileOpen(true)}
-        user={user}
-      />
-
-      {/* Hero section */}
-      <Hero
-        headlines={headlines}
-        mode={mode}
-        query={query}
-        setQuery={setQuery}
-        location={location}
-        setLocation={setLocation}
-        onSearch={onSearch}
-        hoverXY={hoverXY}
-        setHoverXY={setHoverXY}
-      />
-
-      {/* Category Chips */}
-      <CategoryChips categories={categories} />
-
-      {/* Featured Restaurants Carousel */}
-      <Section title="Top Restaurants Near You" subtitle="Based on your location">
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-32 rounded-3xl bg-gray-100 dark:bg-white/10" />
-            ))}
-          </div>
-        ) : (
-          <FeaturedCarousel items={restaurants} mode={mode} />
-        )}
-      </Section>
-
-      {/* Special Offers Grid */}
-      <Section title="Delicious Offers" subtitle="Tasty discounts just for you">
-        <OfferGrid offers={offers} />
-      </Section>
-
-      {/* Testimonials */}
-      <Section title="What our customers say" subtitle="Honest reviews from real users">
-        <Testimonials />
-      </Section>
-
-      {/* Why Us - Features */}
-      <Section title="Why Choose Zoomo Eats?" subtitle="We deliver more than just food">
-        <WhyUs />
-      </Section>
-
-      {/* Footer */}
-      <Footer />
-
-      {/* Profile Drawer (hidden by default) */}
-      <ProfileDrawer open={profileOpen} setOpen={setProfileOpen} />
-
-      {/* Chat Widget */}
-      <ChatWidget open={chatOpen} setOpen={setChatOpen} />
+      <p className="text-emerald-400 font-medium text-sm animate-pulse">{text}</p>
     </div>
   );
 }
 
-/* ----------------------------- UI COMPONENTS ----------------------------- */
-/* ----------------------- Announcement ---- */
-function AnnouncementBar({ text }) {
+/* ── Address Modal ── */
+function AddressModal({ onConfirm }) {
+  const [val, setVal] = useState("");
   return (
-    <div className="w-full bg-emerald-600/90 dark:bg-emerald-500/90 text-white text-xs sm:text-sm py-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2">
-        <span className="animate-pulse">●</span>
-        <span className="truncate">{text}</span>
-      </div>
-    </div>
-  );
-}
-
-/* ----------------------- Navbar --------------------- */
-function Navbar({ dark, setDark, mode, setMode, onProfileOpen, user }) {
-  return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-white/80 dark:bg-black/50 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-
-        {/* Left: Logo + Delivery Modes */}
-        <div className="flex items-center gap-3">
-          <img
-            loading="lazy"
-            src="/zoomo-logo.png"
-            alt="Zoomo Eats Logo"
-            className="w-9 h-9 rounded-xl object-cover ring-1 ring-emerald-400/30"
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/zoomo-mascot.png" alt="Zoomo" className="w-20 h-20 animate-wiggle mb-3" />
+          <h2 className="text-2xl font-bold text-white">Where should we deliver?</h2>
+          <p className="text-gray-400 text-sm mt-1">Enter your delivery address to get started</p>
+        </div>
+        <div className="relative mb-4">
+          <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
+          <input
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && val.trim() && onConfirm(val.trim())}
+            placeholder="e.g. Koramangala, Bengaluru"
+            className="w-full pl-11 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
           />
+        </div>
+        <button
+          onClick={() => val.trim() && onConfirm(val.trim())}
+          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-95"
+        >
+          Find Food Near Me 🍔
+        </button>
+      </div>
+    </div>
+  );
+}
 
-          <div className="text-lg font-semibold dark:text-white">
+/* ── Navbar ── */
+function Navbar({ address, onAddressClick, cartCount, user, onProfileOpen, navigate }) {
+  return (
+    <header className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+
+        {/* Logo */}
+        <div className="flex items-center gap-2 shrink-0">
+          <img src="/zoomo-logo.png" alt="Zoomo" className="w-8 h-8 rounded-xl" />
+          <span className="text-white font-bold text-lg hidden sm:block">
             Zoomo <span className="text-emerald-500">Eats</span>
-          </div>
-
-          {/* Mode Selector */}
-          <div className="hidden md:flex items-center gap-1 bg-gray-100 dark:bg-white/10 rounded-xl p-1 ml-2">
-            {["Pickup", "Dine-In", "Delivery"].map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition ${mode === m
-                    ? "bg-white dark:bg-black shadow text-gray-900 dark:text-white"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5"
-                  }`}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
+          </span>
         </div>
 
-        {/* Desktop: Buttons */}
-        <div className="hidden md:flex items-center gap-2">
+        {/* Address pill */}
+        <button
+          onClick={onAddressClick}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-left hover:bg-white/10 transition min-w-0 flex-1 max-w-xs"
+        >
+          <FiMapPin className="text-emerald-500 shrink-0" size={14} />
+          <span className="text-gray-300 truncate">{address || "Set delivery location"}</span>
+        </button>
 
-          {/* Theme toggle */}
-          <button
-            onClick={() => setDark((v) => !v)}
-            className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white text-gray-800 hover:scale-[1.02] active:scale-[.98] transition flex items-center gap-2"
-            aria-label="Toggle theme"
-          >
-            {dark ? <FiSun /> : <FiMoon />} {dark ? "Light" : "Dark"}
-          </button>
-
-          {/* Auth Buttons */}
+        {/* Right actions */}
+        <div className="flex items-center gap-2 shrink-0">
           {user ? (
             <button
               onClick={onProfileOpen}
-              className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white flex items-center gap-2"
+              className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition flex items-center gap-2"
             >
-              <FiUser /> {user?.name || "Profile"}
+              <FiUser size={16} />
+              <span className="hidden sm:block text-sm">{user.name?.split(" ")[0]}</span>
             </button>
           ) : (
             <>
-              <Link
-                to="/login"
-                className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white flex items-center gap-2"
-              >
-                <FiLogIn /> Login
-              </Link>
-
-              <Link
-                to="/signup"
-                className="px-3 py-2 rounded-xl bg-emerald-600 text-white flex items-center gap-2"
-              >
-                <FiUserPlus /> Sign up
-              </Link>
+              <button onClick={() => navigate("/login")} className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition text-sm">
+                <FiLogIn size={14} /> Login
+              </button>
+              <button onClick={() => navigate("/signup")} className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition text-sm">
+                <FiUserPlus size={14} /> Sign up
+              </button>
             </>
           )}
-
-          {/* Cart */}
-          <Link
-            to="/cart"
-            className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white"
-          >
-            <FiShoppingCart />
-          </Link>
-        </div>
-
-        {/* Mobile icons */}
-        <div className="md:hidden flex items-center gap-2">
           <button
-            onClick={() => setDark((v) => !v)}
-            className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white"
+            onClick={() => navigate("/cart")}
+            className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition"
           >
-            {dark ? <FiSun /> : <FiMoon />}
+            <FiShoppingCart size={18} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                {cartCount}
+              </span>
+            )}
           </button>
-
-          <Link
-            to="/cart"
-            className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white"
-          >
-            <FiShoppingCart />
-          </Link>
         </div>
       </div>
     </header>
   );
 }
 
-function Hero({ headlines, mode, query, setQuery, location, setLocation, onSearch, hoverXY, setHoverXY }) {
-  const [index, setIndex] = useState(0);
+/* ── Category Pills ── */
+const CATEGORIES = ["All", "Pizza", "Burgers", "Indian", "Chinese", "Biryani", "Desserts", "Beverages", "Healthy", "Street Food"];
+
+/* ── Restaurant Card ── */
+function RestaurantCard({ r, navigate }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={() => navigate(`/restaurant/${r.id}`)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="cursor-pointer rounded-2xl overflow-hidden bg-[#111] border border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] transition-all duration-300 group"
+    >
+      {/* Image */}
+      <div className="relative h-44 overflow-hidden">
+        <img
+          src={r.img}
+          alt={r.name}
+          className={`w-full h-full object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"}`}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+
+        {/* Coupon badge */}
+        {r.coupon && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-emerald-400 text-[10px] font-medium px-2 py-1 rounded-lg border border-emerald-500/20">
+            <FiTag size={10} /> {r.coupon}
+          </div>
+        )}
+
+        {/* Rating */}
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
+          <FiStar className="text-yellow-400 fill-yellow-400" size={11} /> {r.rating}
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="p-4">
+        <h3 className="font-semibold text-white text-base truncate">{r.name}</h3>
+        <p className="text-gray-400 text-xs mt-0.5 truncate">{r.cuisine}</p>
+        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+          <span className="flex items-center gap-1"><FiClock size={11} /> {r.eta}</span>
+          <span>·</span>
+          <span>₹{r.cost} for two</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Landing Page ── */
+export default function LandingPage() {
+  const { user } = useAuth();
+  const { getTotalItemCount } = useCart();
   const navigate = useNavigate();
 
+  const [address, setAddress] = useState(() => localStorage.getItem("ze_address") || "");
+  const [showAddressModal, setShowAddressModal] = useState(!localStorage.getItem("ze_address") && !user);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const [restaurants, setRestaurants] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const searchRef = useRef(null);
+
+  // Load restaurants
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % headlines.length), 2200);
-    return () => clearInterval(id);
-  }, [headlines.length]);
-
-  const onMouse = (e) => {
-    if (prefersReduced()) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
-    const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
-    setHoverXY({ x, y });
-  };
-
-  return (
-    <section className="relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 py-14 sm:py-20">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-
-          {/* Left side text */}
-          <div>
-            <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-tight text-gray-900 dark:text-white">
-              {headlines[index]}
-            </h1>
-
-            <p className="mt-3 text-gray-600 dark:text-gray-300 max-w-xl">
-              Order from top restaurants near you. Switch between {mode.toLowerCase()} anytime.
-              Smart recommendations, live tracking, and one-tap reorder.
-            </p>
-
-            {/* Search */}
-            <div className="mt-6 space-y-3">
-              <div className="relative">
-                <input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Enter delivery location"
-                  className="w-full px-4 py-3 pl-11 rounded-2xl bg-white/95 dark:bg-white/5 
-                  border border-black/10 dark:border-white/10 focus:outline-none 
-                  focus:ring-2 focus:ring-emerald-500 text-gray-900 dark:text-white 
-                  placeholder-gray-500"
-                />
-                <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 opacity-70" />
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-                <div className="relative">
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search dishes, restaurants, cuisines"
-                    className="w-full px-4 py-3 pl-11 rounded-2xl bg-white/95 dark:bg-white/5 
-                    border border-black/10 dark:border-white/10 focus:outline-none 
-                    focus:ring-2 focus:ring-emerald-500 text-gray-900 dark:text-white 
-                    placeholder-gray-500"
-                  />
-                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 opacity-70" />
-                </div>
-
-                {/* Search Button */}
-                <Magnetic onClick={onSearch} className="bg-emerald-600 text-white">
-                  Search
-                </Magnetic>
-
-                {/* Order Now -> NEW ROUTE */}
-                <Magnetic
-                  onClick={() => navigate("/restaurants")}
-                  className="bg-white dark:bg-emerald-500 text-gray-900 dark:text-black"
-                >
-                  Order Now
-                </Magnetic>
-              </div>
-
-              {/* Features */}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-300">
-                <Chip icon={<FiZap />}>Live tracking</Chip>
-                <Chip>Contactless</Chip>
-                <Chip icon={<FiShield />}>Secure payments</Chip>
-              </div>
-            </div>
-          </div>
-
-          {/* Right side tilt mascot visual */}
-          <div
-            className="relative will-change-transform"
-            onMouseMove={onMouse}
-            onMouseLeave={() => setHoverXY({ x: 0, y: 0 })}
-            style={{
-              transform: `perspective(900px) rotateX(${hoverXY.y * -6}deg) rotateY(${hoverXY.x * 8}deg)`,
-              transition: prefersReduced() ? "none" : "transform 200ms ease",
-            }}
-          >
-            <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-[0_10px_40px_-10px_rgba(16,185,129,0.35)] ring-1 ring-emerald-400/30 relative bg-gradient-to-br from-emerald-50 to-white dark:from-[#0c0c0c] dark:to-[#040404]">
-              <div className="absolute inset-0 rounded-3xl ring-2 ring-emerald-500/20 pointer-events-none" />
-              <img
-                loading="lazy"
-                src="/zoomo-mascot.png"
-                alt="Zoomo mascot"
-                className="w-full h-full object-contain p-6 select-none"
-                draggable="false"
-              />
-            </div>
-
-            <div className="absolute -bottom-6 left-6 bg-white/90 dark:bg-black rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white grid place-content-center text-lg font-bold">
-                Z
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-900 dark:text-white">Fast delivery</div>
-                <div className="text-xs text-gray-600 dark:text-gray-300">Avg 25–35 mins</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  );
-}
-/* ----------------------------- Chip ----------------------------- */
-function Chip({ children, icon }) {
-  return (
-    <span className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-white/10 inline-flex items-center gap-1">
-      {icon}{children}
-    </span>
-  );
-}
-
-/* ----------------------------- Magnetic Button ----------------------------- */
-function Magnetic({ children, className = "", onClick }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || prefersReduced()) return;
-
-    const enter = () => {
-      el.animate(
-        { transform: ["translateY(0)", "translateY(-2px)"] },
-        { duration: 120, fill: "forwards" }
-      );
-    };
-
-    const leave = () => {
-      el.animate(
-        { transform: ["translateY(-2px)", "translateY(0)"] },
-        { duration: 120, fill: "forwards" }
-      );
-    };
-
-    el.addEventListener("mouseenter", enter);
-    el.addEventListener("mouseleave", leave);
-
-    return () => {
-      el.removeEventListener("mouseenter", enter);
-      el.removeEventListener("mouseleave", leave);
-    };
+    async function load() {
+      try {
+        const res = await api.get("/restaurants");
+        const mapped = res.map(r => ({
+          id: r.id,
+          name: r.name,
+          img: r.imageUrl || `https://source.unsplash.com/600x400/?${encodeURIComponent(r.cuisineType || "food")}`,
+          cuisine: r.cuisineType || "Various",
+          area: r.address || "Nearby",
+          rating: r.rating?.toFixed(1) ?? "4.3",
+          eta: "25-40 min",
+          cost: 250,
+          coupon: r.coupon || null,
+        }));
+        setRestaurants(mapped);
+        setFiltered(mapped);
+      } catch {
+        const fallback = [
+          { id: "1", name: "The Pizza Place", cuisine: "Italian · Pizza", rating: "4.5", eta: "30-40 min", cost: 300, img: "https://source.unsplash.com/600x400/?pizza", coupon: "PIZZA50" },
+          { id: "2", name: "Biryani House", cuisine: "Indian · Biryani", rating: "4.3", eta: "25-35 min", cost: 250, img: "https://source.unsplash.com/600x400/?biryani", coupon: null },
+          { id: "3", name: "Burger Barn", cuisine: "American · Burgers", rating: "4.4", eta: "20-30 min", cost: 200, img: "https://source.unsplash.com/600x400/?burger", coupon: "BOGO" },
+          { id: "4", name: "Wok & Roll", cuisine: "Chinese · Asian", rating: "4.2", eta: "30-45 min", cost: 280, img: "https://source.unsplash.com/600x400/?chinese-food", coupon: null },
+          { id: "5", name: "Green Bowl", cuisine: "Healthy · Salads", rating: "4.6", eta: "15-25 min", cost: 220, img: "https://source.unsplash.com/600x400/?salad", coupon: "HEALTHY20" },
+          { id: "6", name: "Dessert Den", cuisine: "Desserts · Sweets", rating: "4.7", eta: "20-30 min", cost: 180, img: "https://source.unsplash.com/600x400/?dessert", coupon: null },
+        ];
+        setRestaurants(fallback);
+        setFiltered(fallback);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, []);
 
-  return (
-    <button
-      ref={ref}
-      onClick={onClick}
-      className={`px-5 py-3 rounded-2xl hover:brightness-110 active:brightness-95 transition ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
+  // Filter
+  useEffect(() => {
+    let list = restaurants;
+    if (category !== "All") {
+      list = list.filter(r => r.cuisine?.toLowerCase().includes(category.toLowerCase()) || r.name?.toLowerCase().includes(category.toLowerCase()));
+    }
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      list = list.filter(r => r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q));
+    }
+    setFiltered(list);
+  }, [query, category, restaurants]);
 
-/* ----------------------------- Category Chips ----------------------------- */
-function CategoryChips({ categories }) {
-  return (
-    <div className="sticky top-[64px] z-30 border-y border-white/10 bg-white/70 dark:bg-black/40 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-2 overflow-x-auto">
-        {categories.map((c, i) => (
-          <button
-            key={c}
-            className="px-3 py-1.5 rounded-xl whitespace-nowrap bg-gray-100 dark:bg-white/10 
-            text-gray-800 dark:text-gray-200 hover:scale-[1.02] transition"
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+  function handleAddressConfirm(addr) {
+    setAddress(addr);
+    localStorage.setItem("ze_address", addr);
+    setShowAddressModal(false);
+  }
 
+  const cartCount = getTotalItemCount?.() ?? 0;
 
-/* ----------------------------- Section ----------------------------- */
-function Section({ title, subtitle, children }) {
   return (
-    <section className="py-10">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              {title}
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{subtitle}</p>
+    <div className="min-h-screen bg-black text-white">
+
+      {/* Address Modal */}
+      {showAddressModal && <AddressModal onConfirm={handleAddressConfirm} />}
+
+      {/* Navbar */}
+      <Navbar
+        address={address}
+        onAddressClick={() => setShowAddressModal(true)}
+        cartCount={cartCount}
+        user={user}
+        onProfileOpen={() => setProfileOpen(true)}
+        navigate={navigate}
+      />
+
+      <main className="max-w-6xl mx-auto px-4 py-8">
+
+        {/* Hero Search */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+            What are you <span className="text-emerald-500">craving</span> today?
+          </h1>
+          <p className="text-gray-500 text-sm mb-5">
+            {address ? `Delivering to ${address}` : "Set your location to see nearby restaurants"}
+          </p>
+          <div className="relative max-w-2xl">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <input
+              ref={searchRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search for restaurants, cuisines, dishes..."
+              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                <FiX size={16} />
+              </button>
+            )}
           </div>
+        </div>
 
-          <div className="hidden sm:flex items-center gap-2">
-            <button className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 dark:text-white">
-              View all
+        {/* Category Pills */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-8">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition ${category === cat
+                  ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                  : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
+            >
+              {cat}
             </button>
-          </div>
+          ))}
         </div>
 
-        {children}
-      </div>
-    </section>
-  );
-}
-
-/* ----------------------------- Featured Carousel ----------------------------- */
-function FeaturedCarousel({ items, mode }) {
-  const ref = useRef(null);
-  const scrollBy = (dx) =>
-    ref.current?.scrollBy({ left: dx, behavior: "smooth" });
-
-  return (
-    <div className="relative">
-      <div
-        ref={ref}
-        className="grid auto-cols-[minmax(260px,1fr)] grid-flow-col gap-4 overflow-x-auto no-scrollbar scroll-smooth"
-      >
-        {items.map((r) => (
-          <RestCard key={r.id} r={r} mode={mode} />
-        ))}
-      </div>
-
-      <button
-        onClick={() => scrollBy(-320)}
-        aria-label="Previous restaurant"
-        className="hidden md:grid place-content-center absolute -left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white dark:bg-white/10 ring-1 ring-black/10"
-      >
-        <FiChevronLeft />
-      </button>
-
-      <button
-        onClick={() => scrollBy(320)}
-        aria-label="Next restaurant"
-        className="hidden md:grid place-content-center absolute -right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white dark:bg-white/10 ring-1 ring-black/10"
-      >
-        <FiChevronRight />
-      </button>
-    </div>
-  );
-}
-
-/* ----------------------------- Restaurant Card ----------------------------- */
-function RestCard({ r, mode }) {
-  return (
-    <Link
-      to={`/restaurant/${r.id}?mode=${(mode || "delivery").toLowerCase()}`}
-      className="rounded-3xl overflow-hidden ring-1 ring-white/10 bg-white/80 dark:bg-[#0e0e0e] 
-                 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-10px_rgba(16,185,129,0.35)] 
-                 transition block"
-    >
-      <div className="aspect-[4/3] relative">
-        <img
-          loading="lazy"
-          src={r.img}
-          alt={`${r.name} restaurant`}
-          className="w-full h-full object-cover"
-        />
-
-        <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/70 text-xs px-2 py-1 rounded-lg flex items-center gap-1">
-          <FiStar className="text-yellow-500" /> {r.rating}
-        </div>
-      </div>
-
-      <div className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="font-semibold text-gray-900 dark:text-white leading-tight pr-2">
-            {r.name}
-          </div>
-
-          <div className="text-xs px-2 py-1 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200">
-            {r.eta} mins
-          </div>
-        </div>
-
-        <div className="text-xs text-gray-600 dark:text-gray-300">
-          {r.cuisine} · {r.area} · ₹{r.cost} for two
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function OfferGrid({ offers }) {
-  return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {offers.map((o) => (
-        <div key={o.id} className="group overflow-hidden rounded-3xl ring-1 ring-white/10 bg-white/80 dark:bg-[#0f0f0f]">
-          <div className="aspect-[16/9] overflow-hidden">
-            <img loading="lazy" src={o.img} alt={`${o.title} offer`} className="w-full h-full object-cover group-hover:scale-105 transition" />
-          </div>
-          <div className="p-4 flex items-center justify-between">
-            <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{o.title}</div>
-              <div className="text-xs text-gray-600 dark:text-gray-300">{o.desc}</div>
-            </div>
-            <div className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs">{o.code}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Testimonials() {
-  const testimonials = [
-    { name: "Alex J.", quote: "Zoomo Eats is a game-changer! Super fast delivery and amazing deals.", rating: 5 },
-    { name: "Sarah K.", quote: "Love the variety and easy switching between pickup and delivery.", rating: 4.8 },
-    { name: "Mike L.", quote: "The chat support is quick and helpful. Highly recommend!", rating: 5 },
-    { name: "Emma R.", quote: "Best food app I've used. The mascot is cute too!", rating: 4.9 },
-  ];
-  return (
-    <div className="grid md:grid-cols-2 gap-4">
-      {testimonials.map((t, i) => (
-        <div key={i} className="rounded-3xl ring-1 ring-white/10 bg-white/80 dark:bg-[#0f0f0f] p-5">
-          <div className="flex items-center mb-2">
-            {[...Array(5)].map((_, j) => (
-              <FiStar key={j} className={`text-yellow-500 ${j < Math.floor(t.rating) ? "fill-current" : ""}`} />
+        {/* Restaurant Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-white/5 animate-pulse">
+                <div className="h-44 bg-white/10 rounded-t-2xl" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-white/10 rounded w-3/4" />
+                  <div className="h-3 bg-white/10 rounded w-1/2" />
+                </div>
+              </div>
             ))}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">"{t.quote}"</div>
-          <div className="font-semibold text-gray-900 dark:text-white">- {t.name}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function WhyUs() {
-  const items = [
-    { t: "Lightning Fast", d: "Optimized routes, real-time ETAs & batching" },
-    { t: "All Modes", d: "Pickup, Dine-In & Delivery in one flow" },
-    { t: "Secure Payments", d: "UPI, Cards, Wallet & COD" },
-    { t: "Reliable Support", d: "24×7 help via chat & callback" },
-    { t: "Curated Choices", d: "Handpicked restaurants with checks" },
-    { t: "Rewards", d: "Earn & redeem points on every order" },
-  ];
-  return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {items.map((x, i) => (
-        <div key={i} className="rounded-3xl ring-1 ring-white/10 bg-white/80 dark:bg-[#0f0f0f] p-5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white grid place-content-center mb-3">✓</div>
-          <div className="font-semibold text-gray-900 dark:text-white">{x.t}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">{x.d}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Footer() {
-  const [email, setEmail] = useState("");
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    alert(`Subscribed with ${email}`);
-    setEmail("");
-  };
-
-  return (
-    <footer className="border-t border-white/10">
-      <div className="max-w-7xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8">
-
-        {/* Logo + Tagline */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <img
-              loading="lazy"
-              src="/zoomo-logo.png"
-              alt="Zoomo Eats Logo"
-              className="w-9 h-9 rounded-xl object-cover"
-            />
-            <div className="text-lg font-semibold dark:text-white">
-              Zoomo Eats
-            </div>
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            Zoom It. Eat It. Love It.
-          </div>
-        </div>
-
-        {/* Company Section */}
-        <div>
-          <div className="font-semibold mb-3 dark:text-white">Company</div>
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 flex flex-col">
-            <button type="button">About</button>
-            <button type="button">Careers</button>
-            <button type="button">Contact</button>
-            <button type="button">Blog</button>
-          </div>
-        </div>
-
-        {/* Help Section */}
-        <div>
-          <div className="font-semibold mb-3 dark:text-white">Help</div>
-          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 flex flex-col">
-            <button type="button">Support</button>
-            <button type="button">FAQs</button>
-            <button type="button">Partner with us</button>
-            <button type="button">Privacy</button>
-          </div>
-        </div>
-
-        {/* App + Newsletter */}
-        <div>
-          <div className="font-semibold mb-3 dark:text-white">Get the app</div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="px-4 py-2 rounded-xl bg-black text-white text-sm">
-              App Store
-            </div>
-            <div className="px-4 py-2 rounded-xl bg-black text-white text-sm">
-              Google Play
-            </div>
-          </div>
-
-          <div className="font-semibold mb-3 dark:text-white">Newsletter</div>
-
-          {/* ✅ FIXED: newsletter form - no more tear */}
-          <form onSubmit={handleSubscribe} className="flex gap-2 w-full overflow-hidden">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your email"
-              className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 
-                         text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none"
-              required
-            />
-            <button
-              type="submit"
-              className="shrink-0 px-3 py-2 rounded-xl bg-emerald-600 text-white whitespace-nowrap"
-            >
-              Subscribe
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <img src="/zoomo-mascot.png" alt="No results" className="w-24 opacity-40 mb-4 animate-float" />
+            <p className="text-gray-500 text-lg font-medium">No restaurants found</p>
+            <p className="text-gray-600 text-sm mt-1">Try a different search or category</p>
+            <button onClick={() => { setQuery(""); setCategory("All"); }} className="mt-4 px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm hover:bg-emerald-500 transition">
+              Clear filters
             </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Bottom Bar */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4 
-                        flex items-center justify-between 
-                        text-xs text-gray-600 dark:text-gray-300">
-          <div>© {new Date().getFullYear()} Zoomo Eats</div>
-          <div className="flex items-center gap-3">
-            <button type="button">Terms</button>
-            <button type="button">Privacy</button>
-            <button type="button">Cookies</button>
           </div>
-        </div>
-      </div>
-    </footer>
+        ) : (
+          <>
+            <p className="text-gray-500 text-sm mb-4">{filtered.length} restaurants available</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered.map(r => <RestaurantCard key={r.id} r={r} navigate={navigate} />)}
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Profile Drawer */}
+      {profileOpen && <ProfileDrawer user={user} onClose={() => setProfileOpen(false)} navigate={navigate} />}
+
+      {/* Chat Bot */}
+      <ChatWidget />
+    </div>
   );
 }
 
-export function ProfileDrawer({ open, setOpen }) {
-  const { user, isAuthenticated } = useAuth();
-  const [recentOrders, setRecentOrders] = useState([]);
-
-  useEffect(() => {
-    if (open && isAuthenticated) {
-      const load = async () => {
-        try {
-          const res = await api.get("/orders/mine");
-          const orders = res?.data || [];
-          setRecentOrders(orders.slice(0, 3));
-        } catch (err) {
-          console.error("Error loading orders:", err);
-        }
-      };
-      load();
-    }
-  }, [open, isAuthenticated]);
-
-  if (!open) return null;
-
+/* ── Profile Drawer ── */
+function ProfileDrawer({ user, onClose, navigate }) {
+  const { logout } = useAuth();
   return (
     <div className="fixed inset-0 z-50 flex">
-      {/* Drawer Panel */}
-      <div className="w-full max-w-md ml-auto h-full bg-white dark:bg-black dark:text-white ring-1 ring-white/10 flex flex-col">
-
-        {/* Header */}
+      <div className="w-full max-w-sm ml-auto h-full bg-[#111] border-l border-white/10 flex flex-col">
         <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <div className="font-semibold flex items-center gap-2">
-            <FiUser /> Profile
+          <span className="font-semibold text-white">Profile</span>
+          <button onClick={onClose} className="text-gray-400 hover:text-white"><FiX /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+            <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center text-xl font-bold text-white">
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </div>
+            <div>
+              <div className="font-semibold text-white">{user?.name}</div>
+              <div className="text-xs text-gray-400">{user?.email}</div>
+            </div>
           </div>
-          <button onClick={() => setOpen(false)} aria-label="Close profile">
-            <FiX />
+          {[
+            { label: "My Orders", path: "/orders" },
+            { label: "My Cart", path: "/cart" },
+            { label: "Restaurants", path: "/restaurants" },
+          ].map(item => (
+            <button
+              key={item.path}
+              onClick={() => { navigate(item.path); onClose(); }}
+              className="w-full text-left px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition text-sm"
+            >
+              {item.label}
+            </button>
+          ))}
+          <button
+            onClick={() => { logout(); onClose(); }}
+            className="w-full px-4 py-3 rounded-xl text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-sm"
+          >
+            Logout
           </button>
         </div>
-
-        {/* Content */}
-        <div className="p-5 space-y-5 overflow-y-auto">
-
-          {/* User Info */}
-          <div className="flex items-center gap-4">
-            <img
-              loading="lazy"
-              src={user?.avatar || "/avatar.png"}
-              alt="User avatar"
-              className="w-14 h-14 rounded-2xl bg-gray-200 object-cover"
-            />
-            <div>
-              <div className="text-lg font-semibold">
-                {user?.name || "Guest"}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-300">
-                {user?.email || "Not signed in"}
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="grid grid-cols-2 gap-3">
-
-            {!isAuthenticated && (
-              <>
-                <Link
-                  to="/login"
-                  className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-center"
-                >
-                  Login
-                </Link>
-
-                <Link
-                  to="/signup"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-center"
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
-
-            <Link
-              to="/orders"
-              className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-center col-span-2"
-            >
-              My Orders
-            </Link>
-
-            <Link
-              to="/cart"
-              className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-center col-span-2"
-            >
-              My Cart
-            </Link>
-
-            <Link
-              to="/restaurants"
-              className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-center col-span-2"
-            >
-              Explore Restaurants
-            </Link>
-          </div>
-
-          {/* Recent Orders */}
-          {isAuthenticated && (
-            <div>
-              <div className="font-semibold mb-2">Recent Orders</div>
-              <div className="space-y-2">
-                {recentOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="p-3 rounded-2xl ring-1 ring-white/10 flex items-center justify-between bg-white/70 dark:bg-[#0f0f0f]"
-                  >
-                    <div>
-                      <div className="font-semibold">
-                        Order #{order.id.slice(0, 6)}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300">
-                        {order.status} • ₹{order.total || order.subtotal}
-                      </div>
-                    </div>
-                    <button className="px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10">
-                      Reorder
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-
-      {/* Background Overlay */}
-      <div
-        className="flex-1 bg-black/40"
-        onClick={() => setOpen(false)}
-      />
+      <div className="flex-1 bg-black/50" onClick={onClose} />
     </div>
   );
 }
 
-/* ---------------------------- Chat Widget --------------------------- */
-function ChatWidget({ open, setOpen }) {
+/* ── Chat Widget ── */
+function ChatWidget() {
+  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "bot", text: "Hi! I'm Zoomo Assist, powered by our friendly mascot! How can I help you today?" },
-    { role: "bot", text: "You can ask about orders, deals, restaurants, or anything else!" },
+    { role: "bot", text: "Hey! I'm Zoomo 🍔 What can I help you with?" }
   ]);
-
   const [text, setText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const quick = ["Current deals", "Track my order", "Delivery areas", "Payment options", "Contact support", "Recommend a restaurant"];
-  const chatRef = useRef(null);
-
-  function send(content = text) {
-    const val = content.trim();
-    if (!val) return;
-
-    const userMsg = { role: "user", text: val };
-    setMessages((m) => [...m, userMsg]);
-    setText("");
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const replyText = routeIntent(val);
-      const botMsg = { role: "bot", text: replyText };
-      setMessages((m) => [...m, botMsg]);
-      setIsTyping(false);
-    }, 1500 + Math.random() * 1000);
-  }
-
-  function routeIntent(t) {
-    const s = t.toLowerCase();
-
-    if (s.includes("deal") || s.includes("offer") || s.includes("promo"))
-      return "Today's hot deals: ZOOMO50 for 50% off on select partners, BOGO for Buy 1 Get 1, and FREESHIP for free delivery above ₹199!";
-
-    if (s.includes("track") || s.includes("order") || s.includes("status"))
-      return "To track your order, go to Menu → Orders. Or share your order number here!";
-
-    if (s.includes("deliver") || s.includes("area") || s.includes("city") || s.includes("location"))
-      return "We are serving 45+ cities! Enter your pincode or area on homepage to check availability.";
-
-    if (s.includes("pay") || s.includes("payment") || s.includes("upi") || s.includes("card"))
-      return "We accept UPI, Cards, Wallet, Net Banking, and Cash on Delivery. Secure & fast!";
-
-    if (s.includes("support") || s.includes("help") || s.includes("agent"))
-      return "I'm connecting you to our support team. Expect a callback in 5–10 minutes.";
-
-    if (s.includes("recommend") || s.includes("restaurant") || s.includes("suggest"))
-      return "Popular picks: I Love Pizza, Taste of Punjab, Sharma Fast Food. What cuisine do you like?";
-
-    if (s.includes("menu") || s.includes("dish"))
-      return "Tell me the dish or restaurant name — I'll help you find it!";
-
-    return "Hmm, I didn't get that. Could you rephrase? Or choose any quick reply below!";
-  }
+  const [typing, setTyping] = useState(false);
+  const ref = useRef(null);
 
   useEffect(() => {
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }
-  }, [messages, isTyping]);
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+  }, [messages, typing]);
+
+  function send(msg = text) {
+    const val = msg.trim();
+    if (!val) return;
+    setMessages(m => [...m, { role: "user", text: val }]);
+    setText("");
+    setTyping(true);
+    setTimeout(() => {
+      const s = val.toLowerCase();
+      let reply = "Hmm, I didn't get that! Try asking about deals, orders, or restaurants.";
+      if (s.includes("deal") || s.includes("offer")) reply = "🔥 Use ZOOMO50 for 50% off, BOGO for Buy 1 Get 1, or FREESHIP for free delivery above ₹199!";
+      else if (s.includes("track") || s.includes("order")) reply = "Go to Menu → My Orders to track your order!";
+      else if (s.includes("deliver")) reply = "We deliver to 45+ cities! Set your location on the home screen.";
+      else if (s.includes("pay")) reply = "We support UPI, Cards, Wallets, Net Banking & Cash on Delivery!";
+      setMessages(m => [...m, { role: "bot", text: reply }]);
+      setTyping(false);
+    }, 1200 + Math.random() * 800);
+  }
+
+  if (!open) return (
+    <button
+      onClick={() => setOpen(true)}
+      className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full overflow-hidden shadow-xl hover:scale-110 transition border-2 border-emerald-500/50"
+    >
+      <img src="/zoomo-mascot.png" alt="Chat" className="w-full h-full object-cover animate-float" />
+    </button>
+  );
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="rounded-full shadow-xl w-16 h-16 overflow-hidden hover:scale-105 transition animate-pulse"
-        >
-          <img
-            src="/zoomo-mascot.png"
-            alt="Zoomo Mascot"
-            className="w-full h-full object-cover"
-          />
-        </button>
-      )}
-
-      {open && (
-        <div className="w-96 rounded-3xl overflow-hidden ring-1 ring-white/10 bg-white/95 dark:bg-[#0b0f0c] dark:text-white shadow-2xl">
-
-          {/* Header */}
-          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src="/zoomo-mascot.png" className="w-8 h-8 rounded-full animate-wiggle" />
-              <div className="font-semibold">Zoomo Assist</div>
-            </div>
-            <button onClick={() => setOpen(false)}>
-              <FiX />
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div ref={chatRef} className="h-80 overflow-y-auto p-4 space-y-3">
-            {messages.map((m, i) => (
-              <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <div className={`flex items-start gap-2 max-w-[80%] ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-
-                  {m.role === "bot" && (
-                    <img src="/zoomo-mascot.png" className="w-8 h-8 rounded-full flex-shrink-0" />
-                  )}
-
-                  {m.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-emerald-600 text-white grid place-content-center flex-shrink-0">
-                      U
-                    </div>
-                  )}
-
-                  <div
-                    className={`px-4 py-2 rounded-2xl ${m.role === "user"
-                        ? "bg-emerald-600 text-white"
-                        : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200"
-                      }`}
-                  >
-                    {m.text}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="flex items-center gap-2">
-                  <img src="/zoomo-mascot.png" className="w-8 h-8 rounded-full" />
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-2xl">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                      <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Quick replies */}
-          <div className="px-3 pb-2 flex flex-wrap gap-2">
-            {quick.map((q) => (
-              <button
-                key={q}
-                onClick={() => send(q)}
-                className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          {/* Input */}
-          <div className="p-3 flex items-center gap-2 border-t border-white/10">
-            <input
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Type your message..."
-              className="flex-1 px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none"
-            />
-            <button
-              onClick={() => send()}
-              className="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:brightness-110 transition"
-            >
-              Send
-            </button>
-          </div>
+    <div className="fixed bottom-5 right-5 z-50 w-80 rounded-3xl overflow-hidden bg-[#0f0f0f] border border-white/10 shadow-2xl">
+      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-[#111]">
+        <div className="flex items-center gap-2">
+          <img src="/zoomo-mascot.png" className="w-7 h-7 rounded-full animate-wiggle" alt="" />
+          <span className="font-semibold text-white text-sm">Zoomo Assist</span>
+          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
         </div>
-      )}
+        <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white"><FiX size={16} /></button>
+      </div>
+
+      <div ref={ref} className="h-64 overflow-y-auto p-3 space-y-3">
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-emerald-600 text-white" : "bg-white/10 text-gray-200"
+              }`}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        {typing && (
+          <div className="flex gap-1 pl-2">
+            {[0, 0.2, 0.4].map((d, i) => (
+              <div key={i} className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: `${d}s` }} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2 p-3 border-t border-white/10">
+        {["Deals", "Track order", "Payment"].map(q => (
+          <button key={q} onClick={() => send(q)} className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition">{q}</button>
+        ))}
+      </div>
+
+      <div className="p-3 pt-0 flex gap-2">
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && send()}
+          placeholder="Ask something..."
+          className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none text-sm"
+        />
+        <button onClick={() => send()} className="px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition text-sm">
+          Send
+        </button>
+      </div>
     </div>
   );
 }
