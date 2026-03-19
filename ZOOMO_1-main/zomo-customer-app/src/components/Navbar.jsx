@@ -1,86 +1,80 @@
-import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiShoppingCart, FiUser, FiLogIn, FiUserPlus, FiMapPin } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
-import ThemeToggle from "./ThemeToggle";
+import { useCart } from "../context/CartContext";
 
-export default function Navbar({ onProfileOpen }) {
-  const { user, logout, isAuthenticated } = useAuth();
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  const { cart } = useCart();
+  const navigate = useNavigate();
+
+  const address = localStorage.getItem("ze_address");
+  const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 
-      backdrop-blur-lg bg-white/70 dark:bg-black/40
-      border-b border-black/5 dark:border-white/10 
-      shadow-sm transition-colors">
-
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
 
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <img
-            src="/zoomo-mascot.png"
-            className="w-12 h-12"
-            alt="Zoomo Mascot"
-          />
-          <h1 className="text-2xl font-bold tracking-tight dark:text-white">
-            Zoomo Eats
-          </h1>
-        </div>
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <img src="/zoomo-logo.png" alt="Zoomo" className="w-8 h-8 rounded-xl" />
+          <span className="text-white font-bold text-lg hidden sm:block">
+            Zoomo <span className="text-emerald-500">Eats</span>
+          </span>
+        </Link>
 
-        {/* Navigation */}
-        <div className="hidden md:flex items-center gap-6 dark:text-white">
-          <a href="#features" className="hover:text-emerald-500 transition">Features</a>
-          <a href="#restaurants" className="hover:text-emerald-500 transition">Restaurants</a>
-          <a href="#contact" className="hover:text-emerald-500 transition">Contact</a>
-        </div>
+        {/* Address pill */}
+        {address && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm min-w-0 flex-1 max-w-xs">
+            <FiMapPin className="text-emerald-500 shrink-0" size={14} />
+            <span className="text-gray-300 truncate">{address}</span>
+          </div>
+        )}
 
-        {/* Right Section */}
-        <div className="flex items-center gap-3">
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
-          {/* If not authenticated */}
-          {!isAuthenticated && (
-            <>
-              <Link
-                to="/login"
-                className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-white/10 
-                text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-white/20 transition"
-              >
-                Login
-              </Link>
-
-              <Link
-                to="/signup"
-                className="px-4 py-2 rounded-xl bg-emerald-600 text-white 
-                hover:bg-emerald-500 transition shadow-md"
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
-
-          {/* If authenticated */}
-          {isAuthenticated && (
+        {/* Right actions */}
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
+          {user ? (
             <>
               <button
-                onClick={onProfileOpen}
-                className="px-4 py-2 rounded-xl bg-gray-200 dark:bg-white/10 
-                text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-white/20 transition"
+                onClick={() => navigate("/orders")}
+                className="p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition flex items-center gap-2 text-sm"
               >
-                {user?.name || "Hello User"}
+                <FiUser size={15} />
+                <span className="hidden sm:block">{user.name?.split(" ")[0]}</span>
               </button>
-
               <button
                 onClick={logout}
-                className="px-4 py-2 rounded-xl bg-red-500 text-white 
-                hover:bg-red-600 transition"
+                className="hidden sm:block p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition text-sm"
               >
                 Logout
               </button>
             </>
+          ) : (
+            <>
+              <Link to="/login" className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition text-sm">
+                <FiLogIn size={14} /> Login
+              </Link>
+              <Link to="/signup" className="flex items-center gap-1 p-2 px-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition text-sm">
+                <FiUserPlus size={14} /> <span className="hidden sm:block">Sign up</span>
+              </Link>
+            </>
           )}
-        </div>
 
+          {/* Cart with live count */}
+          <button
+            onClick={() => navigate("/cart")}
+            className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition"
+          >
+            <FiShoppingCart size={18} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 }

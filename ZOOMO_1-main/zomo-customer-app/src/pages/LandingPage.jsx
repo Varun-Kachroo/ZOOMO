@@ -5,6 +5,7 @@ import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
+
 /* ── Mascot Loader ── */
 export function MascotLoader({ text = "Loading..." }) {
   return (
@@ -17,6 +18,7 @@ export function MascotLoader({ text = "Loading..." }) {
     </div>
   );
 }
+
 
 /* ── Address Modal ── */
 function AddressModal({ onConfirm }) {
@@ -49,6 +51,7 @@ function AddressModal({ onConfirm }) {
     </div>
   );
 }
+
 
 /* ── Navbar ── */
 function Navbar({ address, onAddressClick, cartCount, user, onProfileOpen, navigate }) {
@@ -110,8 +113,10 @@ function Navbar({ address, onAddressClick, cartCount, user, onProfileOpen, navig
   );
 }
 
+
 /* ── Category Pills ── */
 const CATEGORIES = ["All", "Pizza", "Burgers", "Indian", "Chinese", "Biryani", "Desserts", "Beverages", "Healthy", "Street Food"];
+
 
 /* ── Restaurant Card ── */
 function RestaurantCard({ r, navigate }) {
@@ -159,10 +164,12 @@ function RestaurantCard({ r, navigate }) {
   );
 }
 
+
 /* ── Main Landing Page ── */
 export default function LandingPage() {
   const { user } = useAuth();
-  const { getTotalItemCount } = useCart();
+  // ✅ FIX 1: use cart directly instead of getTotalItemCount
+  const { cart } = useCart();
   const navigate = useNavigate();
 
   const [address, setAddress] = useState(() => localStorage.getItem("ze_address") || "");
@@ -230,7 +237,8 @@ export default function LandingPage() {
     setShowAddressModal(false);
   }
 
-  const cartCount = getTotalItemCount?.() ?? 0;
+  // ✅ FIX 2: read cart items directly — no function call
+  const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -332,6 +340,7 @@ export default function LandingPage() {
   );
 }
 
+
 /* ── Profile Drawer ── */
 function ProfileDrawer({ user, onClose, navigate }) {
   const { logout } = useAuth();
@@ -377,6 +386,7 @@ function ProfileDrawer({ user, onClose, navigate }) {
     </div>
   );
 }
+
 
 /* ── Chat Widget ── */
 function ChatWidget() {
