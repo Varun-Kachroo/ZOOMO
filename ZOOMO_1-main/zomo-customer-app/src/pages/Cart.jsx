@@ -20,10 +20,12 @@ export default function Cart() {
     </div>
   );
 
-  const subtotal = getSubtotal();
+
+  const subtotal = parseFloat(getSubtotal().toFixed(2));
   const delivery = 29;
-  const tax = Math.round(subtotal * 0.05);
-  const total = subtotal + delivery + tax;
+  const tax = parseFloat((subtotal * 0.05).toFixed(2));
+  const total = parseFloat((subtotal + delivery + tax).toFixed(2));
+
 
   return (
     <div className="min-h-screen bg-black text-white pb-8">

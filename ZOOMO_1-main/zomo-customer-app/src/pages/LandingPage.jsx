@@ -21,7 +21,7 @@ export function MascotLoader({ text = "Loading..." }) {
 
 
 /* ── Address Modal ── */
-function AddressModal({ onConfirm }) {
+function AddressModal({ onConfirm, onSkip }) {
   const [val, setVal] = useState("");
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-4">
@@ -43,9 +43,16 @@ function AddressModal({ onConfirm }) {
         </div>
         <button
           onClick={() => val.trim() && onConfirm(val.trim())}
-          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-95"
+          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-95 mb-3"
         >
           Find Food Near Me 🍔
+        </button>
+        {/* Add Later */}
+        <button
+          onClick={onSkip}
+          className="w-full py-3 rounded-2xl bg-transparent border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition text-sm"
+        >
+          Add Later
         </button>
       </div>
     </div>
@@ -168,7 +175,6 @@ function RestaurantCard({ r, navigate }) {
 /* ── Main Landing Page ── */
 export default function LandingPage() {
   const { user } = useAuth();
-  // ✅ FIX 1: use cart directly instead of getTotalItemCount
   const { cart } = useCart();
   const navigate = useNavigate();
 
@@ -237,14 +243,18 @@ export default function LandingPage() {
     setShowAddressModal(false);
   }
 
-  // ✅ FIX 2: read cart items directly — no function call
   const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
   return (
     <div className="min-h-screen bg-black text-white">
 
       {/* Address Modal */}
-      {showAddressModal && <AddressModal onConfirm={handleAddressConfirm} />}
+      {showAddressModal && (
+        <AddressModal
+          onConfirm={handleAddressConfirm}
+          onSkip={() => setShowAddressModal(false)}
+        />
+      )}
 
       {/* Navbar */}
       <Navbar
