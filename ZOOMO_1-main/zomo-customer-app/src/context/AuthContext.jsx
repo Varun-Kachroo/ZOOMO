@@ -10,7 +10,7 @@ export default function AuthProvider({ children }) {
 
   /* =========================================
      RESTORE SESSION ON REFRESH
-  ========================================== */
+  ========================================= */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -22,7 +22,8 @@ export default function AuthProvider({ children }) {
       .then((res) => {
         if (!res || res.role !== "USER") {
           console.warn("🚫 Invalid/merchant token detected → logout");
-          return logout();
+          logout();
+          return;
         }
         setUser(res);
       })
@@ -31,12 +32,14 @@ export default function AuthProvider({ children }) {
   }, []);
 
   /* =========================================
-      LOGIN (CUSTOMER ONLY)
-  ========================================== */
-  const login = async ({ email, password }) => {
+     LOGIN (CUSTOMER ONLY)
+  ========================================= */
+  // ✅ FIX: accepts (email, password) as two args — matches how Login.jsx calls it
+  const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
 
-    const token = res.access_token;
+    // ✅ FIX: backend returns "accesstoken" not "access_token"
+    const token = res.accesstoken ?? res.access_token;
     const userData = res.user;
 
     if (!token || !userData) throw new Error("❌ Invalid login response from server");
@@ -48,12 +51,13 @@ export default function AuthProvider({ children }) {
   };
 
   /* =========================================
-      SIGNUP → auto-login
-  ========================================== */
+     SIGNUP → auto-login
+  ========================================= */
   const signup = async (form) => {
     const res = await api.post("/auth/signup", form);
 
-    const token = res.access_token;
+    // ✅ FIX: backend returns "accesstoken" not "access_token"
+    const token = res.accesstoken ?? res.access_token;
     const userData = res.user;
 
     if (!token) throw new Error("❌ Signup didn't return token");
@@ -64,8 +68,8 @@ export default function AuthProvider({ children }) {
   };
 
   /* =========================================
-      LOGOUT
-  ========================================== */
+     LOGOUT
+  ========================================= */
   const logout = () => {
     localStorage.removeItem("access_token");
     setUser(null);
