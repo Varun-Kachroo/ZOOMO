@@ -1,11 +1,130 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiMapPin, FiCheck } from "react-icons/fi";
+import { FiArrowLeft, FiMapPin } from "react-icons/fi";
 import { api } from "../services/api";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { MascotLoader } from "./LandingPage";
 
+
+/* ── Order Success Animation ── */
+function OrderSuccessAnimation({ onDone }) {
+  const [stage, setStage] = useState("enter");
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setStage("celebrate"), 600);
+    const t2 = setTimeout(() => setStage("exit"), 3200);
+    const t3 = setTimeout(() => onDone(), 3800);
+    return () => [t1, t2, t3].forEach(clearTimeout);
+  }, []);
+
+  return (
+    <div
+      className={`fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center gap-6 transition-opacity duration-500 ${stage === "exit" ? "opacity-0" : "opacity-100"
+        }`}
+    >
+      {/* Ripple rings */}
+      <div className="relative flex items-center justify-center">
+        {stage === "celebrate" && (
+          <>
+            <div className="absolute w-40 h-40 rounded-full border-2 border-emerald-500/30 animate-ping" />
+            <div
+              className="absolute w-56 h-56 rounded-full border border-emerald-500/10 animate-ping"
+              style={{ animationDelay: "0.3s" }}
+            />
+          </>
+        )}
+
+        {/* Mascot */}
+        <div
+          className={`relative z-10 transition-all duration-500 ${stage === "enter"
+              ? "scale-0 opacity-0"
+              : stage === "celebrate"
+                ? "scale-110 opacity-100"
+                : "scale-100 opacity-100"
+            }`}
+        >
+          <img
+            src="/zoomo-mascot.png"
+            alt="Zoomo"
+            className={`w-32 h-32 ${stage === "celebrate" ? "animate-wiggle" : "animate-float"}`}
+          />
+          {/* Glow */}
+          <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl -z-10" />
+        </div>
+      </div>
+
+      {/* Confetti dots */}
+      {stage === "celebrate" && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 rounded-full animate-bounce"
+              style={{
+                backgroundColor: ["#10b981", "#34d399", "#6ee7b7", "#fff", "#fbbf24"][i % 5],
+                left: `${5 + (i * 4.7) % 90}%`,
+                top: `${10 + (i * 7.3) % 70}%`,
+                animationDelay: `${(i * 0.1) % 0.8}s`,
+                animationDuration: `${0.6 + (i % 4) * 0.2}s`,
+                opacity: 0.7 + (i % 3) * 0.1,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Text */}
+      <div
+        className={`text-center transition-all duration-500 ${stage === "enter" ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+          }`}
+      >
+        <div className="flex items-center justify-center gap-2 mb-2">
+          {/* Animated checkmark */}
+          <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+            <svg
+              className="w-4 h-4 text-white"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+            >
+              <polyline
+                points="20 6 9 17 4 12"
+                style={{
+                  strokeDasharray: 30,
+                  strokeDashoffset: stage === "celebrate" ? 0 : 30,
+                  transition: "stroke-dashoffset 0.5s ease 0.3s",
+                }}
+              />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-extrabold text-white">Order Placed!</h2>
+        </div>
+        <p className="text-emerald-400 font-medium text-sm">
+          Zoomo is on it! 🍔 Your food is being prepared.
+        </p>
+        <p className="text-gray-500 text-xs mt-1">
+          You'll receive updates in My Orders
+        </p>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-emerald-500 rounded-full transition-all ease-linear"
+          style={{
+            width: stage === "celebrate" ? "100%" : "0%",
+            transitionDuration: stage === "celebrate" ? "2600ms" : "0ms",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+
+/* ── Main Checkout ── */
 export default function Checkout() {
   const { cart, getSubtotal } = useCart();
   const { user } = useAuth();
@@ -18,6 +137,7 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // ✅ NEW
 
   useEffect(() => {
     async function load() {
@@ -55,21 +175,30 @@ export default function Checkout() {
         items: cart.items.map(i => ({ dishId: i.dish.id, quantity: i.quantity })),
         paymentMethod,
       });
-      navigate("/orders");
-    } catch { alert("Failed to place order. Try again."); }
-    finally { setPlacing(false); }
+      setPlacing(false);
+      setShowSuccess(true); // ✅ show animation instead of immediate navigate
+    } catch {
+      alert("Failed to place order. Try again.");
+      setPlacing(false);
+    }
   }
 
   if (loading) return <MascotLoader text="Loading checkout..." />;
   if (placing) return <MascotLoader text="Placing your order... 🍔" />;
 
-  const subtotal = getSubtotal();
+  const subtotal = parseFloat(getSubtotal().toFixed(2));
   const delivery = 29;
-  const tax = Math.round(subtotal * 0.05);
-  const total = subtotal + delivery + tax;
+  const tax = parseFloat((subtotal * 0.05).toFixed(2));
+  const total = parseFloat((subtotal + delivery + tax).toFixed(2));
 
   return (
     <div className="min-h-screen bg-black text-white pb-10">
+
+      {/* ✅ Order success animation — sits above everything */}
+      {showSuccess && (
+        <OrderSuccessAnimation onDone={() => navigate("/orders")} />
+      )}
+
       <div className="max-w-2xl mx-auto px-4 py-6">
 
         <div className="flex items-center gap-3 mb-6">
@@ -136,7 +265,7 @@ export default function Checkout() {
           {cart.items.map(i => (
             <div key={i.id} className="flex justify-between text-sm text-gray-300">
               <span>{i.dish.name} × {i.quantity}</span>
-              <span>₹{i.dish.price * i.quantity}</span>
+              <span>₹{(i.dish.price * i.quantity).toFixed(2)}</span>
             </div>
           ))}
           <div className="border-t border-white/10 pt-3 space-y-1 text-sm text-gray-400">
@@ -160,6 +289,7 @@ export default function Checkout() {
   );
 }
 
+
 function Section({ title, children }) {
   return (
     <div className="mb-5 p-5 rounded-2xl bg-[#111] border border-white/10 space-y-3">
@@ -168,3 +298,4 @@ function Section({ title, children }) {
     </div>
   );
 }
+
