@@ -6,7 +6,6 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { MascotLoader } from "./LandingPage";
 
-
 /* ─────────────────────────────────────────
    VALID PROMO CODES
 ───────────────────────────────────────── */
@@ -19,7 +18,6 @@ const PROMO_CODES = {
 };
 
 const TIP_OPTIONS = [0, 10, 20, 30, 50];
-
 
 /* ─────────────────────────────────────────
    ORDER SUCCESS ANIMATION
@@ -94,7 +92,6 @@ function OrderSuccessAnimation({ onDone }) {
   );
 }
 
-
 /* ─────────────────────────────────────────
    PROMO APPLIED FLASH
 ───────────────────────────────────────── */
@@ -120,7 +117,6 @@ function PromoFlash({ promo, onDone }) {
     </div>
   );
 }
-
 
 /* ─────────────────────────────────────────
    MAIN CHECKOUT
@@ -169,9 +165,8 @@ export default function Checkout() {
     load();
   }, []);
 
-  // Build min date for scheduler (today)
   const minDate = new Date().toISOString().split("T")[0];
-  // Build time slots — every 30 min from now up to midnight
+
   function getTimeSlots() {
     const slots = [];
     const now = new Date();
@@ -451,7 +446,8 @@ export default function Checkout() {
             </div>
           ) : (
             <>
-              <div className="flex gap-2">
+              {/* ✅ FIXED — stacks vertically on mobile, horizontal on desktop */}
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   value={promoInput}
                   onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); }}
@@ -461,7 +457,7 @@ export default function Checkout() {
                 />
                 <button
                   onClick={applyPromo}
-                  className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition"
                 >
                   Apply
                 </button>
@@ -471,7 +467,6 @@ export default function Checkout() {
                   <FiX size={11} /> {promoError}
                 </p>
               )}
-              {/* Hint chips */}
               <div className="flex gap-2 flex-wrap">
                 {Object.entries(PROMO_CODES).map(([code, info]) => (
                   <button
@@ -534,7 +529,6 @@ export default function Checkout() {
     </div>
   );
 }
-
 
 function Section({ title, children }) {
   return (
