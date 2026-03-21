@@ -8,6 +8,7 @@ import { PrismaService } from '../../../common/prisma.service';
 import { OrderStatus } from '@prisma/client';
 
 const STATUS_FLOW: Record<OrderStatus, OrderStatus | null> = {
+  SCHEDULED: OrderStatus.PENDING,        // ✅ ADDED
   PENDING: OrderStatus.PREPARING,
   PREPARING: OrderStatus.READY_FOR_PICKUP,
   READY_FOR_PICKUP: OrderStatus.OUT_FOR_DELIVERY,
@@ -18,7 +19,7 @@ const STATUS_FLOW: Record<OrderStatus, OrderStatus | null> = {
 
 @Injectable()
 export class MerchantOrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // 🔐 ensure restaurant belongs to merchant
   private async assertRestaurantOwnership(
@@ -154,9 +155,12 @@ export class MerchantOrdersService {
     if (!order)
       throw new NotFoundException('Order not found');
 
-    if (order.status !== OrderStatus.PENDING) {
+    if (
+      order.status !== OrderStatus.PENDING &&
+      order.status !== OrderStatus.SCHEDULED   // ✅ allow cancelling SCHEDULED too
+    ) {
       throw new BadRequestException(
-        'Only pending orders can be cancelled',
+        'Only pending or scheduled orders can be cancelled',
       );
     }
 
