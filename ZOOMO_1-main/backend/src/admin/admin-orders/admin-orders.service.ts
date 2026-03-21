@@ -8,7 +8,7 @@ import { OrderStatus } from "@prisma/client";
 
 @Injectable()
 export class AdminOrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /* ===========================
      GET ALL ORDERS (ADMIN)
@@ -18,10 +18,10 @@ export class AdminOrdersService {
       orderBy: { createdAt: "desc" },
       include: {
         restaurant: true,
+        user: true,       // ✅ included so admin table shows customer name
+        address: true,    // ✅ included so admin table shows address
         driver: {
-          include: {
-            user: true,
-          },
+          include: { user: true },
         },
       },
     });
@@ -31,71 +31,70 @@ export class AdminOrdersService {
      ASSIGN DRIVER (ADMIN)
   ============================ */
   async assignDriver(orderId: string, driverId: string) {
-    /* -------- ORDER VALIDATION -------- */
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
     });
 
-    if (!order) {
-      throw new NotFoundException("Order not found");
-    }
+    if (!order) throw new NotFoundException("Order not found");
 
     if (order.driverId) {
-      throw new BadRequestException(
-        "Order already assigned to a driver"
-      );
+      throw new BadRequestException("Order already assigned to a driver");
     }
 
     if (order.status !== OrderStatus.READY_FOR_PICKUP) {
-      throw new BadRequestException(
-        "Only READY_FOR_PICKUP orders can be assigned"
-      );
+      throw new BadRequestException("Only READY_FOR_PICKUP orders can be assigned");
     }
 
-    /* -------- DRIVER VALIDATION -------- */
     const driver = await this.prisma.driver.findUnique({
       where: { id: driverId },
     });
 
-    if (!driver) {
-      throw new BadRequestException("Driver not found");
-    }
+    if (!driver) throw new BadRequestException("Driver not found");
 
-    /* 🚨 CRITICAL: CHECK ACTIVE ORDERS */
-    const activeOrdersCount =
-      await this.prisma.order.count({
-        where: {
-          driverId,
-          status: {
-            in: [
-              OrderStatus.READY_FOR_PICKUP,
-              OrderStatus.OUT_FOR_DELIVERY,
-            ],
-          },
+    const activeOrdersCount = await this.prisma.order.count({
+      where: {
+        driverId,
+        status: {
+          in: [OrderStatus.READY_FOR_PICKUP, OrderStatus.OUT_FOR_DELIVERY],
         },
-      });
+      },
+    });
 
     if (activeOrdersCount > 0) {
-      throw new BadRequestException(
-        "Driver already has an active order"
-      );
+      throw new BadRequestException("Driver already has an active order");
     }
 
-    /* -------- ASSIGN & LOCK DRIVER -------- */
     return this.prisma.$transaction([
       this.prisma.order.update({
         where: { id: orderId },
-        data: {
-          driverId,
-        },
+        data: { driverId },
       }),
-
       this.prisma.driver.update({
         where: { id: driverId },
-        data: {
-          isAvailable: false,
-        },
+        data: { isAvailable: false },
       }),
     ]);
+  }
+
+  /* ===========================
+     UPDATE ORDER STATUS (ADMIN)  ✅ NEW
+  ============================ */
+  async updateOrderStatus(orderId: string, status: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) throw new NotFoundException("Order not found");
+
+    // Only allow transitioning FROM scheduled
+    const allowedStatuses = Object.values(OrderStatus);
+    if (!allowedStatuses.includes(status as OrderStatus)) {
+      throw new BadRequestException(`Invalid status: ${status}`);
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: status as OrderStatus },
+    });
   }
 }

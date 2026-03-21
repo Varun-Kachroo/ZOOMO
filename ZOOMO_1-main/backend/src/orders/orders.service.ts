@@ -6,9 +6,17 @@ import {
 import { PrismaService } from "../common/prisma.service";
 import { OrderStatus } from "@prisma/client";
 
+const PROMO_CODES: Record<string, { type: string; value: number; max?: number }> = {
+  ZOOMO50: { type: "percent", value: 50, max: 100 },
+  BOGO: { type: "flat", value: 60 },
+  FREESHIP: { type: "ship", value: 29 },
+  HEALTHY20: { type: "percent", value: 20, max: 80 },
+  NEWUSER: { type: "flat", value: 80 },
+};
+
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /* ===========================
      GET USER ORDERS
@@ -17,11 +25,9 @@ export class OrdersService {
     return this.prisma.order.findMany({
       where: { userId },
       include: {
-        items: {
-          include: { dish: true },
-        },
+        items: { include: { dish: true } },
         restaurant: true,
-        payment: true, // 👈 include payment
+        payment: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -36,13 +42,12 @@ export class OrdersService {
       include: {
         items: { include: { dish: true } },
         restaurant: true,
-        payment: true, // 👈 include payment
+        payment: true,
       },
     });
 
     if (!order) throw new NotFoundException("Order not found");
-    if (order.userId !== userId)
-      throw new BadRequestException("Unauthorized");
+    if (order.userId !== userId) throw new BadRequestException("Unauthorized");
 
     return order;
   }
@@ -55,47 +60,68 @@ export class OrdersService {
       addressId,
       specialInstructions,
       tip,
-      paymentMethod, // "COD" | "ONLINE"
+      paymentMethod,
+      promoCode,
+      scheduledFor,
     } = data;
 
     const cart = await this.prisma.cart.findUnique({
       where: { userId },
-      include: {
-        items: { include: { dish: true } },
-      },
+      include: { items: { include: { dish: true } } },
     });
 
     if (!cart || cart.items.length === 0) {
       throw new BadRequestException("Cart is empty");
     }
 
-    /* ===========================
-       CALCULATE TOTALS
-    ============================ */
+    /* ── Totals ── */
     const subtotal = cart.items.reduce(
       (sum, item) => sum + item.quantity * item.dish.price,
       0
     );
+    const tipAmount = tip || 0;
+    const tax = parseFloat((subtotal * 0.05).toFixed(2));
 
-    const deliveryFee = 29;
-    const tax = subtotal * 0.05;
-    const total = subtotal + deliveryFee + tax + (tip || 0);
+    /* ── Promo ── */
+    let discount = 0;
+    let deliveryFee = 29;
+    let validatedPromoCode: string | null = null;
 
-    // All dishes belong to same restaurant
+    if (promoCode) {
+      const promo = PROMO_CODES[promoCode.toUpperCase()];
+      if (!promo) throw new BadRequestException("Invalid promo code");
+      validatedPromoCode = promoCode.toUpperCase();
+      if (promo.type === "percent") {
+        discount = Math.min(
+          parseFloat(((subtotal * promo.value) / 100).toFixed(2)),
+          promo.max ?? Infinity
+        );
+      } else if (promo.type === "flat") {
+        discount = Math.min(promo.value, subtotal);
+      } else if (promo.type === "ship") {
+        deliveryFee = 0;
+      }
+    }
+
+    const total = parseFloat(
+      (subtotal + deliveryFee + tax + tipAmount - discount).toFixed(2)
+    );
+
+    /* ── Restaurant ── */
     const restaurantDish = await this.prisma.dish.findUnique({
       where: { id: cart.items[0].dishId },
       include: { restaurant: true },
     });
 
-    if (!restaurantDish) {
-      throw new BadRequestException("Invalid restaurant");
-    }
+    if (!restaurantDish) throw new BadRequestException("Invalid restaurant");
 
-    /* ===========================
-       TRANSACTION (ORDER + PAYMENT)
-    ============================ */
+    /* ── Status ── */
+    const orderStatus = scheduledFor
+      ? OrderStatus.SCHEDULED
+      : OrderStatus.PENDING;
+
+    /* ── Transaction ── */
     const order = await this.prisma.$transaction(async (tx) => {
-      // 1️⃣ CREATE ORDER
       const createdOrder = await tx.order.create({
         data: {
           userId,
@@ -105,22 +131,23 @@ export class OrdersService {
           deliveryFee,
           tax,
           total,
-          tip,
+          tip: tipAmount,
+          promoCode: validatedPromoCode,
+          discount,
+          scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
           specialInstructions,
-          status: OrderStatus.PENDING,
+          status: orderStatus,
           items: {
             create: cart.items.map((item) => ({
               dishId: item.dishId,
               quantity: item.quantity,
               price: item.dish.price,
-              specialInstructions:
-                item.specialInstructions || null,
+              specialInstructions: item.specialInstructions || null,
             })),
           },
         },
       });
 
-      // 2️⃣ CREATE PAYMENT (🔥 FIX)
       await tx.payment.create({
         data: {
           orderId: createdOrder.id,
@@ -128,15 +155,14 @@ export class OrdersService {
           currency: "INR",
           method: paymentMethod || "COD",
           status: "PENDING",
-          provider:
-            paymentMethod === "COD" ? "COD" : "ONLINE",
+          provider: paymentMethod === "COD" ? "COD" : "ONLINE",
         },
       });
 
       return createdOrder;
     });
 
-    // 3️⃣ CLEAR CART
+    /* ── Clear cart ── */
     await this.prisma.cartItem.deleteMany({
       where: { cartId: cart.id },
     });

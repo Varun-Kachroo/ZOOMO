@@ -6,7 +6,7 @@ import { UseGuards } from "@nestjs/common/decorators";
 @Controller("admin/orders")
 @UseGuards(AdminJwtGuard)
 export class AdminOrdersController {
-  constructor(private readonly adminOrdersService: AdminOrdersService) {}
+  constructor(private readonly adminOrdersService: AdminOrdersService) { }
 
   @Get()
   getAllOrders() {
@@ -19,5 +19,14 @@ export class AdminOrdersController {
     @Body("driverId") driverId: string
   ) {
     return this.adminOrdersService.assignDriver(orderId, driverId);
+  }
+
+  // ✅ NEW — force confirm or cancel a scheduled order
+  @Patch(":orderId/status")
+  updateOrderStatus(
+    @Param("orderId") orderId: string,
+    @Body("status") status: string
+  ) {
+    return this.adminOrdersService.updateOrderStatus(orderId, status);
   }
 }

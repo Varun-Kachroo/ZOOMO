@@ -18,3 +18,7 @@ export const assignDriver = (orderId, driverId) =>
 
 export const getOrders = () => adminApi.get('/orders');
 export const getDrivers = () => adminApi.get('/drivers');
+
+// ✅ NEW — update order status (used for scheduled order force confirm / cancel)
+export const updateOrderStatus = (orderId, status) =>
+  adminApi.patch(`/orders/${orderId}/status`, { status });
