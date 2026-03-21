@@ -140,7 +140,7 @@ function PromoFlash({ promo, onDone }) {
    MAIN CHECKOUT
 ───────────────────────────────────────── */
 export default function Checkout() {
-  const { cart, getSubtotal, clearCart } = useCart(); // ✅ destructure clearCart
+  const { cart, getSubtotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -232,7 +232,7 @@ export default function Checkout() {
     } catch { alert("Failed to save address"); }
   }
 
-  /* ── Place order ── */
+  /* ── Place order ✅ FIXED ── */
   async function placeOrder() {
     if (!selectedAddress) return alert("Select a delivery address");
     if (!paymentMethod) return alert("Select a payment method");
@@ -248,10 +248,15 @@ export default function Checkout() {
         tip: tip,
         scheduledFor: scheduleDelivery ? `${scheduleDate}T${scheduleTime}:00` : null,
       });
-      await clearCart(); // ✅ clear cart after successful order
+
+      // ✅ Non-blocking — cart clear runs in background
+      // Order success is NOT dependent on this
+      clearCart().catch(() => { });
+
       setPlacing(false);
       setShowSuccess(true);
-    } catch {
+    } catch (err) {
+      console.error("Place order error:", err);
       alert("Failed to place order. Try again.");
       setPlacing(false);
     }
@@ -279,7 +284,7 @@ export default function Checkout() {
     }
   }
 
-  // ✅ Integer paise math — eliminates floating point drift
+  // ✅ Integer paise math — no floating point drift
   const total = (
     Math.round(subtotal * 100) +
     Math.round(delivery * 100) +
@@ -356,7 +361,7 @@ export default function Checkout() {
           ) : (
             <div className="space-y-3">
               <p className="text-gray-400 text-xs">Pick a date and time for your delivery</p>
-              {/* ✅ FIXED — stacks on mobile, side by side on desktop */}
+              {/* ✅ FIXED — stacks on mobile */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Date</label>
