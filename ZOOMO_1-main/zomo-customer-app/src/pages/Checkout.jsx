@@ -93,27 +93,63 @@ function OrderSuccessAnimation({ onDone }) {
 }
 
 /* ─────────────────────────────────────────
-   PROMO APPLIED FLASH
+   PROMO APPLIED FLASH ✅ UPDATED
 ───────────────────────────────────────── */
 function PromoFlash({ promo, onDone }) {
   const [visible, setVisible] = useState(true);
+  const [popped, setPopped] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => { setVisible(false); setTimeout(onDone, 400); }, 2000);
-    return () => clearTimeout(t);
+    const t0 = setTimeout(() => setPopped(true), 50);
+    const t1 = setTimeout(() => setVisible(false), 2400);
+    const t2 = setTimeout(() => onDone(), 2900);
+    return () => [t0, t1, t2].forEach(clearTimeout);
   }, []);
 
   return (
-    <div className={`fixed inset-0 z-[998] pointer-events-none flex items-end justify-center pb-24 transition-opacity duration-400 ${visible ? "opacity-100" : "opacity-0"}`}>
-      <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-emerald-600 shadow-[0_0_40px_rgba(16,185,129,0.5)] border border-emerald-400/30 animate-bounce">
-        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-          <FiTag className="text-white" size={16} />
+    <div
+      className={`fixed inset-0 z-[998] pointer-events-none flex items-end justify-center pb-28 transition-all duration-500 ${visible ? "opacity-100" : "opacity-0 translate-y-4"
+        }`}
+    >
+      <div
+        className={`relative flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-500 ease-out
+          bg-[#0a1a0f] border-emerald-500/40 shadow-[0_0_60px_rgba(16,185,129,0.35)]
+          ${popped ? "scale-100 translate-y-0 opacity-100" : "scale-75 translate-y-6 opacity-0"}
+        `}
+      >
+        {/* Glow ring */}
+        <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 blur-xl" />
+
+        {/* Icon */}
+        <div className={`relative w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center transition-transform duration-700 ${popped ? "rotate-0" : "-rotate-45"}`}>
+          <FiTag className="text-emerald-400" size={18} />
         </div>
-        <div>
-          <p className="text-white font-bold text-sm">Promo Applied! 🎉</p>
-          <p className="text-emerald-100 text-xs">{promo.label} saved on your order</p>
+
+        {/* Text */}
+        <div className="relative">
+          <p className="text-white font-bold text-sm tracking-wide">
+            🎉 <span className="text-emerald-400">{promo.code}</span> applied!
+          </p>
+          <p className="text-emerald-600 text-xs mt-0.5">{promo.label} saved on your order</p>
+        </div>
+
+        {/* Shimmer bar */}
+        <div className="absolute bottom-0 left-0 h-[2px] w-full rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
+            style={{
+              animation: popped ? "shimmer 2s linear forwards" : "none",
+            }}
+          />
         </div>
       </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%); opacity: 1; }
+          100% { transform: translateX(100%);  opacity: 0.3; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -446,7 +482,6 @@ export default function Checkout() {
             </div>
           ) : (
             <>
-              {/* ✅ FIXED — stacks vertically on mobile, horizontal on desktop */}
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   value={promoInput}
