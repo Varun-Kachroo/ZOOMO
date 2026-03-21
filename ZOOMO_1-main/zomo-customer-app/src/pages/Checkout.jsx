@@ -93,7 +93,7 @@ function OrderSuccessAnimation({ onDone }) {
 }
 
 /* ─────────────────────────────────────────
-   PROMO APPLIED FLASH ✅ UPDATED
+   PROMO APPLIED FLASH
 ───────────────────────────────────────── */
 function PromoFlash({ promo, onDone }) {
   const [visible, setVisible] = useState(true);
@@ -107,43 +107,25 @@ function PromoFlash({ promo, onDone }) {
   }, []);
 
   return (
-    <div
-      className={`fixed inset-0 z-[998] pointer-events-none flex items-end justify-center pb-28 transition-all duration-500 ${visible ? "opacity-100" : "opacity-0 translate-y-4"
-        }`}
-    >
-      <div
-        className={`relative flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-500 ease-out
-          bg-[#0a1a0f] border-emerald-500/40 shadow-[0_0_60px_rgba(16,185,129,0.35)]
-          ${popped ? "scale-100 translate-y-0 opacity-100" : "scale-75 translate-y-6 opacity-0"}
-        `}
-      >
-        {/* Glow ring */}
+    <div className={`fixed inset-0 z-[998] pointer-events-none flex items-end justify-center pb-28 transition-all duration-500 ${visible ? "opacity-100" : "opacity-0 translate-y-4"}`}>
+      <div className={`relative flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-500 ease-out bg-[#0a1a0f] border-emerald-500/40 shadow-[0_0_60px_rgba(16,185,129,0.35)] ${popped ? "scale-100 translate-y-0 opacity-100" : "scale-75 translate-y-6 opacity-0"}`}>
         <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 blur-xl" />
-
-        {/* Icon */}
         <div className={`relative w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center transition-transform duration-700 ${popped ? "rotate-0" : "-rotate-45"}`}>
           <FiTag className="text-emerald-400" size={18} />
         </div>
-
-        {/* Text */}
         <div className="relative">
           <p className="text-white font-bold text-sm tracking-wide">
             🎉 <span className="text-emerald-400">{promo.code}</span> applied!
           </p>
           <p className="text-emerald-600 text-xs mt-0.5">{promo.label} saved on your order</p>
         </div>
-
-        {/* Shimmer bar */}
         <div className="absolute bottom-0 left-0 h-[2px] w-full rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
-            style={{
-              animation: popped ? "shimmer 2s linear forwards" : "none",
-            }}
+            style={{ animation: popped ? "shimmer 2s linear forwards" : "none" }}
           />
         </div>
       </div>
-
       <style>{`
         @keyframes shimmer {
           0%   { transform: translateX(-100%); opacity: 1; }
@@ -158,7 +140,7 @@ function PromoFlash({ promo, onDone }) {
    MAIN CHECKOUT
 ───────────────────────────────────────── */
 export default function Checkout() {
-  const { cart, getSubtotal } = useCart();
+  const { cart, getSubtotal, clearCart } = useCart(); // ✅ destructure clearCart
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -266,6 +248,7 @@ export default function Checkout() {
         tip: tip,
         scheduledFor: scheduleDelivery ? `${scheduleDate}T${scheduleTime}:00` : null,
       });
+      await clearCart(); // ✅ clear cart after successful order
       setPlacing(false);
       setShowSuccess(true);
     } catch {
@@ -281,18 +264,29 @@ export default function Checkout() {
   const subtotal = parseFloat(getSubtotal().toFixed(2));
   const delivery = appliedPromo?.type === "ship" ? 0 : 29;
   const tax = parseFloat((subtotal * 0.05).toFixed(2));
-  const tipAmount = showCustomTip && customTip ? parseFloat(customTip) || 0 : tip;
+  const tipAmount = showCustomTip && customTip
+    ? parseFloat(parseFloat(customTip).toFixed(2)) || 0
+    : tip;
 
   let discount = 0;
   if (appliedPromo) {
     if (appliedPromo.type === "percent") {
-      discount = Math.min(parseFloat((subtotal * appliedPromo.value / 100).toFixed(2)), appliedPromo.max ?? Infinity);
+      discount = parseFloat(
+        Math.min(subtotal * appliedPromo.value / 100, appliedPromo.max ?? Infinity).toFixed(2)
+      );
     } else if (appliedPromo.type === "flat") {
-      discount = Math.min(appliedPromo.value, subtotal);
+      discount = parseFloat(Math.min(appliedPromo.value, subtotal).toFixed(2));
     }
   }
 
-  const total = parseFloat((subtotal + delivery + tax + tipAmount - discount).toFixed(2));
+  // ✅ Integer paise math — eliminates floating point drift
+  const total = (
+    Math.round(subtotal * 100) +
+    Math.round(delivery * 100) +
+    Math.round(tax * 100) +
+    Math.round(tipAmount * 100) -
+    Math.round(discount * 100)
+  ) / 100;
 
   return (
     <div className="min-h-screen bg-black text-white pb-10">
@@ -362,7 +356,8 @@ export default function Checkout() {
           ) : (
             <div className="space-y-3">
               <p className="text-gray-400 text-xs">Pick a date and time for your delivery</p>
-              <div className="grid grid-cols-2 gap-3">
+              {/* ✅ FIXED — stacks on mobile, side by side on desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Date</label>
                   <input
@@ -526,27 +521,28 @@ export default function Checkout() {
             </div>
           ))}
           <div className="border-t border-white/10 pt-3 space-y-1.5 text-sm text-gray-400">
-            <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
+            <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
             <div className="flex justify-between">
               <span>Delivery</span>
-              <span className={appliedPromo?.type === "ship" ? "text-emerald-400 line-through decoration-emerald-400/50" : ""}>
-                {appliedPromo?.type === "ship" ? <span className="text-emerald-400 no-underline ml-1">FREE</span> : `₹${delivery}`}
-              </span>
+              {appliedPromo?.type === "ship"
+                ? <span className="text-emerald-400">FREE</span>
+                : <span>₹{delivery.toFixed(2)}</span>
+              }
             </div>
-            <div className="flex justify-between"><span>Tax (5%)</span><span>₹{tax}</span></div>
+            <div className="flex justify-between"><span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span></div>
             {tipAmount > 0 && (
               <div className="flex justify-between text-pink-400">
-                <span>Tip 💚</span><span>₹{tipAmount}</span>
+                <span>Tip 💚</span><span>₹{tipAmount.toFixed(2)}</span>
               </div>
             )}
             {discount > 0 && (
               <div className="flex justify-between text-emerald-400">
                 <span>Discount ({appliedPromo?.code})</span>
-                <span>− ₹{discount}</span>
+                <span>− ₹{discount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-white font-bold text-base pt-2 border-t border-white/10">
-              <span>Total</span><span>₹{total}</span>
+              <span>Total</span><span>₹{total.toFixed(2)}</span>
             </div>
           </div>
         </Section>
@@ -556,8 +552,8 @@ export default function Checkout() {
           className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-[0.99]"
         >
           {scheduleDelivery && scheduleDate && scheduleTime
-            ? `Schedule Order · ₹${total}`
-            : `Place Order · ₹${total}`}
+            ? `Schedule Order · ₹${total.toFixed(2)}`
+            : `Place Order · ₹${total.toFixed(2)}`}
         </button>
 
       </div>
