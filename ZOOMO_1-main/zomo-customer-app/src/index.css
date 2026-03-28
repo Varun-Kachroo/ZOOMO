@@ -2,36 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure full height */
-
 * {
   font-family: 'Poppins', sans-serif !important;
+  box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-
 }
 
-/* Light mode */
 body {
-  background-color: #ffffff;
+  background-color: #0B0F0E;
 }
 
-/* Dark mode */
 html.dark body {
-  background-color: #000000;
+  background-color: #0B0F0E;
 }
 
-/* Prevent outer white margins */
-* {
-  box-sizing: border-box;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .input-zoomo {
-  @apply px-4 py-3 rounded-xl bg-gray-100 dark:bg-white/10 
-         text-black dark:text-white outline-none focus:ring-2 
-         focus:ring-emerald-500 border border-black/10 dark:border-white/10;
+  @apply px-4 py-3 rounded-xl bg-white/5 text-white outline-none focus:ring-2 focus:ring-z-accent border border-white/10;
 }

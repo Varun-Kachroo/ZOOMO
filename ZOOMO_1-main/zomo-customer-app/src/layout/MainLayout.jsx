@@ -3,7 +3,7 @@ import Footer from "../components/Footer";
 
 export default function MainLayout({ children }) {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-z-page text-white">
       <Navbar />
       <main>{children}</main>
       <Footer />

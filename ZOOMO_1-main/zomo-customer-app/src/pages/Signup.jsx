@@ -34,7 +34,7 @@ export default function Signup() {
   ];
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-z-page flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img src="/zoomo-mascot.png" alt="Zoomo" className="w-20 h-20 mx-auto mb-3 animate-float" />
@@ -42,7 +42,7 @@ export default function Signup() {
           <p className="text-gray-500 text-sm mt-1">Join Zoomo Eats and start ordering!</p>
         </div>
 
-        <div className="bg-[#111] border border-white/10 rounded-3xl p-8">
+        <div className="bg-z-card border border-white/10 rounded-3xl p-8">
           {error && (
             <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">{error}</div>
           )}
@@ -55,19 +55,19 @@ export default function Signup() {
                   <input
                     name={f.name} type={f.type} value={form[f.name]} onChange={change}
                     required={f.name !== "phone"} placeholder={f.placeholder}
-                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm"
                   />
                 </div>
               </div>
             ))}
             <button type="submit" disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition disabled:opacity-50 mt-2">
+              className="w-full py-3.5 rounded-xl bg-z-primary hover:bg-z-hover text-white font-semibold transition disabled:opacity-50 mt-2">
               {loading ? "Creating account..." : "Sign Up 🎉"}
             </button>
           </form>
           <p className="text-center text-gray-500 text-sm mt-5">
             Already have an account?{" "}
-            <Link to="/login" className="text-emerald-500 hover:underline font-medium">Login</Link>
+            <Link to="/login" className="text-z-accent hover:underline font-medium">Login</Link>
           </p>
         </div>
       </div>

@@ -10,7 +10,7 @@ const STATUS_STYLE = {
   PREPARING: "text-orange-400 bg-orange-400/10",
   READYFORPICKUP: "text-purple-400 bg-purple-400/10",
   OUTFORDELIVERY: "text-sky-400 bg-sky-400/10",
-  DELIVERED: "text-emerald-400 bg-emerald-400/10",
+  DELIVERED: "text-z-accent bg-z-accent/10",
   CANCELLED: "text-red-400 bg-red-400/10",
 };
 
@@ -29,7 +29,7 @@ export default function Orders() {
   if (loading) return <MascotLoader text="Loading your orders..." />;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-z-page text-white">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
@@ -43,7 +43,7 @@ export default function Orders() {
             <img src="/zoomo-mascot.png" alt="" className="w-24 opacity-30 mx-auto mb-4 animate-float" />
             <h2 className="text-xl font-bold text-white mb-2">No orders yet!</h2>
             <p className="text-gray-500 text-sm mb-5">Start exploring restaurants and place your first order</p>
-            <button onClick={() => navigate("/restaurants")} className="px-6 py-3 rounded-2xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition">
+            <button onClick={() => navigate("/restaurants")} className="px-6 py-3 rounded-2xl bg-z-primary text-white font-semibold hover:bg-z-hover transition">
               Browse Restaurants
             </button>
           </div>
@@ -53,11 +53,11 @@ export default function Orders() {
               <div
                 key={order.id}
                 onClick={() => navigate(`/orders/${order.id}`)}
-                className="cursor-pointer p-5 rounded-2xl bg-[#111] border border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] transition"
+                className="cursor-pointer p-5 rounded-2xl bg-z-card border border-white/10 hover:border-z-accent/30 hover:shadow-[0_0_20px_rgba(34,197,94,0.1)] transition"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <FiPackage className="text-emerald-500" size={16} />
+                    <FiPackage className="text-z-accent" size={16} />
                     <span className="font-semibold text-white text-sm">Order #{order.id.slice(0, 6).toUpperCase()}</span>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-lg font-medium ${STATUS_STYLE[order.status] || "text-gray-400 bg-white/10"}`}>

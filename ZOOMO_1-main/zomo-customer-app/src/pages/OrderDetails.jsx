@@ -7,7 +7,7 @@ import { MascotLoader } from "./LandingPage";
 const STATUS_STYLE = {
   PENDING: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
   PREPARING: "text-orange-400 bg-orange-400/10 border-orange-400/20",
-  DELIVERED: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+  DELIVERED: "text-z-accent bg-z-accent/10 border-z-accent/20",
   CANCELLED: "text-red-400 bg-red-400/10 border-red-400/20",
 };
 
@@ -26,13 +26,13 @@ export default function OrderDetails() {
 
   if (loading) return <MascotLoader text="Loading order details..." />;
   if (!order) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-z-page flex items-center justify-center">
       <p className="text-gray-500">Order not found</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-z-page text-white">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate("/orders")} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
@@ -45,6 +45,7 @@ export default function OrderDetails() {
         </div>
 
         <div className="space-y-4">
+
           {/* Restaurant */}
           <Card title="Restaurant">
             <p className="text-white font-medium">{order.restaurant?.name}</p>
@@ -80,11 +81,12 @@ export default function OrderDetails() {
             <Card title="Payment">
               <div className="text-sm space-y-1 text-gray-300">
                 <div className="flex justify-between"><span>Method</span><span className="text-white">{order.payment.provider}</span></div>
-                <div className="flex justify-between"><span>Status</span><span className="text-emerald-400">{order.payment.status}</span></div>
+                <div className="flex justify-between"><span>Status</span><span className="text-z-accent">{order.payment.status}</span></div>
                 <div className="flex justify-between"><span>Amount</span><span className="text-white">₹{order.payment.amount}</span></div>
               </div>
             </Card>
           )}
+
         </div>
       </div>
     </div>
@@ -93,7 +95,7 @@ export default function OrderDetails() {
 
 function Card({ title, children }) {
   return (
-    <div className="p-5 rounded-2xl bg-[#111] border border-white/10">
+    <div className="p-5 rounded-2xl bg-z-card border border-white/10">
       <h3 className="font-semibold text-white mb-3 text-sm">{title}</h3>
       {children}
     </div>

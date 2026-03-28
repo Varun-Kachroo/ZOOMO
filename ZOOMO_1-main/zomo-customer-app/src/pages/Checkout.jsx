@@ -6,9 +6,6 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { MascotLoader } from "./LandingPage";
 
-/* ─────────────────────────────────────────
-   VALID PROMO CODES
-───────────────────────────────────────── */
 const PROMO_CODES = {
   ZOOMO50: { type: "percent", value: 50, label: "50% off", max: 100 },
   BOGO: { type: "flat", value: 60, label: "₹60 off", max: null },
@@ -19,9 +16,7 @@ const PROMO_CODES = {
 
 const TIP_OPTIONS = [0, 10, 20, 30, 50];
 
-/* ─────────────────────────────────────────
-   ORDER SUCCESS ANIMATION
-───────────────────────────────────────── */
+/* ── Order Success Animation ── */
 function OrderSuccessAnimation({ onDone }) {
   const [stage, setStage] = useState("enter");
 
@@ -33,17 +28,17 @@ function OrderSuccessAnimation({ onDone }) {
   }, []);
 
   return (
-    <div className={`fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center gap-6 transition-opacity duration-500 ${stage === "exit" ? "opacity-0" : "opacity-100"}`}>
+    <div className={`fixed inset-0 z-[999] bg-z-page flex flex-col items-center justify-center gap-6 transition-opacity duration-500 ${stage === "exit" ? "opacity-0" : "opacity-100"}`}>
       <div className="relative flex items-center justify-center">
         {stage === "celebrate" && (
           <>
-            <div className="absolute w-40 h-40 rounded-full border-2 border-emerald-500/30 animate-ping" />
-            <div className="absolute w-56 h-56 rounded-full border border-emerald-500/10 animate-ping" style={{ animationDelay: "0.3s" }} />
+            <div className="absolute w-40 h-40 rounded-full border-2 border-z-accent/30 animate-ping" />
+            <div className="absolute w-56 h-56 rounded-full border border-z-accent/10 animate-ping" style={{ animationDelay: "0.3s" }} />
           </>
         )}
         <div className={`relative z-10 transition-all duration-500 ${stage === "enter" ? "scale-0 opacity-0" : stage === "celebrate" ? "scale-110 opacity-100" : "scale-100 opacity-100"}`}>
           <img src="/zoomo-mascot.png" alt="Zoomo" className={`w-32 h-32 ${stage === "celebrate" ? "animate-wiggle" : "animate-float"}`} />
-          <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl -z-10" />
+          <div className="absolute inset-0 rounded-full bg-z-accent/20 blur-2xl -z-10" />
         </div>
       </div>
 
@@ -52,7 +47,7 @@ function OrderSuccessAnimation({ onDone }) {
           {[...Array(20)].map((_, i) => (
             <div key={i} className="absolute w-2 h-2 rounded-full animate-bounce"
               style={{
-                backgroundColor: ["#10b981", "#34d399", "#6ee7b7", "#fff", "#fbbf24"][i % 5],
+                backgroundColor: ["#22C55E", "#34d399", "#6ee7b7", "#fff", "#fbbf24"][i % 5],
                 left: `${5 + (i * 4.7) % 90}%`,
                 top: `${10 + (i * 7.3) % 70}%`,
                 animationDelay: `${(i * 0.1) % 0.8}s`,
@@ -66,7 +61,7 @@ function OrderSuccessAnimation({ onDone }) {
 
       <div className={`text-center transition-all duration-500 ${stage === "enter" ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-z-primary flex items-center justify-center">
             <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <polyline points="20 6 9 17 4 12"
                 style={{
@@ -79,12 +74,12 @@ function OrderSuccessAnimation({ onDone }) {
           </div>
           <h2 className="text-2xl font-extrabold text-white">Order Placed!</h2>
         </div>
-        <p className="text-emerald-400 font-medium text-sm">Zoomo is on it! 🍔 Your food is being prepared.</p>
+        <p className="text-z-accent font-medium text-sm">Zoomo is on it! 🍔 Your food is being prepared.</p>
         <p className="text-gray-500 text-xs mt-1">You'll receive updates in My Orders</p>
       </div>
 
       <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-        <div className="h-full bg-emerald-500 rounded-full transition-all ease-linear"
+        <div className="h-full bg-z-accent rounded-full transition-all ease-linear"
           style={{ width: stage === "celebrate" ? "100%" : "0%", transitionDuration: stage === "celebrate" ? "2600ms" : "0ms" }}
         />
       </div>
@@ -92,9 +87,7 @@ function OrderSuccessAnimation({ onDone }) {
   );
 }
 
-/* ─────────────────────────────────────────
-   PROMO APPLIED FLASH
-───────────────────────────────────────── */
+/* ── Promo Flash ── */
 function PromoFlash({ promo, onDone }) {
   const [visible, setVisible] = useState(true);
   const [popped, setPopped] = useState(false);
@@ -108,20 +101,20 @@ function PromoFlash({ promo, onDone }) {
 
   return (
     <div className={`fixed inset-0 z-[998] pointer-events-none flex items-end justify-center pb-28 transition-all duration-500 ${visible ? "opacity-100" : "opacity-0 translate-y-4"}`}>
-      <div className={`relative flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-500 ease-out bg-[#0a1a0f] border-emerald-500/40 shadow-[0_0_60px_rgba(16,185,129,0.35)] ${popped ? "scale-100 translate-y-0 opacity-100" : "scale-75 translate-y-6 opacity-0"}`}>
-        <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 blur-xl" />
-        <div className={`relative w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center transition-transform duration-700 ${popped ? "rotate-0" : "-rotate-45"}`}>
-          <FiTag className="text-emerald-400" size={18} />
+      <div className={`relative flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-500 ease-out bg-z-card2 border-z-accent/40 shadow-[0_0_60px_rgba(34,197,94,0.35)] ${popped ? "scale-100 translate-y-0 opacity-100" : "scale-75 translate-y-6 opacity-0"}`}>
+        <div className="absolute inset-0 rounded-2xl bg-z-accent/5 blur-xl" />
+        <div className={`relative w-10 h-10 rounded-full bg-z-accent/20 border border-z-accent/30 flex items-center justify-center transition-transform duration-700 ${popped ? "rotate-0" : "-rotate-45"}`}>
+          <FiTag className="text-z-accent" size={18} />
         </div>
         <div className="relative">
           <p className="text-white font-bold text-sm tracking-wide">
-            🎉 <span className="text-emerald-400">{promo.code}</span> applied!
+            🎉 <span className="text-z-accent">{promo.code}</span> applied!
           </p>
-          <p className="text-emerald-600 text-xs mt-0.5">{promo.label} saved on your order</p>
+          <p className="text-z-primary text-xs mt-0.5">{promo.label} saved on your order</p>
         </div>
         <div className="absolute bottom-0 left-0 h-[2px] w-full rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
+            className="h-full bg-gradient-to-r from-transparent via-z-accent to-transparent"
             style={{ animation: popped ? "shimmer 2s linear forwards" : "none" }}
           />
         </div>
@@ -136,9 +129,17 @@ function PromoFlash({ promo, onDone }) {
   );
 }
 
-/* ─────────────────────────────────────────
-   MAIN CHECKOUT
-───────────────────────────────────────── */
+/* ── Section wrapper ── */
+function Section({ title, children }) {
+  return (
+    <div className="mb-5 p-5 rounded-2xl bg-z-card border border-white/10 space-y-3">
+      <h3 className="font-semibold text-white flex items-center">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+/* ── Main Checkout ── */
 export default function Checkout() {
   const { cart, getSubtotal, clearCart } = useCart();
   const { user } = useAuth();
@@ -153,18 +154,15 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Promo
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState("");
   const [showPromoFlash, setShowPromoFlash] = useState(false);
 
-  // Tip
   const [tip, setTip] = useState(0);
   const [customTip, setCustomTip] = useState("");
   const [showCustomTip, setShowCustomTip] = useState(false);
 
-  // Schedule
   const [scheduleDelivery, setScheduleDelivery] = useState(false);
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
@@ -199,7 +197,6 @@ export default function Checkout() {
     return slots;
   }
 
-  /* ── Promo logic ── */
   function applyPromo() {
     setPromoError("");
     const code = promoInput.trim().toUpperCase();
@@ -220,7 +217,6 @@ export default function Checkout() {
     setPromoInput("");
   }
 
-  /* ── Save address ── */
   async function saveAddress() {
     if (!form.street || !form.city || !form.state || !form.zipCode) return alert("Fill all fields");
     try {
@@ -232,7 +228,6 @@ export default function Checkout() {
     } catch { alert("Failed to save address"); }
   }
 
-  /* ── Place order ✅ FIXED ── */
   async function placeOrder() {
     if (!selectedAddress) return alert("Select a delivery address");
     if (!paymentMethod) return alert("Select a payment method");
@@ -248,11 +243,7 @@ export default function Checkout() {
         tip: tip,
         scheduledFor: scheduleDelivery ? `${scheduleDate}T${scheduleTime}:00` : null,
       });
-
-      // ✅ Non-blocking — cart clear runs in background
-      // Order success is NOT dependent on this
       clearCart().catch(() => { });
-
       setPlacing(false);
       setShowSuccess(true);
     } catch (err) {
@@ -265,7 +256,6 @@ export default function Checkout() {
   if (loading) return <MascotLoader text="Loading checkout..." />;
   if (placing) return <MascotLoader text="Placing your order... 🍔" />;
 
-  /* ── Bill calculations ── */
   const subtotal = parseFloat(getSubtotal().toFixed(2));
   const delivery = appliedPromo?.type === "ship" ? 0 : 29;
   const tax = parseFloat((subtotal * 0.05).toFixed(2));
@@ -276,15 +266,12 @@ export default function Checkout() {
   let discount = 0;
   if (appliedPromo) {
     if (appliedPromo.type === "percent") {
-      discount = parseFloat(
-        Math.min(subtotal * appliedPromo.value / 100, appliedPromo.max ?? Infinity).toFixed(2)
-      );
+      discount = parseFloat(Math.min(subtotal * appliedPromo.value / 100, appliedPromo.max ?? Infinity).toFixed(2));
     } else if (appliedPromo.type === "flat") {
       discount = parseFloat(Math.min(appliedPromo.value, subtotal).toFixed(2));
     }
   }
 
-  // ✅ Integer paise math — no floating point drift
   const total = (
     Math.round(subtotal * 100) +
     Math.round(delivery * 100) +
@@ -294,7 +281,7 @@ export default function Checkout() {
   ) / 100;
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-z-page text-white pb-10">
 
       {showSuccess && <OrderSuccessAnimation onDone={() => navigate("/orders")} />}
       {showPromoFlash && appliedPromo && (
@@ -310,13 +297,13 @@ export default function Checkout() {
           <h1 className="text-2xl font-bold">Checkout</h1>
         </div>
 
-        {/* ── Delivery Address ── */}
+        {/* Delivery Address */}
         <Section title="Delivery Address">
           {!showForm && addresses.map(a => (
-            <label key={a.id} className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${selectedAddress === a.id ? "border-emerald-500 bg-emerald-500/10" : "border-white/10 bg-white/5"}`}>
-              <input type="radio" checked={selectedAddress === a.id} onChange={() => setSelectedAddress(a.id)} className="mt-1 accent-emerald-600" />
+            <label key={a.id} className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${selectedAddress === a.id ? "border-z-accent bg-z-accent/10" : "border-white/10 bg-white/5"}`}>
+              <input type="radio" checked={selectedAddress === a.id} onChange={() => setSelectedAddress(a.id)} className="mt-1 accent-z-primary" />
               <div>
-                <FiMapPin className="text-emerald-500 inline mr-1" size={13} />
+                <FiMapPin className="text-z-accent inline mr-1" size={13} />
                 <span className="text-white text-sm font-medium">{a.street}</span>
                 <p className="text-gray-400 text-xs mt-0.5">{a.city}, {a.state} - {a.zipCode}</p>
               </div>
@@ -327,30 +314,30 @@ export default function Checkout() {
               {["street", "city", "state", "zipCode"].map(f => (
                 <input key={f} placeholder={f[0].toUpperCase() + f.slice(1)} value={form[f]}
                   onChange={e => setForm({ ...form, [f]: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm"
                 />
               ))}
               <div className="flex gap-3">
-                <button onClick={saveAddress} className="flex-1 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition">Save Address</button>
+                <button onClick={saveAddress} className="flex-1 py-3 rounded-xl bg-z-primary text-white text-sm font-semibold hover:bg-z-hover transition">Save Address</button>
                 {addresses.length > 0 && <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm">Cancel</button>}
               </div>
             </div>
           )}
           {!showForm && (
-            <button onClick={() => setShowForm(true)} className="text-emerald-500 text-sm hover:underline">+ Add new address</button>
+            <button onClick={() => setShowForm(true)} className="text-z-accent text-sm hover:underline">+ Add new address</button>
           )}
         </Section>
 
-        {/* ── Schedule Delivery ── */}
+        {/* Schedule Delivery */}
         <Section title={
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FiClock className="text-emerald-500" size={15} />
+              <FiClock className="text-z-accent" size={15} />
               <span>Schedule Delivery</span>
             </div>
             <button
               onClick={() => setScheduleDelivery(v => !v)}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${scheduleDelivery ? "bg-emerald-600" : "bg-white/10"}`}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${scheduleDelivery ? "bg-z-primary" : "bg-white/10"}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${scheduleDelivery ? "translate-x-5" : "translate-x-0"}`} />
             </button>
@@ -361,7 +348,6 @@ export default function Checkout() {
           ) : (
             <div className="space-y-3">
               <p className="text-gray-400 text-xs">Pick a date and time for your delivery</p>
-              {/* ✅ FIXED — stacks on mobile */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Date</label>
@@ -370,7 +356,7 @@ export default function Checkout() {
                     min={minDate}
                     value={scheduleDate}
                     onChange={e => setScheduleDate(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-z-accent [color-scheme:dark]"
                   />
                 </div>
                 <div>
@@ -378,7 +364,7 @@ export default function Checkout() {
                   <select
                     value={scheduleTime}
                     onChange={e => setScheduleTime(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-z-accent"
                   >
                     <option value="" className="bg-black">Select time</option>
                     {getTimeSlots().map(t => (
@@ -388,7 +374,7 @@ export default function Checkout() {
                 </div>
               </div>
               {scheduleDate && scheduleTime && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-z-accent/10 border border-z-accent/20 text-z-accent text-xs">
                   <FiCheck size={12} />
                   Scheduled for {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                 </div>
@@ -397,7 +383,7 @@ export default function Checkout() {
           )}
         </Section>
 
-        {/* ── Tip the delivery partner ── */}
+        {/* Tip */}
         <Section title={
           <div className="flex items-center gap-2">
             <FiHeart className="text-pink-400" size={15} />
@@ -432,26 +418,22 @@ export default function Checkout() {
             <div className="relative mt-2">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
               <input
-                type="number"
-                min="0"
-                max="500"
-                placeholder="Enter amount"
-                value={customTip}
-                onChange={e => setCustomTip(e.target.value)}
+                type="number" min="0" max="500" placeholder="Enter amount"
+                value={customTip} onChange={e => setCustomTip(e.target.value)}
                 className="w-full pl-8 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
               />
             </div>
           )}
         </Section>
 
-        {/* ── Payment Method ── */}
+        {/* Payment Method */}
         <Section title="Payment Method">
           {[
             { id: "COD", label: "Cash on Delivery", sub: "Pay when your order arrives" },
             { id: "ONLINE", label: "Online Payment", sub: "Coming soon", disabled: true },
           ].map(p => (
-            <label key={p.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${p.disabled ? "opacity-40 cursor-not-allowed" : ""} ${paymentMethod === p.id ? "border-emerald-500 bg-emerald-500/10" : "border-white/10 bg-white/5"}`}>
-              <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id} onChange={() => !p.disabled && setPaymentMethod(p.id)} className="accent-emerald-600" />
+            <label key={p.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${p.disabled ? "opacity-40 cursor-not-allowed" : ""} ${paymentMethod === p.id ? "border-z-accent bg-z-accent/10" : "border-white/10 bg-white/5"}`}>
+              <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id} onChange={() => !p.disabled && setPaymentMethod(p.id)} className="accent-z-primary" />
               <div>
                 <p className="text-white text-sm font-medium">{p.label}</p>
                 <p className="text-gray-400 text-xs">{p.sub}</p>
@@ -460,20 +442,20 @@ export default function Checkout() {
           ))}
         </Section>
 
-        {/* ── Promo Code ── */}
+        {/* Promo Code */}
         <Section title={
           <div className="flex items-center gap-2">
-            <FiTag className="text-emerald-500" size={15} />
+            <FiTag className="text-z-accent" size={15} />
             <span>Promo Code</span>
           </div>
         }>
           {appliedPromo ? (
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-z-accent/10 border border-z-accent/30">
               <div className="flex items-center gap-2">
-                <FiTag className="text-emerald-400" size={14} />
+                <FiTag className="text-z-accent" size={14} />
                 <div>
-                  <p className="text-emerald-400 font-bold text-sm">{appliedPromo.code}</p>
-                  <p className="text-emerald-600 text-xs">{appliedPromo.label} applied!</p>
+                  <p className="text-z-accent font-bold text-sm">{appliedPromo.code}</p>
+                  <p className="text-z-hover text-xs">{appliedPromo.label} applied!</p>
                 </div>
               </div>
               <button onClick={removePromo} className="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-red-400 transition">
@@ -488,11 +470,11 @@ export default function Checkout() {
                   onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); }}
                   onKeyDown={e => e.key === "Enter" && applyPromo()}
                   placeholder="Enter promo code"
-                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm uppercase tracking-wider"
+                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm uppercase tracking-wider"
                 />
                 <button
                   onClick={applyPromo}
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-z-primary hover:bg-z-hover text-white text-sm font-semibold transition"
                 >
                   Apply
                 </button>
@@ -507,7 +489,7 @@ export default function Checkout() {
                   <button
                     key={code}
                     onClick={() => { setPromoInput(code); setPromoError(""); }}
-                    className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 transition"
+                    className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:bg-z-accent/10 hover:text-z-accent hover:border-z-accent/20 transition"
                   >
                     {code} · {info.label}
                   </button>
@@ -517,7 +499,7 @@ export default function Checkout() {
           )}
         </Section>
 
-        {/* ── Order Summary ── */}
+        {/* Order Summary */}
         <Section title="Order Summary">
           {cart.items.map(i => (
             <div key={i.id} className="flex justify-between text-sm text-gray-300">
@@ -530,7 +512,7 @@ export default function Checkout() {
             <div className="flex justify-between">
               <span>Delivery</span>
               {appliedPromo?.type === "ship"
-                ? <span className="text-emerald-400">FREE</span>
+                ? <span className="text-z-accent">FREE</span>
                 : <span>₹{delivery.toFixed(2)}</span>
               }
             </div>
@@ -541,7 +523,7 @@ export default function Checkout() {
               </div>
             )}
             {discount > 0 && (
-              <div className="flex justify-between text-emerald-400">
+              <div className="flex justify-between text-z-accent">
                 <span>Discount ({appliedPromo?.code})</span>
                 <span>− ₹{discount.toFixed(2)}</span>
               </div>
@@ -554,7 +536,7 @@ export default function Checkout() {
 
         <button
           onClick={placeOrder}
-          className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition active:scale-[0.99]"
+          className="w-full py-4 rounded-2xl bg-z-primary hover:bg-z-hover text-white font-semibold transition active:scale-[0.99]"
         >
           {scheduleDelivery && scheduleDate && scheduleTime
             ? `Schedule Order · ₹${total.toFixed(2)}`
@@ -562,15 +544,6 @@ export default function Checkout() {
         </button>
 
       </div>
-    </div>
-  );
-}
-
-function Section({ title, children }) {
-  return (
-    <div className="mb-5 p-5 rounded-2xl bg-[#111] border border-white/10 space-y-3">
-      <h3 className="font-semibold text-white flex items-center">{title}</h3>
-      {children}
     </div>
   );
 }
