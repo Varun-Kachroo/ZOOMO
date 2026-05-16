@@ -1,435 +1,380 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FiSearch,
-  FiMapPin,
-  FiShoppingCart,
-  FiUser,
-  FiLogIn,
-  FiUserPlus,
-  FiX,
-  FiStar,
-  FiClock,
-  FiSliders,
-  FiArrowRight,
-} from "react-icons/fi";
+import { FiSearch, FiMapPin, FiShoppingCart, FiUser, FiLogIn, FiUserPlus, FiX, FiStar, FiClock, FiTag } from "react-icons/fi";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
-/* =========================
-   Shared loader
-========================= */
+/* ── Mascot Loader ── */
 export function MascotLoader({ text = "Loading..." }) {
   return (
-    <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-4 bg-[#F5F7F6]">
+    <div className="fixed inset-0 z-[999] bg-z-page flex flex-col items-center justify-center gap-4">
       <div className="relative">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-[#0F3D2E] to-[#145A43] shadow-[0px_10px_30px_rgba(0,0,0,0.08)]">
-          <ZoomoMark className="h-10 w-10 text-white" />
-        </div>
+        <img src="/zoomo-mascot.png" alt="Loading" className="w-24 h-24 animate-float" />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-z-accent/30 rounded-full blur-sm animate-pulse" />
       </div>
-      <p className="text-sm font-medium text-[#145A43]">{text}</p>
+      <p className="text-z-accent font-medium text-sm animate-pulse">{text}</p>
     </div>
   );
 }
 
-/* =========================
-   Tokens / data
-========================= */
-const QUICK_PICKS = [
-  { label: "Burgers", emoji: "🍔" },
-  { label: "Pizza", emoji: "🍕" },
-  { label: "Healthy", emoji: "🥗" },
-  { label: "Coffee", emoji: "☕" },
-];
-
-const FILTERS = ["Popular", "Fast delivery", "Top rated"];
-
-const FALLBACK_RESTAURANTS = [
-  {
-    id: "green-bowl",
-    name: "Green Bowl Kitchen",
-    cuisine: "Healthy bowls • Salads • Fresh juices",
-    rating: "4.8",
-    eta: "18 min",
-    image:
-      "linear-gradient(135deg, #B8E7C3 0%, #8CD9A5 100%)",
-  },
-  {
-    id: "stone-fire",
-    name: "Stone Fire Pizza",
-    cuisine: "Wood-fired pizza • Italian classics",
-    rating: "4.9",
-    eta: "22 min",
-    image:
-      "linear-gradient(135deg, #F3CF99 0%, #F0B36A 100%)",
-  },
-  {
-    id: "midnight-sushi",
-    name: "Midnight Sushi",
-    cuisine: "Premium rolls • Bento • Late night",
-    rating: "4.7",
-    eta: "26 min",
-    image:
-      "linear-gradient(135deg, #D7E0EE 0%, #C6D1E3 100%)",
-  },
-];
-
-/* =========================
-   Brand mark
-========================= */
-function ZoomoMark({ className = "h-5 w-5 text-white" }) {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      fill="none"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <rect width="32" height="32" rx="8" fill="currentColor" opacity="0.18" />
-      <path
-        d="M7 8.5H21.2L15.6 14H10.6L7 17.6V8.5Z"
-        fill="currentColor"
-      />
-      <path
-        d="M23.8 8.5V18.1L18.4 12.8L23.8 8.5Z"
-        fill="currentColor"
-      />
-      <path
-        d="M8 23.5L13.7 17.8H18.1L11.9 23.5H8Z"
-        fill="currentColor"
-      />
-      <path
-        d="M15.6 16.9H20.8L24.5 20.7V23.5H13.2L15.6 16.9Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-/* =========================
-   Address modal
-========================= */
+/* ── Address Modal ── */
 function AddressModal({ onConfirm, onSkip }) {
-  const [value, setValue] = useState("");
-
+  const [val, setVal] = useState("");
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F0E]/20 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-[28px] border border-[#E5E7EB] bg-white p-6 shadow-[0px_10px_30px_rgba(0,0,0,0.08)] sm:p-7">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-[#0F3D2E] to-[#145A43] text-white shadow-[0px_4px_12px_rgba(0,0,0,0.06)]">
-            <ZoomoMark className="h-7 w-7 text-white" />
-          </div>
-          <div>
-            <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-[#145A43]">
-              Delivered fast
-            </p>
-            <h2 className="text-[24px] font-semibold leading-8 text-[#0B0F0E]">
-              Set your address
-            </h2>
-          </div>
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-z-card border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/zoomo-mascot.png" alt="Zoomo" className="w-20 h-20 animate-wiggle mb-3" />
+          <h2 className="text-2xl font-bold text-white">Where should we deliver?</h2>
+          <p className="text-gray-400 text-sm mt-1">Enter your delivery address to get started</p>
         </div>
-
-        <p className="mb-5 text-[16px] leading-6 text-[#6B7280]">
-          Enter your delivery area to browse nearby restaurants and faster offers.
-        </p>
-
-        <label className="mb-2 block text-[13px] font-medium leading-[18px] text-[#0B0F0E]">
-          Delivery location
-        </label>
-
         <div className="relative mb-4">
-          <FiMapPin
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280]"
-            size={18}
-          />
+          <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-z-accent" size={18} />
           <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) =>
-              e.key === "Enter" && value.trim() && onConfirm(value.trim())
-            }
-            placeholder="e.g. Bandra West, Mumbai"
-            className="h-[52px] w-full rounded-[20px] border border-[#E5E7EB] bg-white pl-12 pr-4 text-[16px] text-[#0B0F0E] outline-none transition duration-150 ease-out placeholder:text-[#9CA3AF] focus:border-[#145A43] focus:ring-2 focus:ring-[#145A43]/10"
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && val.trim() && onConfirm(val.trim())}
+            placeholder="e.g. Koramangala, Bengaluru"
+            className="w-full pl-11 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm"
           />
         </div>
-
-        <div className="space-y-3">
-          <button
-            onClick={() => value.trim() && onConfirm(value.trim())}
-            className="flex h-[52px] w-full items-center justify-center rounded-full bg-gradient-to-br from-[#0F3D2E] to-[#145A43] text-[16px] font-semibold text-white shadow-[0px_10px_30px_rgba(0,0,0,0.08)] transition duration-150 ease-out hover:opacity-95"
-          >
-            Continue
-          </button>
-
-          <button
-            onClick={onSkip}
-            className="flex h-[52px] w-full items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[16px] font-medium text-[#0B0F0E] transition duration-150 ease-out hover:bg-[#F5F7F6]"
-          >
-            Add later
-          </button>
-        </div>
+        <button
+          onClick={() => val.trim() && onConfirm(val.trim())}
+          className="w-full py-4 rounded-2xl bg-z-primary hover:bg-z-hover text-white font-semibold transition active:scale-95 mb-3"
+        >
+          Find Food Near Me 🍔
+        </button>
+        <button
+          onClick={onSkip}
+          className="w-full py-3 rounded-2xl bg-transparent border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition text-sm"
+        >
+          Add Later
+        </button>
       </div>
     </div>
   );
 }
 
-/* =========================
-   Landing navbar
-========================= */
-function LandingNavbar({ cartCount, user, navigate }) {
+/* ── Navbar (inline, LandingPage-specific) ── */
+function Navbar({ address, onAddressClick, cartCount, user, onProfileOpen, navigate }) {
   return (
-    <div className="mb-8 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#0F3D2E] text-white shadow-[0px_4px_12px_rgba(0,0,0,0.06)]">
-          <ZoomoMark className="h-7 w-7 text-white" />
-        </div>
-        <div className="leading-none">
-          <p className="text-[13px] font-medium text-[#6B7280]">Zoomo</p>
-          <p className="text-[24px] font-semibold leading-6 text-[#145A43]">
-            Eats
-          </p>
-        </div>
-      </div>
+    <header className="sticky top-0 z-40 bg-z-gradient backdrop-blur-xl border-b border-white/10">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
 
-      <div className="flex items-center gap-3">
-        {user ? (
-          <button
-            onClick={() => navigate("/orders")}
-            className="flex h-12 min-w-12 items-center justify-center rounded-full border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0B0F0E] transition duration-150 ease-out hover:bg-[#F5F7F6]"
-          >
-            <FiUser size={18} />
-            <span className="ml-2 hidden sm:inline">
-              {user.name?.split(" ")[0] || "Account"}
-            </span>
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate("/login")}
-            className="text-[16px] font-medium text-[#0B0F0E] transition duration-150 ease-out hover:text-[#145A43]"
-          >
-            Sign in
-          </button>
-        )}
+        {/* Logo — inline SVG replaces zoomo-logo.png */}
+        <div className="flex items-center gap-2 shrink-0">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="#0F3D2E" />
+            <path d="M8 10H22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
+            <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
+            <path d="M10 22H24" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
+          </svg>
+          <span className="text-white font-bold text-lg hidden sm:block">
+            Zoomo <span className="text-z-accent">Eats</span>
+          </span>
+        </div>
 
+        {/* Address pill */}
         <button
-          onClick={() => navigate("/cart")}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#0B0F0E] shadow-[0px_1px_2px_rgba(0,0,0,0.04)] transition duration-150 ease-out hover:bg-[#F5F7F6]"
+          onClick={onAddressClick}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-left hover:bg-white/10 transition min-w-0 flex-1 max-w-xs"
         >
-          <FiShoppingCart size={18} />
-          {cartCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#145A43] px-1 text-[11px] font-semibold text-white">
-              {cartCount}
-            </span>
+          <FiMapPin className="text-z-accent shrink-0" size={14} />
+          <span className="text-gray-300 truncate">{address || "Set delivery location"}</span>
+        </button>
+
+        {/* Right actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          {user ? (
+            <button
+              onClick={onProfileOpen}
+              className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition flex items-center gap-2"
+            >
+              <FiUser size={16} />
+              <span className="hidden sm:block text-sm">{user.name?.split(" ")[0]}</span>
+            </button>
+          ) : (
+            <>
+              <button onClick={() => navigate("/login")} className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition text-sm">
+                <FiLogIn size={14} /> Login
+              </button>
+              <button onClick={() => navigate("/signup")} className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-z-primary hover:bg-z-hover text-white transition text-sm">
+                <FiUserPlus size={14} /> Sign up
+              </button>
+            </>
           )}
-        </button>
+          <button
+            onClick={() => navigate("/cart")}
+            className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition"
+          >
+            <FiShoppingCart size={18} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-z-accent text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+    </header>
   );
 }
 
-/* =========================
-   Helpers
-========================= */
-function PromoCard({ onClick }) {
-  return (
-    <div className="overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0F3D2E] to-[#145A43] p-6 text-white shadow-[0px_10px_30px_rgba(0,0,0,0.08)]">
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <p className="mb-3 text-[13px] font-medium uppercase tracking-[0.18em] text-white/70">
-            Today&apos;s offer
-          </p>
-          <h2 className="max-w-[260px] text-[32px] font-bold leading-[40px] tracking-[-0.02em]">
-            Free delivery on your first order.
-          </h2>
-        </div>
+/* ── Category Pills ── */
+const CATEGORIES = ["All", "Pizza", "Burgers", "Indian", "Chinese", "Biryani", "Desserts", "Beverages", "Healthy", "Street Food"];
 
-        <div className="flex h-20 w-20 items-center justify-center rounded-[20px] border border-white/10 bg-white/10">
-          <div className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-[#0F3D2E] text-white">
-            <ZoomoMark className="h-6 w-6 text-white" />
+/* ── Restaurant Card ── */
+function RestaurantCard({ r, navigate }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={() => navigate(`/restaurant/${r.id}`)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="cursor-pointer rounded-2xl overflow-hidden bg-z-card border border-white/10 hover:border-z-accent/30 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)] transition-all duration-300 group"
+    >
+      <div className="relative h-44 overflow-hidden">
+        <img
+          src={r.img}
+          alt={r.name}
+          className={`w-full h-full object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"}`}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        {r.coupon && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-z-accent text-[10px] font-medium px-2 py-1 rounded-lg border border-z-accent/20">
+            <FiTag size={10} /> {r.coupon}
           </div>
+        )}
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
+          <FiStar className="text-yellow-400 fill-yellow-400" size={11} /> {r.rating}
         </div>
       </div>
-
-      <button
-        onClick={onClick}
-        className="flex h-[52px] items-center justify-center rounded-full bg-white px-7 text-[16px] font-semibold text-[#0F3D2E] transition duration-150 ease-out hover:bg-[#F5F7F6]"
-      >
-        Order now
-      </button>
+      <div className="p-4">
+        <h3 className="font-semibold text-white text-base truncate">{r.name}</h3>
+        <p className="text-gray-400 text-xs mt-0.5 truncate">{r.cuisine}</p>
+        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+          <span className="flex items-center gap-1"><FiClock size={11} /> {r.eta}</span>
+          <span>·</span>
+          <span>₹{r.cost} for two</span>
+        </div>
+      </div>
     </div>
   );
 }
 
-function QuickPickCard({ item, onClick }) {
+/* ── Profile Drawer ── */
+function ProfileDrawer({ user, onClose, navigate }) {
+  const { logout } = useAuth();
   return (
-    <button
-      onClick={onClick}
-      className="min-w-[140px] rounded-[20px] border border-[#E5E7EB] bg-white p-4 text-left shadow-[0px_1px_2px_rgba(0,0,0,0.04)] transition duration-150 ease-out hover:-translate-y-[1px] hover:shadow-[0px_4px_12px_rgba(0,0,0,0.06)]"
-    >
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[16px] bg-[#F5F7F6] text-[30px]">
-        {item.emoji}
+    <div className="fixed inset-0 z-50 flex">
+      <div className="w-full max-w-sm ml-auto h-full bg-z-card border-l border-white/10 flex flex-col">
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+          <span className="font-semibold text-white">Profile</span>
+          <button onClick={onClose} className="text-gray-400 hover:text-white"><FiX /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+            <div className="w-12 h-12 rounded-xl bg-z-primary flex items-center justify-center text-xl font-bold text-white">
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </div>
+            <div>
+              <div className="font-semibold text-white">{user?.name}</div>
+              <div className="text-xs text-gray-400">{user?.email}</div>
+            </div>
+          </div>
+          {[
+            { label: "My Orders", path: "/orders" },
+            { label: "My Cart", path: "/cart" },
+            { label: "Restaurants", path: "/restaurants" },
+          ].map(item => (
+            <button
+              key={item.path}
+              onClick={() => { navigate(item.path); onClose(); }}
+              className="w-full text-left px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition text-sm"
+            >
+              {item.label}
+            </button>
+          ))}
+          <button
+            onClick={() => { logout(); onClose(); }}
+            className="w-full px-4 py-3 rounded-xl text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-sm"
+          >
+            Logout
+          </button>
+        </div>
       </div>
-      <p className="text-[24px] font-semibold leading-8 text-[#0B0F0E]">
-        {item.label}
-      </p>
-    </button>
+      <div className="flex-1 bg-black/50" onClick={onClose} />
+    </div>
   );
 }
 
-function FilterChip({ active, children, onClick }) {
-  return (
+/* ── Chat Widget ── */
+function ChatWidget() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: "bot", text: "Hey! I'm Zoomo 🍔 What can I help you with?" }
+  ]);
+  const [text, setText] = useState("");
+  const [typing, setTyping] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+  }, [messages, typing]);
+
+  function send(msg = text) {
+    const val = msg.trim();
+    if (!val) return;
+    setMessages(m => [...m, { role: "user", text: val }]);
+    setText("");
+    setTyping(true);
+    setTimeout(() => {
+      const s = val.toLowerCase();
+      let reply = "Hmm, I didn't get that! Try asking about deals, orders, or restaurants.";
+      if (s.includes("deal") || s.includes("offer")) reply = "🔥 Use ZOOMO50 for 50% off, BOGO for Buy 1 Get 1, or FREESHIP for free delivery above ₹199!";
+      else if (s.includes("track") || s.includes("order")) reply = "Go to Menu → My Orders to track your order!";
+      else if (s.includes("deliver")) reply = "We deliver to 45+ cities! Set your location on the home screen.";
+      else if (s.includes("pay")) reply = "We support UPI, Cards, Wallets, Net Banking & Cash on Delivery!";
+      setMessages(m => [...m, { role: "bot", text: reply }]);
+      setTyping(false);
+    }, 1200 + Math.random() * 800);
+  }
+
+  if (!open) return (
     <button
-      onClick={onClick}
-      className={[
-        "h-[52px] rounded-full px-7 text-[16px] font-semibold transition duration-150 ease-out",
-        active
-          ? "bg-[#0F3D2E] text-white shadow-[0px_4px_12px_rgba(0,0,0,0.06)]"
-          : "border border-[#E5E7EB] bg-white text-[#0B0F0E] hover:bg-[#F5F7F6]",
-      ].join(" ")}
+      onClick={() => setOpen(true)}
+      className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full overflow-hidden shadow-xl hover:scale-110 transition border-2 border-z-accent/50"
     >
-      {children}
+      <img src="/zoomo-mascot.png" alt="Chat" className="w-full h-full object-cover animate-float" />
     </button>
   );
-}
 
-function RestaurantCard({ restaurant, onClick }) {
   return (
-    <article
-      onClick={onClick}
-      className="cursor-pointer overflow-hidden rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0px_4px_12px_rgba(0,0,0,0.06)] transition duration-180 ease-out hover:-translate-y-[2px] hover:shadow-[0px_10px_30px_rgba(0,0,0,0.08)]"
-    >
-      <div
-        className="relative h-56 w-full"
-        style={{
-          background:
-            restaurant.imageStyle ||
-            `url(${restaurant.img}) center/cover no-repeat`,
-        }}
-      >
-        <div className="absolute left-5 top-5 flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0B0F0E] shadow-[0px_1px_2px_rgba(0,0,0,0.04)]">
-          <span>{restaurant.rating}</span>
-          <FiStar className="fill-current" size={14} />
+    <div className="fixed bottom-5 right-5 z-50 w-80 rounded-3xl overflow-hidden bg-[#0f0f0f] border border-white/10 shadow-2xl">
+      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-z-card">
+        <div className="flex items-center gap-2">
+          <img src="/zoomo-mascot.png" className="w-7 h-7 rounded-full animate-wiggle" alt="" />
+          <span className="font-semibold text-white text-sm">Zoomo Assist</span>
+          <span className="w-2 h-2 bg-z-accent rounded-full animate-pulse" />
         </div>
-
-        <div className="absolute right-5 top-5 rounded-full bg-[#0B0F0E] px-4 py-2 text-sm font-semibold text-white">
-          {restaurant.eta}
-        </div>
+        <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white"><FiX size={16} /></button>
       </div>
 
-      <div className="flex items-center gap-4 p-5">
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-[32px] font-bold leading-10 tracking-[-0.02em] text-[#0B0F0E]">
-            {restaurant.name}
-          </h3>
-          <p className="mt-1 truncate text-[16px] leading-6 text-[#6B7280]">
-            {restaurant.cuisine}
-          </p>
-        </div>
+      <div ref={ref} className="h-64 overflow-y-auto p-3 space-y-3">
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-z-primary text-white" : "bg-white/10 text-gray-200"
+              }`}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        {typing && (
+          <div className="flex gap-1 pl-2">
+            {[0, 0.2, 0.4].map((d, i) => (
+              <div key={i} className="w-2 h-2 bg-z-accent rounded-full animate-bounce" style={{ animationDelay: `${d}s` }} />
+            ))}
+          </div>
+        )}
+      </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F0F2F1] text-[#145A43] transition duration-150 ease-out hover:bg-[#E5E7EB]"
-        >
-          <FiArrowRight size={20} />
+      <div className="flex gap-2 p-3 border-t border-white/10">
+        {["Deals", "Track order", "Payment"].map(q => (
+          <button key={q} onClick={() => send(q)} className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition">{q}</button>
+        ))}
+      </div>
+
+      <div className="p-3 pt-0 flex gap-2">
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && send()}
+          placeholder="Ask something..."
+          className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none text-sm"
+        />
+        <button onClick={() => send()} className="px-3 py-2 rounded-xl bg-z-primary hover:bg-z-hover text-white transition text-sm">
+          Send
         </button>
       </div>
-    </article>
+    </div>
   );
 }
 
-/* =========================
-   Page
-========================= */
+/* ── Main Landing Page ── */
 export default function LandingPage() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { cart } = useCart();
+  const navigate = useNavigate();
 
-  const [address, setAddress] = useState(
-    () => localStorage.getItem("ze_address") || ""
-  );
-  const [showAddressModal, setShowAddressModal] = useState(
-    !localStorage.getItem("ze_address") && !user
-  );
+  const [address, setAddress] = useState(() => localStorage.getItem("ze_address") || "");
+  const [showAddressModal, setShowAddressModal] = useState(!localStorage.getItem("ze_address") && !user);
   const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("Popular");
+  const [category, setCategory] = useState("All");
   const [restaurants, setRestaurants] = useState([]);
+  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [profileOpen, setProfileOpen] = useState(false);
   const searchRef = useRef(null);
 
   useEffect(() => {
-    async function loadRestaurants() {
+    async function load() {
       try {
         const res = await api.get("/restaurants");
-        const list = Array.isArray(res) ? res : res?.data || [];
-
-        const mapped = list.map((r, index) => ({
+        const mapped = res.map(r => ({
           id: r.id,
           name: r.name,
-          cuisine:
-            r.cuisineType
-              ? `${r.cuisineType} • Premium delivery`
-              : "Curated menu • Fast delivery",
-          rating: r.rating?.toFixed(1) || ["4.8", "4.9", "4.7"][index % 3],
-          eta: ["18 min", "22 min", "26 min", "20 min"][index % 4],
-          img: r.imageUrl,
-          imageStyle: null,
+          img: r.imageUrl || `https://source.unsplash.com/600x400/?${encodeURIComponent(r.cuisineType || "food")}`,
+          cuisine: r.cuisineType || "Various",
+          area: r.address || "Nearby",
+          rating: r.rating?.toFixed(1) ?? "4.3",
+          eta: "25-40 min",
+          cost: 250,
+          coupon: r.coupon || null,
         }));
-
-        setRestaurants(mapped.length ? mapped : FALLBACK_RESTAURANTS);
+        setRestaurants(mapped);
+        setFiltered(mapped);
       } catch {
-        setRestaurants(FALLBACK_RESTAURANTS);
+        const fallback = [
+          { id: "1", name: "The Pizza Place", cuisine: "Italian · Pizza", rating: "4.5", eta: "30-40 min", cost: 300, img: "https://source.unsplash.com/600x400/?pizza", coupon: "PIZZA50" },
+          { id: "2", name: "Biryani House", cuisine: "Indian · Biryani", rating: "4.3", eta: "25-35 min", cost: 250, img: "https://source.unsplash.com/600x400/?biryani", coupon: null },
+          { id: "3", name: "Burger Barn", cuisine: "American · Burgers", rating: "4.4", eta: "20-30 min", cost: 200, img: "https://source.unsplash.com/600x400/?burger", coupon: "BOGO" },
+          { id: "4", name: "Wok & Roll", cuisine: "Chinese · Asian", rating: "4.2", eta: "30-45 min", cost: 280, img: "https://source.unsplash.com/600x400/?chinese-food", coupon: null },
+          { id: "5", name: "Green Bowl", cuisine: "Healthy · Salads", rating: "4.6", eta: "15-25 min", cost: 220, img: "https://source.unsplash.com/600x400/?salad", coupon: "HEALTHY20" },
+          { id: "6", name: "Dessert Den", cuisine: "Desserts · Sweets", rating: "4.7", eta: "20-30 min", cost: 180, img: "https://source.unsplash.com/600x400/?dessert", coupon: null },
+        ];
+        setRestaurants(fallback);
+        setFiltered(fallback);
       } finally {
         setLoading(false);
       }
     }
-
-    loadRestaurants();
+    load();
   }, []);
 
-  function handleAddressConfirm(value) {
-    setAddress(value);
-    localStorage.setItem("ze_address", value);
+  useEffect(() => {
+    let list = restaurants;
+    if (category !== "All") {
+      list = list.filter(r => r.cuisine?.toLowerCase().includes(category.toLowerCase()) || r.name?.toLowerCase().includes(category.toLowerCase()));
+    }
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      list = list.filter(r => r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q));
+    }
+    setFiltered(list);
+  }, [query, category, restaurants]);
+
+  function handleAddressConfirm(addr) {
+    setAddress(addr);
+    localStorage.setItem("ze_address", addr);
     setShowAddressModal(false);
   }
 
-  const cartCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
-
-  const visibleRestaurants = useMemo(() => {
-    let list = [...restaurants];
-
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(q) ||
-          item.cuisine?.toLowerCase().includes(q)
-      );
-    }
-
-    if (activeFilter === "Fast delivery") {
-      list = [...list].sort((a, b) => parseInt(a.eta) - parseInt(b.eta));
-    }
-
-    if (activeFilter === "Top rated") {
-      list = [...list].sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
-    }
-
-    return list;
-  }, [restaurants, query, activeFilter]);
-
-  if (loading) {
-    return <MascotLoader text="Preparing your feed..." />;
-  }
+  const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#F5F7F6] text-[#0B0F0E]">
+    <div className="min-h-screen bg-z-page text-white">
+
       {showAddressModal && (
         <AddressModal
           onConfirm={handleAddressConfirm}
@@ -437,170 +382,92 @@ export default function LandingPage() {
         />
       )}
 
-      <main className="mx-auto max-w-[760px] px-4 py-5 sm:px-6 sm:py-8">
-        <div className="rounded-[28px] border border-[#E5E7EB] bg-[#F5F7F6] p-5 sm:p-6">
-          <LandingNavbar cartCount={cartCount} user={user} navigate={navigate} />
+      <Navbar
+        address={address}
+        onAddressClick={() => setShowAddressModal(true)}
+        cartCount={cartCount}
+        user={user}
+        onProfileOpen={() => setProfileOpen(true)}
+        navigate={navigate}
+      />
 
-          <section className="mb-8">
-            <p className="mb-4 text-[13px] font-medium uppercase tracking-[0.18em] text-[#145A43]">
-              Delivered fast
-            </p>
+      <main className="max-w-6xl mx-auto px-4 py-8">
 
-            <h1 className="max-w-[540px] text-[44px] font-bold leading-[52px] tracking-[-0.03em] text-[#0B0F0E]">
-              What are you{" "}
-              <span className="text-[#145A43]">craving today?</span>
-            </h1>
-
-            <p className="mt-4 max-w-[520px] text-[16px] leading-6 text-[#6B7280]">
-              Premium food delivery with a cleaner interface and faster checkout.
-              {address ? ` Delivering to ${address}.` : ""}
-            </p>
-
-            <div className="relative mt-8">
-              <FiSearch
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-[#145A43]"
-                size={18}
-              />
-              <input
-                ref={searchRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search restaurants, dishes, cuisine"
-                className="h-[52px] w-full rounded-full border border-[#E5E7EB] bg-white pl-14 pr-20 text-[16px] text-[#0B0F0E] outline-none transition duration-150 ease-out placeholder:text-[#9CA3AF] focus:border-[#145A43] focus:ring-2 focus:ring-[#145A43]/10"
-              />
-
-              {query ? (
-                <button
-                  onClick={() => setQuery("")}
-                  className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#F0F2F1] text-[#145A43] transition duration-150 ease-out hover:bg-[#E5E7EB]"
-                >
-                  <FiX size={16} />
-                </button>
-              ) : (
-                <button
-                  className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#F0F2F1] text-[#145A43] transition duration-150 ease-out hover:bg-[#E5E7EB]"
-                >
-                  <FiSliders size={16} />
-                </button>
-              )}
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <PromoCard onClick={() => navigate("/restaurants")} />
-          </section>
-
-          <section className="mb-8">
-            <div className="mb-4 flex items-end justify-between gap-3">
-              <h2 className="text-[24px] font-semibold leading-8 text-[#0B0F0E]">
-                Quick picks
-              </h2>
-              <span className="text-[16px] leading-6 text-[#6B7280]">For you</span>
-            </div>
-
-            <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {QUICK_PICKS.map((item) => (
-                <QuickPickCard
-                  key={item.label}
-                  item={item}
-                  onClick={() => {
-                    setQuery(item.label);
-                    searchRef.current?.focus();
-                  }}
-                />
-              ))}
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {FILTERS.map((filter) => (
-                <FilterChip
-                  key={filter}
-                  active={activeFilter === filter}
-                  onClick={() => setActiveFilter(filter)}
-                >
-                  {filter}
-                </FilterChip>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            {visibleRestaurants.map((restaurant, index) => (
-              <RestaurantCard
-                key={restaurant.id || index}
-                restaurant={{
-                  ...restaurant,
-                  imageStyle:
-                    restaurant.imageStyle ||
-                    (restaurant.img
-                      ? null
-                      : FALLBACK_RESTAURANTS[index % FALLBACK_RESTAURANTS.length]
-                        .image),
-                }}
-                onClick={() =>
-                  navigate(
-                    restaurant.id && restaurant.id !== "green-bowl" && restaurant.id !== "stone-fire" && restaurant.id !== "midnight-sushi"
-                      ? `/restaurant/${restaurant.id}`
-                      : "/restaurants"
-                  )
-                }
-              />
-            ))}
-
-            {!visibleRestaurants.length && (
-              <div className="rounded-[28px] border border-[#E5E7EB] bg-white p-8 text-center shadow-[0px_4px_12px_rgba(0,0,0,0.06)]">
-                <p className="text-[24px] font-semibold leading-8 text-[#0B0F0E]">
-                  No matches found
-                </p>
-                <p className="mt-2 text-[16px] leading-6 text-[#6B7280]">
-                  Try another cuisine, restaurant name, or a broader search term.
-                </p>
-              </div>
+        {/* Hero Search — unchanged */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+            What are you <span className="text-z-accent">craving</span> today?
+          </h1>
+          <p className="text-gray-500 text-sm mb-5">
+            {address ? `Delivering to ${address}` : "Set your location to see nearby restaurants"}
+          </p>
+          <div className="relative max-w-2xl">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <input
+              ref={searchRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search for restaurants, cuisines, dishes..."
+              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm transition"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                <FiX size={16} />
+              </button>
             )}
-          </section>
-
-          <section className="mt-8 rounded-[28px] border border-[#E5E7EB] bg-white p-5 shadow-[0px_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="flex items-start gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[#F0F2F1] text-[#145A43]">
-                <FiClock size={18} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-medium uppercase tracking-[0.18em] text-[#6B7280]">
-                  Faster checkout
-                </p>
-                <h3 className="mt-1 text-[24px] font-semibold leading-8 text-[#0B0F0E]">
-                  Save time on every order
-                </h3>
-                <p className="mt-2 text-[12px] leading-4 text-[#6B7280]">
-                  Sign in to save addresses, track orders, and reorder in one tap.
-                </p>
-              </div>
-            </div>
-
-            {!user && (
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <button
-                  onClick={() => navigate("/signup")}
-                  className="flex h-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#0F3D2E] to-[#145A43] px-6 text-[16px] font-semibold text-white shadow-[0px_4px_12px_rgba(0,0,0,0.06)] transition duration-150 ease-out hover:opacity-95"
-                >
-                  <FiUserPlus className="mr-2" size={16} />
-                  Create account
-                </button>
-
-                <button
-                  onClick={() => navigate("/login")}
-                  className="flex h-[52px] items-center justify-center rounded-full border border-[#E5E7EB] bg-white px-6 text-[16px] font-semibold text-[#0B0F0E] transition duration-150 ease-out hover:bg-[#F5F7F6]"
-                >
-                  <FiLogIn className="mr-2" size={16} />
-                  Sign in
-                </button>
-              </div>
-            )}
-          </section>
+          </div>
         </div>
+
+        {/* Category Pills — unchanged */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-8">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition ${category === cat
+                ? "bg-z-primary text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Restaurant Grid — unchanged */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-white/5 animate-pulse">
+                <div className="h-44 bg-white/10 rounded-t-2xl" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-white/10 rounded w-3/4" />
+                  <div className="h-3 bg-white/10 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <img src="/zoomo-mascot.png" alt="No results" className="w-24 opacity-40 mb-4 animate-float" />
+            <p className="text-gray-500 text-lg font-medium">No restaurants found</p>
+            <p className="text-gray-600 text-sm mt-1">Try a different search or category</p>
+            <button onClick={() => { setQuery(""); setCategory("All"); }} className="mt-4 px-5 py-2 rounded-xl bg-z-primary text-white text-sm hover:bg-z-hover transition">
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="text-gray-500 text-sm mb-4">{filtered.length} restaurants available</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered.map(r => <RestaurantCard key={r.id} r={r} navigate={navigate} />)}
+            </div>
+          </>
+        )}
       </main>
+
+      {profileOpen && <ProfileDrawer user={user} onClose={() => setProfileOpen(false)} navigate={navigate} />}
+      <ChatWidget />
     </div>
   );
 }
