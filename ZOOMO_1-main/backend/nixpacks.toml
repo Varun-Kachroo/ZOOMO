@@ -2,8 +2,7 @@
 cmds = ["npm install --include=dev"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = ["npm run build", "npx prisma generate"]
 
 [start]
-cmd = "npx prisma migrate deploy && node dist/main"
-
+cmd = "npx prisma migrate deploy && npm run start:prod"

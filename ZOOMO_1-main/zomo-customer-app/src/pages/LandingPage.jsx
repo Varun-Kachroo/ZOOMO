@@ -425,8 +425,8 @@ export default function LandingPage() {
               key={cat}
               onClick={() => setCategory(cat)}
               className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition ${category === cat
-                  ? "bg-z-primary text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                  : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                ? "bg-z-primary text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
                 }`}
             >
               {cat}
