@@ -257,79 +257,89 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
       boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
       transition: "all 180ms ease-out",
     }}>
-      <div style={{
-        maxWidth: 1152, margin: "0 auto", padding: "12px 20px",
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12
+      <style>{`
+        .ze-nav-row { display:flex; align-items:center; gap:10px; }
+        .ze-nav-auth { display:flex; align-items:center; gap:8px; }
+        .ze-nav-auth-label { display:inline; }
+        @media (max-width: 560px) {
+          .ze-nav-row { gap:8px; }
+          .ze-nav-auth-label { display:none; }
+          .ze-nav-auth button, .ze-nav-auth a { padding:8px !important; }
+        }
+      `}</style>
+      <div className="ze-nav-row" style={{
+        maxWidth: 1152, margin: "0 auto", padding: "12px 16px",
+        justifyContent: "space-between"
       }}>
 
         <div style={{ cursor: "pointer", flexShrink: 0 }} onClick={() => navigate("/")}>
           <ZLogo />
         </div>
 
-        {/* Address pill */}
+        {/* Address pill — always visible, shrinks but never disappears */}
         <button
           onClick={onAddressClick}
           style={{
-            display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
+            display: "flex", alignItems: "center", gap: 7, padding: "8px 12px",
             borderRadius: 12, background: C.page, border: `1.5px solid ${C.border}`,
             fontSize: 13, color: address ? C.textMain : C.textSub, cursor: "pointer",
-            fontFamily: "inherit", flex: 1, maxWidth: 320, minWidth: 0,
+            fontFamily: "inherit", flex: "1 1 auto", minWidth: 0, maxWidth: 260,
             transition: "border-color 120ms, background 120ms", textAlign: "left"
           }}
           onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
           onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
         >
-          <span style={{ color: C.accent, flexShrink: 0 }}><Icon.MapPin /></span>
+          <span style={{ color: C.accent, flexShrink: 0, display: "flex" }}><Icon.MapPin /></span>
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: address ? 500 : 400 }}>
-            {address || "Set delivery location"}
+            {address || "Set location"}
           </span>
         </button>
 
-        {/* Right actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        {/* Right actions — fixed group, never wraps */}
+        <div className="ze-nav-auth" style={{ flexShrink: 0 }}>
           {user ? (
             <button
               onClick={onProfileOpen}
               style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
                 borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
                 color: C.textMain, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-                transition: "all 120ms"
+                transition: "all 120ms", flexShrink: 0
               }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
               onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
             >
               <Icon.User />
-              <span style={{ display: "none" }} className="sm:inline">{user.name?.split(" ")[0]}</span>
+              <span className="ze-nav-auth-label">{user.name?.split(" ")[0]}</span>
             </button>
           ) : (
             <>
               <button
                 onClick={() => navigate("/login")}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
                   borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
                   color: C.textSub, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 120ms"
+                  transition: "all 120ms", flexShrink: 0, whiteSpace: "nowrap"
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
               >
-                <Icon.LogIn /> Login
+                <Icon.LogIn /> <span className="ze-nav-auth-label">Login</span>
               </button>
               <button
                 onClick={() => navigate("/signup")}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "9px 16px",
+                  display: "flex", alignItems: "center", gap: 6, padding: "9px 14px",
                   borderRadius: 10, border: "none",
                   background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
                   color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 120ms", boxShadow: "0 2px 8px rgba(15,61,46,0.25)"
+                  transition: "all 120ms", boxShadow: "0 2px 8px rgba(15,61,46,0.25)", flexShrink: 0, whiteSpace: "nowrap"
                 }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,61,46,0.25)"}
               >
-                <Icon.UserPlus /> Sign up
+                <Icon.UserPlus /> <span className="ze-nav-auth-label">Sign up</span>
               </button>
             </>
           )}
@@ -337,7 +347,7 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
           <button
             onClick={() => navigate("/cart")}
             style={{
-              position: "relative", width: 40, height: 40, borderRadius: 10,
+              position: "relative", width: 38, height: 38, borderRadius: 10,
               border: `1.5px solid ${C.border}`, background: C.surface,
               display: "flex", alignItems: "center", justifyContent: "center",
               color: C.textSub, cursor: "pointer", transition: "all 120ms", flexShrink: 0
