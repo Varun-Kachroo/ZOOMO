@@ -917,7 +917,7 @@ export default function LandingPage() {
       {/* ── OFFER BANNER ── */}
       <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 20px" }}>
         <div style={{
-          marginTop: -28, position: "relative", zIndex: 10,
+          marginTop: 24, position: "relative", zIndex: 10,
           background: C.surface, borderRadius: 20, padding: "18px 24px",
           boxShadow: "0 4px 24px rgba(15,61,46,0.10)", border: `1px solid ${C.borderSoft}`,
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16
