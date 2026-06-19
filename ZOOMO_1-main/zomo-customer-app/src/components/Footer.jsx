@@ -1,51 +1,81 @@
-import { Link } from "react-router-dom";
-
-function ZLogo() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="8" fill="#0F3D2E" />
-      <path d="M8 10H22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M10 22H24" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-    </svg>
-  );
-}
+const C = {
+  primary: "#0F3D2E", accent: "#22C55E",
+};
 
 export default function Footer() {
   return (
-    <footer className="bg-z-card text-white mt-20 py-16 border-t border-white/5">
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10">
+    <footer style={{
+      background: C.primary, padding: "48px 20px 28px", marginTop: 64,
+      fontFamily: "'Poppins', system-ui, sans-serif"
+    }}>
+      <div style={{ maxWidth: 1152, margin: "0 auto" }}>
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+          gap: 32, marginBottom: 36
+        }}>
 
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <ZLogo />
-            <h2 className="text-2xl font-bold">Zoomo <span className="text-z-accent">Eats</span></h2>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center"
+              }}>
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                  <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+                  <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+                  <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+                </svg>
+              </div>
+              <span style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>
+                Zoomo <span style={{ color: C.accent }}>Eats</span>
+              </span>
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: "20px", maxWidth: 220 }}>
+              Fastest food delivery platform with real-time tracking & exciting offers.
+            </p>
           </div>
-          <p className="text-gray-400">
-            Fastest food delivery platform with real-time tracking & exciting offers.
-          </p>
+
+          <div>
+            <h3 style={{ color: "#fff", fontWeight: 600, fontSize: 13, marginBottom: 14, letterSpacing: "0.02em" }}>Explore</h3>
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+              {[["Restaurants", "/restaurants"], ["Offers", "#"], ["Support", "#"]].map(([label, href]) => (
+                <li key={label}>
+                  <a href={href} style={{
+                    color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none",
+                    transition: "color 120ms"
+                  }}
+                    onMouseEnter={e => e.target.style.color = "#fff"}
+                    onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}
+                  >{label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 style={{ color: "#fff", fontWeight: 600, fontSize: 13, marginBottom: 14, letterSpacing: "0.02em" }}>Legal</h3>
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+              {[["Terms & Conditions", "/terms"], ["Privacy Policy", "/privacy"]].map(([label, href]) => (
+                <li key={label}>
+                  <a href={href} style={{
+                    color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none",
+                    transition: "color 120ms"
+                  }}
+                    onMouseEnter={e => e.target.style.color = "#fff"}
+                    onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}
+                  >{label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Explore</h3>
-          <ul className="space-y-2 text-gray-400">
-            <li><a href="/restaurants" className="hover:text-z-accent transition">Restaurants</a></li>
-            <li><a href="/offers" className="hover:text-z-accent transition">Offers</a></li>
-            <li><a href="/support" className="hover:text-z-accent transition">Support</a></li>
-          </ul>
+        <div style={{
+          borderTop: "1px solid rgba(255,255,255,0.10)", paddingTop: 20,
+          color: "rgba(255,255,255,0.35)", fontSize: 12, textAlign: "center"
+        }}>
+          © {new Date().getFullYear()} Zoomo Eats. All rights reserved.
         </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Legal</h3>
-          <ul className="space-y-2 text-gray-400">
-            <li><a href="/terms" className="hover:text-z-accent transition">Terms & Conditions</a></li>
-            <li><a href="/privacy" className="hover:text-z-accent transition">Privacy Policy</a></li>
-          </ul>
-        </div>
-
-      </div>
-      <div className="text-center text-gray-500 mt-10">
-        © {new Date().getFullYear()} Zoomo Eats. All rights reserved.
       </div>
     </footer>
   );

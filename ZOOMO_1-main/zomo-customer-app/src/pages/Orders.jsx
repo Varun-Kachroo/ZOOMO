@@ -1,17 +1,33 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiPackage } from "react-icons/fi";
 import { api } from "../services/api";
 import { MascotLoader } from "./LandingPage";
 
+const C = {
+  page: "#F5F7F6", surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
+  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E5E7EB", borderSoft: "#F0F2F1",
+};
+
 const STATUS_STYLE = {
-  PENDING: "text-yellow-400 bg-yellow-400/10",
-  CONFIRMED: "text-blue-400 bg-blue-400/10",
-  PREPARING: "text-orange-400 bg-orange-400/10",
-  READYFORPICKUP: "text-purple-400 bg-purple-400/10",
-  OUTFORDELIVERY: "text-sky-400 bg-sky-400/10",
-  DELIVERED: "text-z-accent bg-z-accent/10",
-  CANCELLED: "text-red-400 bg-red-400/10",
+  PENDING: { color: "#D97706", bg: "#FEF3C7" },
+  CONFIRMED: { color: "#2563EB", bg: "#DBEAFE" },
+  PREPARING: { color: "#EA580C", bg: "#FFEDD5" },
+  READYFORPICKUP: { color: "#7C3AED", bg: "#EDE9FE" },
+  OUTFORDELIVERY: { color: "#0284C7", bg: "#E0F2FE" },
+  DELIVERED: { color: "#16A34A", bg: "#DCFCE7" },
+  CANCELLED: { color: "#DC2626", bg: "#FEE2E2" },
+};
+
+const Icon = {
+  ArrowLeft: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+  ),
+  Package: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7.5 4.27 9 5.15" /><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg>
+  ),
+  ChevronRight: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+  ),
 };
 
 export default function Orders() {
@@ -29,48 +45,80 @@ export default function Orders() {
   if (loading) return <MascotLoader text="Loading your orders..." />;
 
   return (
-    <div className="min-h-screen bg-z-page text-white">
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
-            <FiArrowLeft />
+    <div style={{ minHeight: "100vh", background: C.page, fontFamily: "'Poppins', system-ui, sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');`}</style>
+
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 20px 60px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+          <button onClick={() => navigate(-1)}
+            style={{
+              width: 38, height: 38, borderRadius: 12, border: `1.5px solid ${C.border}`,
+              background: C.surface, display: "flex", alignItems: "center", justifyContent: "center",
+              color: C.textSub, cursor: "pointer", transition: "all 120ms"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}>
+            <Icon.ArrowLeft />
           </button>
-          <h1 className="text-2xl font-bold">My Orders</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textMain, letterSpacing: "-0.015em" }}>My Orders</h1>
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-20">
-            <img src="/zoomo-mascot.png" alt="" className="w-24 opacity-30 mx-auto mb-4 animate-float" />
-            <h2 className="text-xl font-bold text-white mb-2">No orders yet!</h2>
-            <p className="text-gray-500 text-sm mb-5">Start exploring restaurants and place your first order</p>
-            <button onClick={() => navigate("/restaurants")} className="px-6 py-3 rounded-2xl bg-z-primary text-white font-semibold hover:bg-z-hover transition">
+          <div style={{ textAlign: "center", padding: "64px 20px" }}>
+            <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.6 }}>📦</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>No orders yet!</h2>
+            <p style={{ color: C.textSub, fontSize: 14, marginBottom: 22 }}>Start exploring restaurants and place your first order</p>
+            <button onClick={() => navigate("/restaurants")}
+              style={{
+                padding: "13px 26px", borderRadius: 16, border: "none",
+                background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+                color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+                boxShadow: "0 4px 16px rgba(15,61,46,0.25)"
+              }}>
               Browse Restaurants
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {orders.map(order => (
-              <div
-                key={order.id}
-                onClick={() => navigate(`/orders/${order.id}`)}
-                className="cursor-pointer p-5 rounded-2xl bg-z-card border border-white/10 hover:border-z-accent/30 hover:shadow-[0_0_20px_rgba(34,197,94,0.1)] transition"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <FiPackage className="text-z-accent" size={16} />
-                    <span className="font-semibold text-white text-sm">Order #{order.id.slice(0, 6).toUpperCase()}</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {orders.map(order => {
+              const statusStyle = STATUS_STYLE[order.status] || { color: C.textSub, bg: C.borderSoft };
+              return (
+                <div key={order.id} onClick={() => navigate(`/orders/${order.id}`)}
+                  style={{
+                    cursor: "pointer", padding: 18, borderRadius: 18, background: C.surface,
+                    border: `1px solid ${C.border}`, transition: "all 120ms"
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent + "60"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(34,197,94,0.08)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = "none"; }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <Icon.Package />
+                      <span style={{ fontWeight: 700, fontSize: 14, color: C.textMain }}>
+                        Order #{order.id.slice(0, 6).toUpperCase()}
+                      </span>
+                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8,
+                      color: statusStyle.color, background: statusStyle.bg
+                    }}>
+                      {order.status.replace(/_/g, " ")}
+                    </span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-lg font-medium ${STATUS_STYLE[order.status] || "text-gray-400 bg-white/10"}`}>
-                    {order.status.replace(/_/g, " ")}
-                  </span>
+                  <p style={{ color: C.textSub, fontSize: 13 }}>{order.restaurant?.name || "Restaurant"}</p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+                    <span style={{ color: C.textMuted, fontSize: 12 }}>
+                      {new Date(order.createdAt).toLocaleString()}
+                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: C.textMain }}>
+                        ₹{order.total ?? order.subtotal}
+                      </span>
+                      <Icon.ChevronRight />
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-400 text-sm">{order.restaurant?.name || "Restaurant"}</p>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-gray-500 text-xs">{new Date(order.createdAt).toLocaleString()}</span>
-                  <span className="text-white font-bold text-sm">₹{order.total ?? order.subtotal}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

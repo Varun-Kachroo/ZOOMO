@@ -1,15 +1,37 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiArrowLeft } from "react-icons/fi";
 import { api } from "../services/api";
 import { MascotLoader } from "./LandingPage";
 
-const STATUS_STYLE = {
-  PENDING: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
-  PREPARING: "text-orange-400 bg-orange-400/10 border-orange-400/20",
-  DELIVERED: "text-z-accent bg-z-accent/10 border-z-accent/20",
-  CANCELLED: "text-red-400 bg-red-400/10 border-red-400/20",
+const C = {
+  page: "#F5F7F6", surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
+  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E5E7EB", borderSoft: "#F0F2F1",
 };
+
+const STATUS_STYLE = {
+  PENDING: { color: "#D97706", bg: "#FEF3C7" },
+  CONFIRMED: { color: "#2563EB", bg: "#DBEAFE" },
+  PREPARING: { color: "#EA580C", bg: "#FFEDD5" },
+  READYFORPICKUP: { color: "#7C3AED", bg: "#EDE9FE" },
+  OUTFORDELIVERY: { color: "#0284C7", bg: "#E0F2FE" },
+  DELIVERED: { color: "#16A34A", bg: "#DCFCE7" },
+  CANCELLED: { color: "#DC2626", bg: "#FEE2E2" },
+};
+
+const Icon = {
+  ArrowLeft: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+  ),
+};
+
+function Card({ title, children }) {
+  return (
+    <div style={{ padding: 20, borderRadius: 18, background: C.surface, border: `1px solid ${C.border}` }}>
+      <h3 style={{ fontWeight: 700, fontSize: 14, color: C.textMain, marginBottom: 12 }}>{title}</h3>
+      {children}
+    </div>
+  );
+}
 
 export default function OrderDetails() {
   const { id } = useParams();
@@ -25,40 +47,60 @@ export default function OrderDetails() {
   }, [id]);
 
   if (loading) return <MascotLoader text="Loading order details..." />;
+
   if (!order) return (
-    <div className="min-h-screen bg-z-page flex items-center justify-center">
-      <p className="text-gray-500">Order not found</p>
+    <div style={{
+      minHeight: "100vh", background: C.page, display: "flex", alignItems: "center",
+      justifyContent: "center", fontFamily: "'Poppins', system-ui, sans-serif"
+    }}>
+      <p style={{ color: C.textSub }}>Order not found</p>
     </div>
   );
 
+  const statusStyle = STATUS_STYLE[order.status] || { color: C.textSub, bg: C.borderSoft };
+
   return (
-    <div className="min-h-screen bg-z-page text-white">
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate("/orders")} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
-            <FiArrowLeft />
+    <div style={{ minHeight: "100vh", background: C.page, fontFamily: "'Poppins', system-ui, sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');`}</style>
+
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "28px 20px 60px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+          <button onClick={() => navigate("/orders")}
+            style={{
+              width: 38, height: 38, borderRadius: 12, border: `1.5px solid ${C.border}`,
+              background: C.surface, display: "flex", alignItems: "center", justifyContent: "center",
+              color: C.textSub, cursor: "pointer", transition: "all 120ms"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}>
+            <Icon.ArrowLeft />
           </button>
-          <h1 className="text-xl font-bold">Order #{order.id.slice(0, 6).toUpperCase()}</h1>
-          <span className={`ml-auto text-xs px-3 py-1 rounded-xl border font-medium ${STATUS_STYLE[order.status] || "text-gray-400 bg-white/10 border-white/10"}`}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: C.textMain, flex: 1 }}>
+            Order #{order.id.slice(0, 6).toUpperCase()}
+          </h1>
+          <span style={{
+            fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 8,
+            color: statusStyle.color, background: statusStyle.bg, whiteSpace: "nowrap"
+          }}>
             {order.status}
           </span>
         </div>
 
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
           {/* Restaurant */}
           <Card title="Restaurant">
-            <p className="text-white font-medium">{order.restaurant?.name}</p>
-            <p className="text-gray-400 text-xs mt-0.5">{new Date(order.createdAt).toLocaleString()}</p>
+            <p style={{ fontWeight: 600, fontSize: 14, color: C.textMain }}>{order.restaurant?.name}</p>
+            <p style={{ color: C.textMuted, fontSize: 12, marginTop: 3 }}>{new Date(order.createdAt).toLocaleString()}</p>
           </Card>
 
           {/* Items */}
           <Card title="Items Ordered">
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {order.items.map(item => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <span className="text-gray-300">{item.dish.name} × {item.quantity}</span>
-                  <span className="text-white font-medium">₹{item.dish.price * item.quantity}</span>
+                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+                  <span style={{ color: C.textSub }}>{item.dish.name} × {item.quantity}</span>
+                  <span style={{ fontWeight: 600, color: C.textMain }}>₹{item.dish.price * item.quantity}</span>
                 </div>
               ))}
             </div>
@@ -66,11 +108,14 @@ export default function OrderDetails() {
 
           {/* Bill */}
           <Card title="Bill Summary">
-            <div className="space-y-2 text-sm text-gray-400">
-              {order.subtotal && <div className="flex justify-between"><span>Subtotal</span><span>₹{order.subtotal}</span></div>}
-              {order.deliveryFee && <div className="flex justify-between"><span>Delivery</span><span>₹{order.deliveryFee}</span></div>}
-              {order.tax && <div className="flex justify-between"><span>Tax</span><span>₹{order.tax}</span></div>}
-              <div className="flex justify-between text-white font-bold text-base border-t border-white/10 pt-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: C.textSub }}>
+              {order.subtotal && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Subtotal</span><span>₹{order.subtotal}</span></div>}
+              {order.deliveryFee && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Delivery</span><span>₹{order.deliveryFee}</span></div>}
+              {order.tax && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Tax</span><span>₹{order.tax}</span></div>}
+              <div style={{
+                display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 15,
+                color: C.textMain, borderTop: `1px solid ${C.borderSoft}`, paddingTop: 10, marginTop: 2
+              }}>
                 <span>Total</span><span>₹{order.total}</span>
               </div>
             </div>
@@ -79,25 +124,24 @@ export default function OrderDetails() {
           {/* Payment */}
           {order.payment && (
             <Card title="Payment">
-              <div className="text-sm space-y-1 text-gray-300">
-                <div className="flex justify-between"><span>Method</span><span className="text-white">{order.payment.provider}</span></div>
-                <div className="flex justify-between"><span>Status</span><span className="text-z-accent">{order.payment.status}</span></div>
-                <div className="flex justify-between"><span>Amount</span><span className="text-white">₹{order.payment.amount}</span></div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: C.textSub }}>Method</span>
+                  <span style={{ color: C.textMain, fontWeight: 600 }}>{order.payment.provider}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: C.textSub }}>Status</span>
+                  <span style={{ color: C.accent, fontWeight: 600 }}>{order.payment.status}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: C.textSub }}>Amount</span>
+                  <span style={{ color: C.textMain, fontWeight: 600 }}>₹{order.payment.amount}</span>
+                </div>
               </div>
             </Card>
           )}
-
         </div>
       </div>
-    </div>
-  );
-}
-
-function Card({ title, children }) {
-  return (
-    <div className="p-5 rounded-2xl bg-z-card border border-white/10">
-      <h3 className="font-semibold text-white mb-3 text-sm">{title}</h3>
-      {children}
     </div>
   );
 }

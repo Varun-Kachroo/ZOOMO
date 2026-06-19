@@ -1,86 +1,181 @@
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiShoppingCart, FiUser, FiLogIn, FiUserPlus, FiMapPin } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
-// Inline SVG Z-mark — replaces zoomo-logo.png
+const C = {
+  surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
+  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF",
+  border: "#E5E7EB", borderSoft: "#F0F2F1",
+};
+
 function ZLogo() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="8" fill="#0F3D2E" />
-      <path d="M8 10H22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M10 22H24" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-    </svg>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{
+        width: 34, height: 34, borderRadius: 10, background: C.primary,
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+      }}>
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+          <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+        </svg>
+      </div>
+      <span style={{ fontWeight: 700, fontSize: 17, color: C.textMain, letterSpacing: "-0.01em" }}>
+        Zoomo <span style={{ color: C.accent }}>Eats</span>
+      </span>
+    </div>
   );
 }
+
+const Icon = {
+  MapPin: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  User: () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  LogIn: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
+    </svg>
+  ),
+  UserPlus: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  ),
+  Cart: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
+  ),
+};
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { cart } = useCart();
   const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 6);
+    window.addEventListener("scroll", h);
+    return () => window.removeEventListener("scroll", h);
+  }, []);
 
   const address = localStorage.getItem("ze_address");
   const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
   return (
-    <header className="sticky top-0 z-40 bg-z-gradient backdrop-blur-xl border-b border-white/10">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <header style={{
+      position: "sticky", top: 0, zIndex: 40,
+      background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.93)",
+      backdropFilter: "blur(16px)",
+      borderBottom: `1px solid ${scrolled ? C.border : C.borderSoft}`,
+      boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
+      transition: "all 180ms ease-out",
+      fontFamily: "'Poppins', system-ui, sans-serif",
+    }}>
+      <div style={{
+        maxWidth: 1152, margin: "0 auto", padding: "12px 20px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12
+      }}>
 
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
+        <Link to="/" style={{ flexShrink: 0, textDecoration: "none" }}>
           <ZLogo />
-          <span className="text-white font-bold text-lg hidden sm:block">
-            Zoomo <span className="text-z-accent">Eats</span>
-          </span>
         </Link>
 
-        {/* Address pill */}
         {address && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm min-w-0 flex-1 max-w-xs">
-            <FiMapPin className="text-z-accent shrink-0" size={14} />
-            <span className="text-gray-300 truncate">{address}</span>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
+            borderRadius: 12, background: "#F5F7F6", border: `1.5px solid ${C.border}`,
+            fontSize: 13, color: C.textMain, flex: 1, maxWidth: 320, minWidth: 0
+          }}>
+            <span style={{ color: C.accent, flexShrink: 0 }}><Icon.MapPin /></span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{address}</span>
           </div>
         )}
 
-        {/* Right actions */}
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: "auto" }}>
           {user ? (
             <>
-              <button
-                onClick={() => navigate("/orders")}
-                className="p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition flex items-center gap-2 text-sm"
+              <button onClick={() => navigate("/orders")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                  borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
+                  color: C.textMain, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 120ms"
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
               >
-                <FiUser size={15} />
-                <span className="hidden sm:block">{user.name?.split(" ")[0]}</span>
+                <Icon.User /> {user.name?.split(" ")[0]}
               </button>
-              <button
-                onClick={logout}
-                className="hidden sm:block p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition text-sm"
+              <button onClick={logout}
+                style={{
+                  padding: "8px 14px", borderRadius: 10, border: "1.5px solid #FECACA",
+                  background: "#FFF5F5", color: "#DC2626", fontSize: 13, fontWeight: 500,
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 120ms"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
+                onMouseLeave={e => e.currentTarget.style.background = "#FFF5F5"}
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition text-sm">
-                <FiLogIn size={14} /> Login
+              <Link to="/login"
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                  borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
+                  color: C.textSub, fontSize: 13, fontWeight: 500, textDecoration: "none",
+                  transition: "all 120ms"
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
+              >
+                <Icon.LogIn /> Login
               </Link>
-              <Link to="/signup" className="flex items-center gap-1 p-2 px-3 rounded-xl bg-z-primary hover:bg-z-hover text-white transition text-sm">
-                <FiUserPlus size={14} /> <span className="hidden sm:block">Sign up</span>
+              <Link to="/signup"
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "9px 16px",
+                  borderRadius: 10, background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+                  color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  boxShadow: "0 2px 8px rgba(15,61,46,0.25)", transition: "all 120ms"
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,61,46,0.25)"}
+              >
+                <Icon.UserPlus /> Sign up
               </Link>
             </>
           )}
 
-          {/* Cart with live count */}
-          <button
-            onClick={() => navigate("/cart")}
-            className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition"
+          <button onClick={() => navigate("/cart")}
+            style={{
+              position: "relative", width: 40, height: 40, borderRadius: 10,
+              border: `1.5px solid ${C.border}`, background: C.surface,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: C.textSub, cursor: "pointer", transition: "all 120ms", flexShrink: 0
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
           >
-            <FiShoppingCart size={18} />
+            <Icon.Cart />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-z-accent text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+              <span style={{
+                position: "absolute", top: -6, right: -6, width: 18, height: 18,
+                background: C.accent, color: "#fff", fontSize: 10, fontWeight: 700,
+                borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                border: "2px solid #fff"
+              }}>
                 {cartCount}
               </span>
             )}

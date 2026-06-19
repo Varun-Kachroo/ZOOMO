@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiMapPin, FiTag, FiX, FiCheck, FiClock, FiHeart } from "react-icons/fi";
 import { api } from "../services/api";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { MascotLoader } from "./LandingPage";
+
+const C = {
+  page: "#F5F7F6", surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
+  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E5E7EB", borderSoft: "#F0F2F1",
+  error: "#DC2626", pink: "#EC4899",
+};
 
 const PROMO_CODES = {
   ZOOMO50: { type: "percent", value: 50, label: "50% off", max: 100 },
@@ -13,75 +18,98 @@ const PROMO_CODES = {
   HEALTHY20: { type: "percent", value: 20, label: "20% off", max: 80 },
   NEWUSER: { type: "flat", value: 80, label: "₹80 off", max: null },
 };
-
 const TIP_OPTIONS = [0, 10, 20, 30, 50];
+
+const Icon = {
+  ArrowLeft: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+  ),
+  MapPin: ({ color }) => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+  ),
+  Tag: ({ size = 15 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg>
+  ),
+  X: ({ size = 14 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+  ),
+  Check: ({ size = 12 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+  ),
+  Clock: ({ size = 15 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+  ),
+  Heart: ({ size = 15, color }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+  ),
+};
 
 /* ── Order Success Animation ── */
 function OrderSuccessAnimation({ onDone }) {
   const [stage, setStage] = useState("enter");
-
   useEffect(() => {
-    const t1 = setTimeout(() => setStage("celebrate"), 600);
+    const t1 = setTimeout(() => setStage("celebrate"), 500);
     const t2 = setTimeout(() => setStage("exit"), 3200);
-    const t3 = setTimeout(() => onDone(), 3800);
+    const t3 = setTimeout(() => onDone(), 3700);
     return () => [t1, t2, t3].forEach(clearTimeout);
   }, []);
 
   return (
-    <div className={`fixed inset-0 z-[999] bg-z-page flex flex-col items-center justify-center gap-6 transition-opacity duration-500 ${stage === "exit" ? "opacity-0" : "opacity-100"}`}>
-      <div className="relative flex items-center justify-center">
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 999, background: C.page,
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24,
+      opacity: stage === "exit" ? 0 : 1, transition: "opacity 500ms"
+    }}>
+      <style>{`
+        @keyframes ping { 75%,100%{transform:scale(1.8);opacity:0} }
+        @keyframes confettiFall { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(30px) rotate(180deg)} }
+      `}</style>
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
         {stage === "celebrate" && (
           <>
-            <div className="absolute w-40 h-40 rounded-full border-2 border-z-accent/30 animate-ping" />
-            <div className="absolute w-56 h-56 rounded-full border border-z-accent/10 animate-ping" style={{ animationDelay: "0.3s" }} />
+            <div style={{
+              position: "absolute", width: 140, height: 140, borderRadius: "50%",
+              border: `2px solid ${C.accent}40`, animation: "ping 1.5s infinite"
+            }} />
+            <div style={{
+              position: "absolute", width: 190, height: 190, borderRadius: "50%",
+              border: `1px solid ${C.accent}20`, animation: "ping 1.5s infinite", animationDelay: "0.3s"
+            }} />
           </>
         )}
-        <div className={`relative z-10 transition-all duration-500 ${stage === "enter" ? "scale-0 opacity-0" : stage === "celebrate" ? "scale-110 opacity-100" : "scale-100 opacity-100"}`}>
-          <img src="/zoomo-mascot.png" alt="Zoomo" className={`w-32 h-32 ${stage === "celebrate" ? "animate-wiggle" : "animate-float"}`} />
-          <div className="absolute inset-0 rounded-full bg-z-accent/20 blur-2xl -z-10" />
+        <div style={{
+          position: "relative", zIndex: 10, width: 110, height: 110, borderRadius: "50%",
+          background: C.primary, display: "flex", alignItems: "center", justifyContent: "center",
+          transform: stage === "enter" ? "scale(0)" : stage === "celebrate" ? "scale(1.1)" : "scale(1)",
+          transition: "all 500ms"
+        }}>
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
+            <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+            <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+            <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          </svg>
         </div>
+        {stage === "celebrate" && [...Array(16)].map((_, i) => (
+          <div key={i} style={{
+            position: "absolute", width: 7, height: 7, borderRadius: "50%",
+            background: ["#22C55E", "#34D399", "#6EE7B7", "#0F3D2E", "#F59E0B"][i % 5],
+            left: `${50 + Math.cos(i * 22.5 * Math.PI / 180) * 90}px`,
+            top: `${50 + Math.sin(i * 22.5 * Math.PI / 180) * 90}px`,
+            animation: `confettiFall 1.2s ease-in ${i * 0.05}s infinite`
+          }} />
+        ))}
       </div>
-
-      {stage === "celebrate" && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <div key={i} className="absolute w-2 h-2 rounded-full animate-bounce"
-              style={{
-                backgroundColor: ["#22C55E", "#34d399", "#6ee7b7", "#fff", "#fbbf24"][i % 5],
-                left: `${5 + (i * 4.7) % 90}%`,
-                top: `${10 + (i * 7.3) % 70}%`,
-                animationDelay: `${(i * 0.1) % 0.8}s`,
-                animationDuration: `${0.6 + (i % 4) * 0.2}s`,
-                opacity: 0.7 + (i % 3) * 0.1,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className={`text-center transition-all duration-500 ${stage === "enter" ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-z-primary flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12"
-                style={{
-                  strokeDasharray: 30,
-                  strokeDashoffset: stage === "celebrate" ? 0 : 30,
-                  transition: "stroke-dashoffset 0.5s ease 0.3s",
-                }}
-              />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-extrabold text-white">Order Placed!</h2>
-        </div>
-        <p className="text-z-accent font-medium text-sm">Zoomo is on it! 🍔 Your food is being prepared.</p>
-        <p className="text-gray-500 text-xs mt-1">You'll receive updates in My Orders</p>
+      <div style={{ textAlign: "center", opacity: stage === "enter" ? 0 : 1, transition: "opacity 500ms" }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>Order Placed! 🎉</h2>
+        <p style={{ color: C.primary, fontWeight: 600, fontSize: 14 }}>Zoomo is on it! Your food is being prepared.</p>
+        <p style={{ color: C.textMuted, fontSize: 12, marginTop: 4 }}>You'll receive updates in My Orders</p>
       </div>
-
-      <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-        <div className="h-full bg-z-accent rounded-full transition-all ease-linear"
-          style={{ width: stage === "celebrate" ? "100%" : "0%", transitionDuration: stage === "celebrate" ? "2600ms" : "0ms" }}
-        />
+      <div style={{ width: 200, height: 4, background: C.borderSoft, borderRadius: 999, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", background: C.accent, borderRadius: 999,
+          width: stage === "celebrate" ? "100%" : "0%",
+          transition: stage === "celebrate" ? "width 2600ms linear" : "none"
+        }} />
       </div>
     </div>
   );
@@ -91,7 +119,6 @@ function OrderSuccessAnimation({ onDone }) {
 function PromoFlash({ promo, onDone }) {
   const [visible, setVisible] = useState(true);
   const [popped, setPopped] = useState(false);
-
   useEffect(() => {
     const t0 = setTimeout(() => setPopped(true), 50);
     const t1 = setTimeout(() => setVisible(false), 2400);
@@ -100,31 +127,32 @@ function PromoFlash({ promo, onDone }) {
   }, []);
 
   return (
-    <div className={`fixed inset-0 z-[998] pointer-events-none flex items-end justify-center pb-28 transition-all duration-500 ${visible ? "opacity-100" : "opacity-0 translate-y-4"}`}>
-      <div className={`relative flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all duration-500 ease-out bg-z-card2 border-z-accent/40 shadow-[0_0_60px_rgba(34,197,94,0.35)] ${popped ? "scale-100 translate-y-0 opacity-100" : "scale-75 translate-y-6 opacity-0"}`}>
-        <div className="absolute inset-0 rounded-2xl bg-z-accent/5 blur-xl" />
-        <div className={`relative w-10 h-10 rounded-full bg-z-accent/20 border border-z-accent/30 flex items-center justify-center transition-transform duration-700 ${popped ? "rotate-0" : "-rotate-45"}`}>
-          <FiTag className="text-z-accent" size={18} />
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 998, pointerEvents: "none", display: "flex",
+      alignItems: "flex-end", justifyContent: "center", paddingBottom: 112,
+      opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+      transition: "all 500ms"
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 14, padding: "16px 22px", borderRadius: 18,
+        background: C.surface, border: `1px solid ${C.accent}50`, boxShadow: "0 8px 40px rgba(34,197,94,0.25)",
+        transform: popped ? "scale(1) translateY(0)" : "scale(0.8) translateY(20px)",
+        opacity: popped ? 1 : 0, transition: "all 400ms ease-out"
+      }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: "50%", background: `${C.accent}20`,
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          transform: popped ? "rotate(0)" : "rotate(-45deg)", transition: "transform 600ms"
+        }}>
+          <Icon.Tag size={17} />
         </div>
-        <div className="relative">
-          <p className="text-white font-bold text-sm tracking-wide">
-            🎉 <span className="text-z-accent">{promo.code}</span> applied!
+        <div>
+          <p style={{ fontWeight: 700, fontSize: 14, color: C.textMain }}>
+            🎉 <span style={{ color: C.accent }}>{promo.code}</span> applied!
           </p>
-          <p className="text-z-primary text-xs mt-0.5">{promo.label} saved on your order</p>
-        </div>
-        <div className="absolute bottom-0 left-0 h-[2px] w-full rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-transparent via-z-accent to-transparent"
-            style={{ animation: popped ? "shimmer 2s linear forwards" : "none" }}
-          />
+          <p style={{ color: C.primary, fontSize: 12, marginTop: 1 }}>{promo.label} saved on your order</p>
         </div>
       </div>
-      <style>{`
-        @keyframes shimmer {
-          0%   { transform: translateX(-100%); opacity: 1; }
-          100% { transform: translateX(100%);  opacity: 0.3; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -132,14 +160,33 @@ function PromoFlash({ promo, onDone }) {
 /* ── Section wrapper ── */
 function Section({ title, children }) {
   return (
-    <div className="mb-5 p-5 rounded-2xl bg-z-card border border-white/10 space-y-3">
-      <h3 className="font-semibold text-white flex items-center">{title}</h3>
-      {children}
+    <div style={{
+      marginBottom: 16, padding: 20, borderRadius: 20, background: C.surface,
+      border: `1px solid ${C.border}`
+    }}>
+      <h3 style={{ fontWeight: 700, fontSize: 14, color: C.textMain, marginBottom: 14 }}>{title}</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
     </div>
   );
 }
 
-/* ── Main Checkout ── */
+/* ── Toggle switch ── */
+function Toggle({ checked, onChange }) {
+  return (
+    <button onClick={onChange}
+      style={{
+        position: "relative", width: 44, height: 24, borderRadius: 999, border: "none",
+        background: checked ? C.primary : C.borderSoft, cursor: "pointer", transition: "background 200ms"
+      }}>
+      <span style={{
+        position: "absolute", top: 2, left: checked ? 22 : 2, width: 20, height: 20,
+        borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+        transition: "left 200ms"
+      }} />
+    </button>
+  );
+}
+
 export default function Checkout() {
   const { cart, getSubtotal, clearCart } = useCart();
   const { user } = useAuth();
@@ -202,19 +249,14 @@ export default function Checkout() {
     const code = promoInput.trim().toUpperCase();
     if (!code) return;
     const found = PROMO_CODES[code];
-    if (!found) {
-      setPromoError("Invalid promo code. Try ZOOMO50, BOGO or FREESHIP.");
-      return;
-    }
+    if (!found) { setPromoError("Invalid promo code. Try ZOOMO50, BOGO or FREESHIP."); return; }
     setAppliedPromo({ code, ...found });
     setPromoInput("");
     setShowPromoFlash(true);
   }
 
   function removePromo() {
-    setAppliedPromo(null);
-    setPromoError("");
-    setPromoInput("");
+    setAppliedPromo(null); setPromoError(""); setPromoInput("");
   }
 
   async function saveAddress() {
@@ -259,9 +301,7 @@ export default function Checkout() {
   const subtotal = parseFloat(getSubtotal().toFixed(2));
   const delivery = appliedPromo?.type === "ship" ? 0 : 29;
   const tax = parseFloat((subtotal * 0.05).toFixed(2));
-  const tipAmount = showCustomTip && customTip
-    ? parseFloat(parseFloat(customTip).toFixed(2)) || 0
-    : tip;
+  const tipAmount = showCustomTip && customTip ? parseFloat(parseFloat(customTip).toFixed(2)) || 0 : tip;
 
   let discount = 0;
   if (appliedPromo) {
@@ -273,155 +313,179 @@ export default function Checkout() {
   }
 
   const total = (
-    Math.round(subtotal * 100) +
-    Math.round(delivery * 100) +
-    Math.round(tax * 100) +
-    Math.round(tipAmount * 100) -
-    Math.round(discount * 100)
+    Math.round(subtotal * 100) + Math.round(delivery * 100) + Math.round(tax * 100) +
+    Math.round(tipAmount * 100) - Math.round(discount * 100)
   ) / 100;
 
+  const inputStyle = {
+    width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.border}`,
+    background: C.surface, color: C.textMain, fontSize: 13, outline: "none", fontFamily: "inherit",
+    transition: "border-color 120ms",
+  };
+
   return (
-    <div className="min-h-screen bg-z-page text-white pb-10">
+    <div style={{
+      minHeight: "100vh", background: C.page, paddingBottom: 40,
+      fontFamily: "'Poppins', system-ui, sans-serif"
+    }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');`}</style>
 
       {showSuccess && <OrderSuccessAnimation onDone={() => navigate("/orders")} />}
-      {showPromoFlash && appliedPromo && (
-        <PromoFlash promo={appliedPromo} onDone={() => setShowPromoFlash(false)} />
-      )}
+      {showPromoFlash && appliedPromo && <PromoFlash promo={appliedPromo} onDone={() => setShowPromoFlash(false)} />}
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 20px" }}>
 
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition">
-            <FiArrowLeft />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+          <button onClick={() => navigate(-1)}
+            style={{
+              width: 38, height: 38, borderRadius: 12, border: `1.5px solid ${C.border}`,
+              background: C.surface, display: "flex", alignItems: "center", justifyContent: "center",
+              color: C.textSub, cursor: "pointer"
+            }}>
+            <Icon.ArrowLeft />
           </button>
-          <h1 className="text-2xl font-bold">Checkout</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textMain, letterSpacing: "-0.015em" }}>Checkout</h1>
         </div>
 
         {/* Delivery Address */}
         <Section title="Delivery Address">
           {!showForm && addresses.map(a => (
-            <label key={a.id} className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${selectedAddress === a.id ? "border-z-accent bg-z-accent/10" : "border-white/10 bg-white/5"}`}>
-              <input type="radio" checked={selectedAddress === a.id} onChange={() => setSelectedAddress(a.id)} className="mt-1 accent-z-primary" />
+            <label key={a.id} style={{
+              display: "flex", alignItems: "flex-start", gap: 10, padding: 14,
+              borderRadius: 14, border: `1.5px solid ${selectedAddress === a.id ? C.accent : C.border}`,
+              background: selectedAddress === a.id ? `${C.accent}0D` : C.page, cursor: "pointer"
+            }}>
+              <input type="radio" checked={selectedAddress === a.id} onChange={() => setSelectedAddress(a.id)}
+                style={{ marginTop: 3, accentColor: C.primary }} />
               <div>
-                <FiMapPin className="text-z-accent inline mr-1" size={13} />
-                <span className="text-white text-sm font-medium">{a.street}</span>
-                <p className="text-gray-400 text-xs mt-0.5">{a.city}, {a.state} - {a.zipCode}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <Icon.MapPin color={C.accent} />
+                  <span style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{a.street}</span>
+                </div>
+                <p style={{ color: C.textSub, fontSize: 12, marginTop: 3 }}>{a.city}, {a.state} - {a.zipCode}</p>
               </div>
             </label>
           ))}
           {showForm && (
-            <div className="space-y-3">
+            <>
               {["street", "city", "state", "zipCode"].map(f => (
                 <input key={f} placeholder={f[0].toUpperCase() + f.slice(1)} value={form[f]}
                   onChange={e => setForm({ ...form, [f]: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm"
-                />
+                  style={inputStyle}
+                  onFocus={e => e.target.style.borderColor = C.primary}
+                  onBlur={e => e.target.style.borderColor = C.border} />
               ))}
-              <div className="flex gap-3">
-                <button onClick={saveAddress} className="flex-1 py-3 rounded-xl bg-z-primary text-white text-sm font-semibold hover:bg-z-hover transition">Save Address</button>
-                {addresses.length > 0 && <button onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm">Cancel</button>}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={saveAddress}
+                  style={{
+                    flex: 1, padding: "12px", borderRadius: 12, border: "none", background: C.primary,
+                    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                  }}>
+                  Save Address
+                </button>
+                {addresses.length > 0 && (
+                  <button onClick={() => setShowForm(false)}
+                    style={{
+                      flex: 1, padding: "12px", borderRadius: 12, border: `1.5px solid ${C.border}`,
+                      background: "transparent", color: C.textSub, fontSize: 13, cursor: "pointer", fontFamily: "inherit"
+                    }}>
+                    Cancel
+                  </button>
+                )}
               </div>
-            </div>
+            </>
           )}
           {!showForm && (
-            <button onClick={() => setShowForm(true)} className="text-z-accent text-sm hover:underline">+ Add new address</button>
+            <button onClick={() => setShowForm(true)}
+              style={{
+                background: "none", border: "none", color: C.primary, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: "inherit", textAlign: "left", padding: 0
+              }}>
+              + Add new address
+            </button>
           )}
         </Section>
 
         {/* Schedule Delivery */}
         <Section title={
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FiClock className="text-z-accent" size={15} />
-              <span>Schedule Delivery</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Icon.Clock color={C.accent} /><span>Schedule Delivery</span>
             </div>
-            <button
-              onClick={() => setScheduleDelivery(v => !v)}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${scheduleDelivery ? "bg-z-primary" : "bg-white/10"}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${scheduleDelivery ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
+            <Toggle checked={scheduleDelivery} onChange={() => setScheduleDelivery(v => !v)} />
           </div>
         }>
           {!scheduleDelivery ? (
-            <p className="text-gray-500 text-xs">Deliver as soon as possible (25–40 min)</p>
+            <p style={{ color: C.textMuted, fontSize: 12 }}>Deliver as soon as possible (25–40 min)</p>
           ) : (
-            <div className="space-y-3">
-              <p className="text-gray-400 text-xs">Pick a date and time for your delivery</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <>
+              <p style={{ color: C.textSub, fontSize: 12 }}>Pick a date and time for your delivery</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Date</label>
-                  <input
-                    type="date"
-                    min={minDate}
-                    value={scheduleDate}
-                    onChange={e => setScheduleDate(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-z-accent [color-scheme:dark]"
-                  />
+                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Date</label>
+                  <input type="date" min={minDate} value={scheduleDate}
+                    onChange={e => setScheduleDate(e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Time</label>
-                  <select
-                    value={scheduleTime}
-                    onChange={e => setScheduleTime(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-z-accent"
-                  >
-                    <option value="" className="bg-black">Select time</option>
-                    {getTimeSlots().map(t => (
-                      <option key={t} value={t} className="bg-black">{t}</option>
-                    ))}
+                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Time</label>
+                  <select value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} style={inputStyle}>
+                    <option value="">Select time</option>
+                    {getTimeSlots().map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
               {scheduleDate && scheduleTime && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-z-accent/10 border border-z-accent/20 text-z-accent text-xs">
-                  <FiCheck size={12} />
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10,
+                  background: `${C.accent}15`, border: `1px solid ${C.accent}30`, color: C.primary, fontSize: 12
+                }}>
+                  <Icon.Check />
                   Scheduled for {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                 </div>
               )}
-            </div>
+            </>
           )}
         </Section>
 
         {/* Tip */}
         <Section title={
-          <div className="flex items-center gap-2">
-            <FiHeart className="text-pink-400" size={15} />
-            <span>Tip Your Delivery Partner</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Icon.Heart color={C.pink} /><span>Tip Your Delivery Partner</span>
           </div>
         }>
-          <p className="text-gray-500 text-xs">100% of the tip goes directly to your delivery partner 💚</p>
-          <div className="flex gap-2 flex-wrap mt-1">
+          <p style={{ color: C.textMuted, fontSize: 12 }}>100% of the tip goes directly to your delivery partner 💚</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {TIP_OPTIONS.map(t => (
-              <button
-                key={t}
-                onClick={() => { setTip(t); setShowCustomTip(false); setCustomTip(""); }}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${tip === t && !showCustomTip
-                  ? "bg-pink-500/20 border-pink-500/50 text-pink-300"
-                  : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
-                  }`}
-              >
+              <button key={t} onClick={() => { setTip(t); setShowCustomTip(false); setCustomTip(""); }}
+                style={{
+                  padding: "8px 16px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  fontFamily: "inherit",
+                  border: `1.5px solid ${tip === t && !showCustomTip ? C.pink : C.border}`,
+                  background: tip === t && !showCustomTip ? `${C.pink}12` : C.page,
+                  color: tip === t && !showCustomTip ? C.pink : C.textSub
+                }}>
                 {t === 0 ? "No tip" : `₹${t}`}
               </button>
             ))}
-            <button
-              onClick={() => { setShowCustomTip(true); setTip(0); }}
-              className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${showCustomTip
-                ? "bg-pink-500/20 border-pink-500/50 text-pink-300"
-                : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
-                }`}
-            >
+            <button onClick={() => { setShowCustomTip(true); setTip(0); }}
+              style={{
+                padding: "8px 16px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                fontFamily: "inherit",
+                border: `1.5px solid ${showCustomTip ? C.pink : C.border}`,
+                background: showCustomTip ? `${C.pink}12` : C.page,
+                color: showCustomTip ? C.pink : C.textSub
+              }}>
               Custom
             </button>
           </div>
           {showCustomTip && (
-            <div className="relative mt-2">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-              <input
-                type="number" min="0" max="500" placeholder="Enter amount"
-                value={customTip} onChange={e => setCustomTip(e.target.value)}
-                className="w-full pl-8 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
-              />
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.textMuted, fontSize: 13 }}>₹</span>
+              <input type="number" min="0" max="500" placeholder="Enter amount" value={customTip}
+                onChange={e => setCustomTip(e.target.value)}
+                style={{ ...inputStyle, paddingLeft: 28 }}
+                onFocus={e => e.target.style.borderColor = C.pink}
+                onBlur={e => e.target.style.borderColor = C.border} />
             </div>
           )}
         </Section>
@@ -432,11 +496,17 @@ export default function Checkout() {
             { id: "COD", label: "Cash on Delivery", sub: "Pay when your order arrives" },
             { id: "ONLINE", label: "Online Payment", sub: "Coming soon", disabled: true },
           ].map(p => (
-            <label key={p.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${p.disabled ? "opacity-40 cursor-not-allowed" : ""} ${paymentMethod === p.id ? "border-z-accent bg-z-accent/10" : "border-white/10 bg-white/5"}`}>
-              <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id} onChange={() => !p.disabled && setPaymentMethod(p.id)} className="accent-z-primary" />
+            <label key={p.id} style={{
+              display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: 14,
+              cursor: p.disabled ? "not-allowed" : "pointer", opacity: p.disabled ? 0.45 : 1,
+              border: `1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
+              background: paymentMethod === p.id ? `${C.accent}0D` : C.page
+            }}>
+              <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id}
+                onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor: C.primary }} />
               <div>
-                <p className="text-white text-sm font-medium">{p.label}</p>
-                <p className="text-gray-400 text-xs">{p.sub}</p>
+                <p style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{p.label}</p>
+                <p style={{ color: C.textMuted, fontSize: 11 }}>{p.sub}</p>
               </div>
             </label>
           ))}
@@ -444,53 +514,63 @@ export default function Checkout() {
 
         {/* Promo Code */}
         <Section title={
-          <div className="flex items-center gap-2">
-            <FiTag className="text-z-accent" size={15} />
-            <span>Promo Code</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Icon.Tag color={C.accent} /><span>Promo Code</span>
           </div>
         }>
           {appliedPromo ? (
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-z-accent/10 border border-z-accent/30">
-              <div className="flex items-center gap-2">
-                <FiTag className="text-z-accent" size={14} />
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px",
+              borderRadius: 14, background: `${C.accent}12`, border: `1px solid ${C.accent}40`
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Icon.Tag color={C.primary} size={15} />
                 <div>
-                  <p className="text-z-accent font-bold text-sm">{appliedPromo.code}</p>
-                  <p className="text-z-hover text-xs">{appliedPromo.label} applied!</p>
+                  <p style={{ fontWeight: 700, fontSize: 13, color: C.primary }}>{appliedPromo.code}</p>
+                  <p style={{ color: C.hover, fontSize: 11 }}>{appliedPromo.label} applied!</p>
                 </div>
               </div>
-              <button onClick={removePromo} className="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-red-400 transition">
-                <FiX size={14} />
+              <button onClick={removePromo}
+                style={{
+                  padding: 6, borderRadius: 8, background: C.surface, border: "none",
+                  color: C.textMuted, cursor: "pointer"
+                }}>
+                <Icon.X />
               </button>
             </div>
           ) : (
             <>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  value={promoInput}
+              <div style={{ display: "flex", gap: 8 }}>
+                <input value={promoInput}
                   onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); }}
                   onKeyDown={e => e.key === "Enter" && applyPromo()}
                   placeholder="Enter promo code"
-                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm uppercase tracking-wider"
-                />
-                <button
-                  onClick={applyPromo}
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-z-primary hover:bg-z-hover text-white text-sm font-semibold transition"
-                >
+                  style={{ ...inputStyle, flex: 1, textTransform: "uppercase", letterSpacing: "0.03em" }}
+                  onFocus={e => e.target.style.borderColor = C.primary}
+                  onBlur={e => e.target.style.borderColor = C.border} />
+                <button onClick={applyPromo}
+                  style={{
+                    padding: "0 20px", borderRadius: 12, border: "none", background: C.primary,
+                    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                  }}>
                   Apply
                 </button>
               </div>
               {promoError && (
-                <p className="text-red-400 text-xs flex items-center gap-1">
-                  <FiX size={11} /> {promoError}
+                <p style={{ color: C.error, fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
+                  <Icon.X size={11} /> {promoError}
                 </p>
               )}
-              <div className="flex gap-2 flex-wrap">
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {Object.entries(PROMO_CODES).map(([code, info]) => (
-                  <button
-                    key={code}
-                    onClick={() => { setPromoInput(code); setPromoError(""); }}
-                    className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:bg-z-accent/10 hover:text-z-accent hover:border-z-accent/20 transition"
-                  >
+                  <button key={code} onClick={() => { setPromoInput(code); setPromoError(""); }}
+                    style={{
+                      fontSize: 10, padding: "5px 10px", borderRadius: 10, border: `1px solid ${C.border}`,
+                      background: C.page, color: C.textMuted, cursor: "pointer", fontFamily: "inherit",
+                      transition: "all 120ms"
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.primary; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}>
                     {code} · {info.label}
                   </button>
                 ))}
@@ -502,47 +582,57 @@ export default function Checkout() {
         {/* Order Summary */}
         <Section title="Order Summary">
           {cart.items.map(i => (
-            <div key={i.id} className="flex justify-between text-sm text-gray-300">
+            <div key={i.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
               <span>{i.dish.name} × {i.quantity}</span>
               <span>₹{(i.dish.price * i.quantity).toFixed(2)}</span>
             </div>
           ))}
-          <div className="border-t border-white/10 pt-3 space-y-1.5 text-sm text-gray-400">
-            <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between">
-              <span>Delivery</span>
-              {appliedPromo?.type === "ship"
-                ? <span className="text-z-accent">FREE</span>
-                : <span>₹{delivery.toFixed(2)}</span>
-              }
+          <div style={{
+            borderTop: `1px solid ${C.borderSoft}`, paddingTop: 12, marginTop: 4,
+            display: "flex", flexDirection: "column", gap: 8
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+              <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between"><span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+              <span>Delivery</span>
+              {appliedPromo?.type === "ship" ? <span style={{ color: C.accent, fontWeight: 600 }}>FREE</span> : <span>₹{delivery.toFixed(2)}</span>}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+              <span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span>
+            </div>
             {tipAmount > 0 && (
-              <div className="flex justify-between text-pink-400">
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.pink }}>
                 <span>Tip 💚</span><span>₹{tipAmount.toFixed(2)}</span>
               </div>
             )}
             {discount > 0 && (
-              <div className="flex justify-between text-z-accent">
-                <span>Discount ({appliedPromo?.code})</span>
-                <span>− ₹{discount.toFixed(2)}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.accent, fontWeight: 600 }}>
+                <span>Discount ({appliedPromo?.code})</span><span>− ₹{discount.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-white font-bold text-base pt-2 border-t border-white/10">
+            <div style={{
+              borderTop: `1px solid ${C.borderSoft}`, paddingTop: 10, marginTop: 2,
+              display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 16, color: C.textMain
+            }}>
               <span>Total</span><span>₹{total.toFixed(2)}</span>
             </div>
           </div>
         </Section>
 
-        <button
-          onClick={placeOrder}
-          className="w-full py-4 rounded-2xl bg-z-primary hover:bg-z-hover text-white font-semibold transition active:scale-[0.99]"
-        >
+        <button onClick={placeOrder}
+          style={{
+            width: "100%", padding: "16px", borderRadius: 16, border: "none",
+            background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+            color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit",
+            boxShadow: "0 4px 16px rgba(15,61,46,0.25)", transition: "box-shadow 120ms"
+          }}
+          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(15,61,46,0.35)"}
+          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.25)"}>
           {scheduleDelivery && scheduleDate && scheduleTime
             ? `Schedule Order · ₹${total.toFixed(2)}`
             : `Place Order · ₹${total.toFixed(2)}`}
         </button>
-
       </div>
     </div>
   );
