@@ -1,116 +1,358 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiMapPin, FiShoppingCart, FiUser, FiLogIn, FiUserPlus, FiX, FiStar, FiClock, FiTag } from "react-icons/fi";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
-/* ── Mascot Loader ── */
+/* ─── DESIGN TOKENS ─────────────────────────────── */
+const C = {
+  page: "#F5F7F6",
+  surface: "#FFFFFF",
+  primary: "#0F3D2E",
+  hover: "#145A43",
+  accent: "#22C55E",
+  textMain: "#0B0F0E",
+  textSub: "#6B7280",
+  textMuted: "#9CA3AF",
+  border: "#E5E7EB",
+  borderSoft: "#F0F2F1",
+};
+
+/* ─── MASCOT LOADER (keep same API as original) ─── */
 export function MascotLoader({ text = "Loading..." }) {
   return (
-    <div className="fixed inset-0 z-[999] bg-z-page flex flex-col items-center justify-center gap-4">
-      <div className="relative">
-        <img src="/zoomo-mascot.png" alt="Loading" className="w-24 h-24 animate-float" />
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-2 bg-z-accent/30 rounded-full blur-sm animate-pulse" />
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 999, background: "#F5F7F6",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16
+    }}>
+      <div style={{
+        width: 64, height: 64, borderRadius: "50%", background: C.primary,
+        display: "flex", alignItems: "center", justifyContent: "center"
+      }}>
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+        </svg>
       </div>
-      <p className="text-z-accent font-medium text-sm animate-pulse">{text}</p>
+      <p style={{ color: C.primary, fontWeight: 600, fontSize: 14, letterSpacing: "0.02em" }}>{text}</p>
     </div>
   );
 }
 
-/* ── Address Modal ── */
+/* ─── ICONS ──────────────────────────────────────── */
+const Icon = {
+  Search: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+    </svg>
+  ),
+  MapPin: ({ size = 14 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  Cart: ({ size = 18 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
+  ),
+  User: ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  Star: () => (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  Clock: () => (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  Tag: () => (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+      <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+    </svg>
+  ),
+  X: ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  ),
+  LogIn: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" />
+      <line x1="15" y1="12" x2="3" y2="12" />
+    </svg>
+  ),
+  UserPlus: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  ),
+  Send: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  ),
+};
+
+/* ─── CUISINE TICKER (signature element) ─────────── */
+const TICKER_ITEMS = [
+  "🍕 Pizza", "🍔 Burgers", "🍛 Biryani", "🥡 Chinese",
+  "🥗 Healthy", "🍰 Desserts", "🧃 Beverages", "🌮 Tacos",
+  "🍜 Noodles", "🥩 BBQ", "🥪 Sandwiches", "🍣 Sushi",
+];
+
+function CuisineTicker() {
+  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  return (
+    <div style={{ background: C.primary, overflow: "hidden", borderTop: `1px solid rgba(255,255,255,0.08)`, borderBottom: `1px solid rgba(255,255,255,0.08)` }}>
+      <style>{`
+        @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+        .ticker-track { display:flex; width:max-content; animation: ticker 32s linear infinite; }
+        .ticker-track:hover { animation-play-state: paused; }
+      `}</style>
+      <div className="ticker-track" style={{ padding: "10px 0" }}>
+        {doubled.map((item, i) => (
+          <span key={i} style={{
+            color: "rgba(255,255,255,0.65)", fontSize: 13, fontWeight: 500,
+            padding: "4px 24px", whiteSpace: "nowrap", letterSpacing: "0.01em",
+            borderRight: i === doubled.length / 2 - 1 ? "none" : "1px solid rgba(255,255,255,0.12)",
+            transition: "color 120ms",
+          }}
+            onMouseEnter={e => e.target.style.color = C.accent}
+            onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── ADDRESS MODAL ───────────────────────────────── */
 function AddressModal({ onConfirm, onSkip }) {
   const [val, setVal] = useState("");
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-z-card border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <div className="flex flex-col items-center mb-6">
-          <img src="/zoomo-mascot.png" alt="Zoomo" className="w-20 h-20 animate-wiggle mb-3" />
-          <h2 className="text-2xl font-bold text-white">Where should we deliver?</h2>
-          <p className="text-gray-400 text-sm mt-1">Enter your delivery address to get started</p>
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50, background: "rgba(15,61,46,0.7)",
+      backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16
+    }}>
+      <div style={{
+        width: "100%", maxWidth: 440, background: C.surface, borderRadius: 28,
+        padding: 32, boxShadow: "0 24px 80px rgba(15,61,46,0.25)", border: `1px solid ${C.borderSoft}`
+      }}>
+
+        <div style={{
+          width: 52, height: 52, borderRadius: 16, background: C.primary,
+          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20
+        }}>
+          <Icon.MapPin size={22} />
         </div>
-        <div className="relative mb-4">
-          <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-z-accent" size={18} />
+        <h2 style={{ color: C.textMain, fontSize: 24, fontWeight: 700, marginBottom: 6, lineHeight: "32px" }}>
+          Where should we deliver?
+        </h2>
+        <p style={{ color: C.textSub, fontSize: 14, marginBottom: 24 }}>
+          Enter your address to find nearby restaurants
+        </p>
+
+        <div style={{ position: "relative", marginBottom: 12 }}>
+          <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.accent }}>
+            <Icon.MapPin size={16} />
+          </div>
           <input
             value={val}
             onChange={e => setVal(e.target.value)}
             onKeyDown={e => e.key === "Enter" && val.trim() && onConfirm(val.trim())}
             placeholder="e.g. Koramangala, Bengaluru"
-            className="w-full pl-11 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm"
+            style={{
+              width: "100%", paddingLeft: 42, paddingRight: 16, paddingTop: 14, paddingBottom: 14,
+              borderRadius: 14, border: `1.5px solid ${C.border}`, fontSize: 14, color: C.textMain,
+              outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+              transition: "border-color 120ms"
+            }}
+            onFocus={e => e.target.style.borderColor = C.primary}
+            onBlur={e => e.target.style.borderColor = C.border}
           />
         </div>
+
         <button
           onClick={() => val.trim() && onConfirm(val.trim())}
-          className="w-full py-4 rounded-2xl bg-z-primary hover:bg-z-hover text-white font-semibold transition active:scale-95 mb-3"
+          style={{
+            width: "100%", padding: "14px", borderRadius: 14, border: "none",
+            background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+            color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer", marginBottom: 10,
+            fontFamily: "inherit", transition: "opacity 120ms"
+          }}
+          onMouseEnter={e => e.target.style.opacity = "0.9"}
+          onMouseLeave={e => e.target.style.opacity = "1"}
         >
-          Find Food Near Me 🍔
+          Find Food Near Me
         </button>
         <button
           onClick={onSkip}
-          className="w-full py-3 rounded-2xl bg-transparent border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition text-sm"
+          style={{
+            width: "100%", padding: "12px", borderRadius: 14, border: `1.5px solid ${C.border}`,
+            background: "transparent", color: C.textSub, fontSize: 14, cursor: "pointer",
+            fontFamily: "inherit", transition: "color 120ms, border-color 120ms"
+          }}
+          onMouseEnter={e => { e.target.style.color = C.textMain; e.target.style.borderColor = C.textMain; }}
+          onMouseLeave={e => { e.target.style.color = C.textSub; e.target.style.borderColor = C.border; }}
         >
-          Add Later
+          Set later
         </button>
       </div>
     </div>
   );
 }
 
-/* ── Navbar (inline, LandingPage-specific) ── */
-function Navbar({ address, onAddressClick, cartCount, user, onProfileOpen, navigate }) {
+/* ─── NAVBAR ──────────────────────────────────────── */
+function ZLogo() {
   return (
-    <header className="sticky top-0 z-40 bg-z-gradient backdrop-blur-xl border-b border-white/10">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{
+        width: 34, height: 34, borderRadius: 10, background: C.primary,
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+      }}>
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+          <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+        </svg>
+      </div>
+      <span style={{ fontWeight: 700, fontSize: 17, color: C.textMain, letterSpacing: "-0.01em" }}>
+        Zoomo <span style={{ color: C.accent }}>Eats</span>
+      </span>
+    </div>
+  );
+}
 
-        {/* Logo — inline SVG replaces zoomo-logo.png */}
-        <div className="flex items-center gap-2 shrink-0">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="32" rx="8" fill="#0F3D2E" />
-            <path d="M8 10H22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-            <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-            <path d="M10 22H24" stroke="#22C55E" strokeWidth="2.4" strokeLinecap="round" />
-          </svg>
-          <span className="text-white font-bold text-lg hidden sm:block">
-            Zoomo <span className="text-z-accent">Eats</span>
-          </span>
+function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen, navigate }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 6);
+    window.addEventListener("scroll", h);
+    return () => window.removeEventListener("scroll", h);
+  }, []);
+
+  return (
+    <header style={{
+      position: "sticky", top: 0, zIndex: 40,
+      background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.93)",
+      backdropFilter: "blur(16px)",
+      borderBottom: `1px solid ${scrolled ? C.border : C.borderSoft}`,
+      boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
+      transition: "all 180ms ease-out",
+    }}>
+      <div style={{
+        maxWidth: 1152, margin: "0 auto", padding: "12px 20px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12
+      }}>
+
+        <div style={{ cursor: "pointer", flexShrink: 0 }} onClick={() => navigate("/")}>
+          <ZLogo />
         </div>
 
         {/* Address pill */}
         <button
           onClick={onAddressClick}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-left hover:bg-white/10 transition min-w-0 flex-1 max-w-xs"
+          style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
+            borderRadius: 12, background: C.page, border: `1.5px solid ${C.border}`,
+            fontSize: 13, color: address ? C.textMain : C.textSub, cursor: "pointer",
+            fontFamily: "inherit", flex: 1, maxWidth: 320, minWidth: 0,
+            transition: "border-color 120ms, background 120ms", textAlign: "left"
+          }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+          onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
         >
-          <FiMapPin className="text-z-accent shrink-0" size={14} />
-          <span className="text-gray-300 truncate">{address || "Set delivery location"}</span>
+          <span style={{ color: C.accent, flexShrink: 0 }}><Icon.MapPin /></span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: address ? 500 : 400 }}>
+            {address || "Set delivery location"}
+          </span>
         </button>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {user ? (
             <button
               onClick={onProfileOpen}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition flex items-center gap-2"
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
+                color: C.textMain, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+                transition: "all 120ms"
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
             >
-              <FiUser size={16} />
-              <span className="hidden sm:block text-sm">{user.name?.split(" ")[0]}</span>
+              <Icon.User />
+              <span style={{ display: "none" }} className="sm:inline">{user.name?.split(" ")[0]}</span>
             </button>
           ) : (
             <>
-              <button onClick={() => navigate("/login")} className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition text-sm">
-                <FiLogIn size={14} /> Login
+              <button
+                onClick={() => navigate("/login")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
+                  borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
+                  color: C.textSub, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 120ms"
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
+              >
+                <Icon.LogIn /> Login
               </button>
-              <button onClick={() => navigate("/signup")} className="hidden sm:flex items-center gap-1 p-2 px-3 rounded-xl bg-z-primary hover:bg-z-hover text-white transition text-sm">
-                <FiUserPlus size={14} /> Sign up
+              <button
+                onClick={() => navigate("/signup")}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "9px 16px",
+                  borderRadius: 10, border: "none",
+                  background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+                  color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 120ms", boxShadow: "0 2px 8px rgba(15,61,46,0.25)"
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,61,46,0.25)"}
+              >
+                <Icon.UserPlus /> Sign up
               </button>
             </>
           )}
+
           <button
             onClick={() => navigate("/cart")}
-            className="relative p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 transition"
+            style={{
+              position: "relative", width: 40, height: 40, borderRadius: 10,
+              border: `1.5px solid ${C.border}`, background: C.surface,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: C.textSub, cursor: "pointer", transition: "all 120ms", flexShrink: 0
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
           >
-            <FiShoppingCart size={18} />
+            <Icon.Cart />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-z-accent text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+              <span style={{
+                position: "absolute", top: -6, right: -6, width: 18, height: 18,
+                background: C.accent, color: "#fff", fontSize: 10, fontWeight: 700,
+                borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                border: "2px solid #fff"
+              }}>
                 {cartCount}
               </span>
             )}
@@ -121,10 +363,10 @@ function Navbar({ address, onAddressClick, cartCount, user, onProfileOpen, navig
   );
 }
 
-/* ── Category Pills ── */
+/* ─── CATEGORY PILLS ─────────────────────────────── */
 const CATEGORIES = ["All", "Pizza", "Burgers", "Indian", "Chinese", "Biryani", "Desserts", "Beverages", "Healthy", "Street Food"];
 
-/* ── Restaurant Card ── */
+/* ─── RESTAURANT CARD ────────────────────────────── */
 function RestaurantCard({ r, navigate }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -132,88 +374,208 @@ function RestaurantCard({ r, navigate }) {
       onClick={() => navigate(`/restaurant/${r.id}`)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="cursor-pointer rounded-2xl overflow-hidden bg-z-card border border-white/10 hover:border-z-accent/30 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)] transition-all duration-300 group"
+      style={{
+        background: C.surface, borderRadius: 20, cursor: "pointer", overflow: "hidden",
+        border: `1px solid ${hovered ? C.primary + "50" : C.border}`,
+        boxShadow: hovered ? "0 12px 40px rgba(15,61,46,0.13)" : "0 2px 10px rgba(0,0,0,0.04)",
+        transform: hovered ? "translateY(-3px)" : "translateY(0)",
+        transition: "all 180ms ease-out",
+      }}
     >
-      <div className="relative h-44 overflow-hidden">
+      {/* Image */}
+      <div style={{ position: "relative", height: 176, overflow: "hidden" }}>
         <img
           src={r.img}
           alt={r.name}
-          className={`w-full h-full object-cover transition-transform duration-500 ${hovered ? "scale-105" : "scale-100"}`}
+          style={{
+            width: "100%", height: "100%", objectFit: "cover",
+            transform: hovered ? "scale(1.05)" : "scale(1)",
+            transition: "transform 240ms ease"
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)"
+        }} />
+
         {r.coupon && (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-z-accent text-[10px] font-medium px-2 py-1 rounded-lg border border-z-accent/20">
-            <FiTag size={10} /> {r.coupon}
+          <div style={{
+            position: "absolute", bottom: 10, left: 10,
+            display: "flex", alignItems: "center", gap: 4,
+            background: "rgba(15,61,46,0.85)", backdropFilter: "blur(4px)",
+            color: C.accent, fontSize: 10, fontWeight: 600,
+            padding: "4px 8px", borderRadius: 8, border: `1px solid ${C.accent}40`
+          }}>
+            <Icon.Tag /> {r.coupon}
           </div>
         )}
-        <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
-          <FiStar className="text-yellow-400 fill-yellow-400" size={11} /> {r.rating}
+
+        <div style={{
+          position: "absolute", top: 10, right: 10,
+          display: "flex", alignItems: "center", gap: 4,
+          background: "rgba(0,0,0,0.70)", backdropFilter: "blur(4px)",
+          color: "#fff", fontSize: 11, fontWeight: 600,
+          padding: "4px 8px", borderRadius: 8
+        }}>
+          <Icon.Star /> {r.rating}
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-white text-base truncate">{r.name}</h3>
-        <p className="text-gray-400 text-xs mt-0.5 truncate">{r.cuisine}</p>
-        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-          <span className="flex items-center gap-1"><FiClock size={11} /> {r.eta}</span>
-          <span>·</span>
-          <span>₹{r.cost} for two</span>
+
+      {/* Info */}
+      <div style={{ padding: "14px 16px 16px" }}>
+        <h3 style={{
+          color: C.textMain, fontWeight: 700, fontSize: 15, marginBottom: 3,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+        }}>
+          {r.name}
+        </h3>
+        <p style={{
+          color: C.textSub, fontSize: 12, marginBottom: 12,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+        }}>
+          {r.cuisine}
+        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.textMuted, fontSize: 12 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <Icon.Clock /> {r.eta}
+            </span>
+            <span>·</span>
+            <span>₹{r.cost} for two</span>
+          </div>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 2, padding: "4px 10px",
+            background: C.primary + "14", color: C.primary, fontSize: 11, fontWeight: 700,
+            borderRadius: 8, letterSpacing: "0.01em"
+          }}>
+            Order <Icon.ChevronRight />
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── Profile Drawer ── */
+/* ─── RESTAURANT SKELETON ────────────────────────── */
+function SkeletonCard() {
+  return (
+    <div style={{ background: C.surface, borderRadius: 20, overflow: "hidden", border: `1px solid ${C.border}` }}>
+      <div style={{ height: 176, background: "#F0F2F1", position: "relative", overflow: "hidden" }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)",
+          animation: "shimmer 1.4s infinite"
+        }} />
+      </div>
+      <div style={{ padding: "14px 16px 16px" }}>
+        <div style={{ height: 16, width: "70%", background: "#F0F2F1", borderRadius: 8, marginBottom: 8 }} />
+        <div style={{ height: 12, width: "50%", background: "#F0F2F1", borderRadius: 8 }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── PROFILE DRAWER ────────────────────────────── */
 function ProfileDrawer({ user, onClose, navigate }) {
   const { logout } = useAuth();
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="w-full max-w-sm ml-auto h-full bg-z-card border-l border-white/10 flex flex-col">
-        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <span className="font-semibold text-white">Profile</span>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><FiX /></button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex" }}>
+      {/* Backdrop */}
+      <div style={{ flex: 1, background: "rgba(15,61,46,0.4)", backdropFilter: "blur(2px)" }} onClick={onClose} />
+      {/* Panel */}
+      <div style={{
+        width: "100%", maxWidth: 320, background: C.surface,
+        borderLeft: `1px solid ${C.border}`, display: "flex", flexDirection: "column",
+        boxShadow: "-8px 0 40px rgba(0,0,0,0.12)"
+      }}>
+
+        <div style={{
+          padding: "16px 20px", borderBottom: `1px solid ${C.borderSoft}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between"
+        }}>
+          <span style={{ fontWeight: 700, color: C.textMain, fontSize: 16 }}>Your profile</span>
+          <button onClick={onClose}
+            style={{
+              width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`,
+              background: "transparent", display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: C.textSub
+            }}>
+            <Icon.X size={14} />
+          </button>
         </div>
-        <div className="p-5 space-y-4">
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <div className="w-12 h-12 rounded-xl bg-z-primary flex items-center justify-center text-xl font-bold text-white">
+
+        <div style={{ padding: 20, flex: 1 }}>
+          {/* Avatar card */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 12, padding: 16,
+            borderRadius: 16, background: C.page, border: `1px solid ${C.borderSoft}`, marginBottom: 16
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 14, background: C.primary,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontWeight: 700, fontSize: 20, flexShrink: 0
+            }}>
               {user?.name?.[0]?.toUpperCase() || "U"}
             </div>
-            <div>
-              <div className="font-semibold text-white">{user?.name}</div>
-              <div className="text-xs text-gray-400">{user?.email}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                fontWeight: 600, color: C.textMain, fontSize: 15,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+              }}>
+                {user?.name}
+              </div>
+              <div style={{
+                color: C.textSub, fontSize: 12, marginTop: 2,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+              }}>
+                {user?.email}
+              </div>
             </div>
           </div>
-          {[
-            { label: "My Orders", path: "/orders" },
-            { label: "My Cart", path: "/cart" },
-            { label: "Restaurants", path: "/restaurants" },
-          ].map(item => (
+
+          {[{ label: "My Orders", path: "/orders" }, { label: "My Cart", path: "/cart" },
+          { label: "All Restaurants", path: "/restaurants" }].map(item => (
             <button
               key={item.path}
               onClick={() => { navigate(item.path); onClose(); }}
-              className="w-full text-left px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition text-sm"
+              style={{
+                width: "100%", padding: "12px 16px", borderRadius: 12,
+                border: `1px solid ${C.border}`, background: C.surface,
+                color: C.textMain, fontSize: 14, fontWeight: 500, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                fontFamily: "inherit", marginBottom: 8, transition: "all 120ms"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.page; e.currentTarget.style.borderColor = C.primary + "60"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = C.border; }}
             >
-              {item.label}
+              {item.label} <Icon.ChevronRight />
             </button>
           ))}
+
           <button
             onClick={() => { logout(); onClose(); }}
-            className="w-full px-4 py-3 rounded-xl text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-sm"
+            style={{
+              width: "100%", padding: "12px 16px", borderRadius: 12, marginTop: 8,
+              border: `1px solid #FECACA`, background: "#FFF5F5",
+              color: "#DC2626", fontSize: 14, fontWeight: 600, cursor: "pointer",
+              fontFamily: "inherit", transition: "all 120ms"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
+            onMouseLeave={e => e.currentTarget.style.background = "#FFF5F5"}
           >
             Logout
           </button>
         </div>
       </div>
-      <div className="flex-1 bg-black/50" onClick={onClose} />
     </div>
   );
 }
 
-/* ── Chat Widget ── */
+/* ─── CHAT WIDGET ────────────────────────────────── */
 function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "bot", text: "Hey! I'm Zoomo 🍔 What can I help you with?" }
+    { role: "bot", text: "Hey! I'm Zoomo 👋 What can I help you with?" }
   ]);
   const [text, setText] = useState("");
   const [typing, setTyping] = useState(false);
@@ -233,75 +595,153 @@ function ChatWidget() {
       const s = val.toLowerCase();
       let reply = "Hmm, I didn't get that! Try asking about deals, orders, or restaurants.";
       if (s.includes("deal") || s.includes("offer")) reply = "🔥 Use ZOOMO50 for 50% off, BOGO for Buy 1 Get 1, or FREESHIP for free delivery above ₹199!";
-      else if (s.includes("track") || s.includes("order")) reply = "Go to Menu → My Orders to track your order!";
+      else if (s.includes("track") || s.includes("order")) reply = "Go to My Orders to track your delivery in real-time!";
       else if (s.includes("deliver")) reply = "We deliver to 45+ cities! Set your location on the home screen.";
       else if (s.includes("pay")) reply = "We support UPI, Cards, Wallets, Net Banking & Cash on Delivery!";
       setMessages(m => [...m, { role: "bot", text: reply }]);
       setTyping(false);
-    }, 1200 + Math.random() * 800);
+    }, 1000 + Math.random() * 600);
   }
 
-  if (!open) return (
-    <button
-      onClick={() => setOpen(true)}
-      className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full overflow-hidden shadow-xl hover:scale-110 transition border-2 border-z-accent/50"
-    >
-      <img src="/zoomo-mascot.png" alt="Chat" className="w-full h-full object-cover animate-float" />
-    </button>
-  );
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          position: "fixed", bottom: 20, right: 20, zIndex: 50,
+          width: 52, height: 52, borderRadius: "50%", border: "none",
+          background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+          color: "#fff", cursor: "pointer", display: "flex", alignItems: "center",
+          justifyContent: "center", boxShadow: "0 4px 20px rgba(15,61,46,0.35)",
+          transition: "transform 120ms"
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
+        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+        title="Chat with Zoomo"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
+    );
+  }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 w-80 rounded-3xl overflow-hidden bg-[#0f0f0f] border border-white/10 shadow-2xl">
-      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-z-card">
-        <div className="flex items-center gap-2">
-          <img src="/zoomo-mascot.png" className="w-7 h-7 rounded-full animate-wiggle" alt="" />
-          <span className="font-semibold text-white text-sm">Zoomo Assist</span>
-          <span className="w-2 h-2 bg-z-accent rounded-full animate-pulse" />
+    <div style={{
+      position: "fixed", bottom: 20, right: 20, zIndex: 50, width: 320,
+      borderRadius: 24, overflow: "hidden", background: C.surface,
+      border: `1px solid ${C.border}`, boxShadow: "0 16px 60px rgba(0,0,0,0.15)"
+    }}>
+
+      {/* Header */}
+      <div style={{
+        padding: "14px 16px", display: "flex", alignItems: "center",
+        justifyContent: "space-between", background: C.primary
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.15)",
+            display: "flex", alignItems: "center", justifyContent: "center"
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <span style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Zoomo Assist</span>
+          <div style={{ width: 7, height: 7, background: C.accent, borderRadius: "50%" }} />
         </div>
-        <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white"><FiX size={16} /></button>
+        <button onClick={() => setOpen(false)}
+          style={{
+            background: "none", border: "none", color: "rgba(255,255,255,0.7)",
+            cursor: "pointer", padding: 4, display: "flex", alignItems: "center"
+          }}>
+          <Icon.X size={14} />
+        </button>
       </div>
 
-      <div ref={ref} className="h-64 overflow-y-auto p-3 space-y-3">
+      {/* Messages */}
+      <div ref={ref} style={{
+        height: 220, overflowY: "auto", padding: 12, display: "flex",
+        flexDirection: "column", gap: 8, background: C.page
+      }}>
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-z-primary text-white" : "bg-white/10 text-gray-200"
-              }`}>
+          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+            <div style={{
+              maxWidth: "82%", padding: "8px 12px", borderRadius: 14, fontSize: 13, lineHeight: "18px",
+              background: m.role === "user" ? C.primary : C.surface,
+              color: m.role === "user" ? "#fff" : C.textMain,
+              border: m.role === "user" ? "none" : `1px solid ${C.border}`,
+              borderBottomRightRadius: m.role === "user" ? 4 : 14,
+              borderBottomLeftRadius: m.role === "bot" ? 4 : 14,
+            }}>
               {m.text}
             </div>
           </div>
         ))}
         {typing && (
-          <div className="flex gap-1 pl-2">
+          <div style={{ display: "flex", gap: 4, paddingLeft: 4 }}>
             {[0, 0.2, 0.4].map((d, i) => (
-              <div key={i} className="w-2 h-2 bg-z-accent rounded-full animate-bounce" style={{ animationDelay: `${d}s` }} />
+              <div key={i} style={{
+                width: 7, height: 7, background: C.textMuted, borderRadius: "50%",
+                animation: "bounce 0.8s ease-in-out infinite", animationDelay: `${d}s`
+              }} />
             ))}
           </div>
         )}
       </div>
 
-      <div className="flex gap-2 p-3 border-t border-white/10">
-        {["Deals", "Track order", "Payment"].map(q => (
-          <button key={q} onClick={() => send(q)} className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition">{q}</button>
+      {/* Quick replies */}
+      <div style={{
+        display: "flex", gap: 6, padding: "8px 12px 0", background: C.surface,
+        borderTop: `1px solid ${C.borderSoft}`
+      }}>
+        {["Deals 🔥", "Track order", "Payment"].map(q => (
+          <button key={q} onClick={() => send(q)}
+            style={{
+              fontSize: 11, padding: "4px 10px", borderRadius: 20,
+              border: `1px solid ${C.border}`, background: C.page,
+              color: C.textSub, cursor: "pointer", fontFamily: "inherit",
+              transition: "all 120ms", whiteSpace: "nowrap"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
+          >{q}</button>
         ))}
       </div>
 
-      <div className="p-3 pt-0 flex gap-2">
+      {/* Input */}
+      <div style={{ display: "flex", gap: 8, padding: 12, background: C.surface }}>
         <input
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === "Enter" && send()}
           placeholder="Ask something..."
-          className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none text-sm"
+          style={{
+            flex: 1, padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${C.border}`,
+            fontSize: 13, color: C.textMain, outline: "none", fontFamily: "inherit",
+            transition: "border-color 120ms"
+          }}
+          onFocus={e => e.target.style.borderColor = C.primary}
+          onBlur={e => e.target.style.borderColor = C.border}
         />
-        <button onClick={() => send()} className="px-3 py-2 rounded-xl bg-z-primary hover:bg-z-hover text-white transition text-sm">
-          Send
+        <button onClick={() => send()}
+          style={{
+            width: 38, height: 38, borderRadius: 10, border: "none",
+            background: C.primary, color: "#fff", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, transition: "background 120ms"
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = C.hover}
+          onMouseLeave={e => e.currentTarget.style.background = C.primary}
+        >
+          <Icon.Send />
         </button>
       </div>
     </div>
   );
 }
 
-/* ── Main Landing Page ── */
+/* ─── MAIN LANDING PAGE ──────────────────────────── */
 export default function LandingPage() {
   const { user } = useAuth();
   const { cart } = useCart();
@@ -317,50 +757,38 @@ export default function LandingPage() {
   const [profileOpen, setProfileOpen] = useState(false);
   const searchRef = useRef(null);
 
+  /* Load restaurants */
   useEffect(() => {
     async function load() {
       try {
         const res = await api.get("/restaurants");
         const mapped = res.map(r => ({
-          id: r.id,
-          name: r.name,
-          img: r.imageUrl || `https://source.unsplash.com/600x400/?${encodeURIComponent(r.cuisineType || "food")}`,
-          cuisine: r.cuisineType || "Various",
-          area: r.address || "Nearby",
-          rating: r.rating?.toFixed(1) ?? "4.3",
-          eta: "25-40 min",
-          cost: 250,
-          coupon: r.coupon || null,
+          id: r.id, name: r.name,
+          img: r.imageUrl || `https://images.unsplash.com/photo-${1513104890138 + Math.floor(Math.random() * 1000000)}?w=600&h=400&fit=crop`,
+          cuisine: r.cuisineType || "Various", area: r.address || "Nearby",
+          rating: r.rating?.toFixed(1) ?? "4.3", eta: "25-40 min", cost: 250, coupon: r.coupon || null,
         }));
-        setRestaurants(mapped);
-        setFiltered(mapped);
+        setRestaurants(mapped); setFiltered(mapped);
       } catch {
         const fallback = [
-          { id: "1", name: "The Pizza Place", cuisine: "Italian · Pizza", rating: "4.5", eta: "30-40 min", cost: 300, img: "https://source.unsplash.com/600x400/?pizza", coupon: "PIZZA50" },
-          { id: "2", name: "Biryani House", cuisine: "Indian · Biryani", rating: "4.3", eta: "25-35 min", cost: 250, img: "https://source.unsplash.com/600x400/?biryani", coupon: null },
-          { id: "3", name: "Burger Barn", cuisine: "American · Burgers", rating: "4.4", eta: "20-30 min", cost: 200, img: "https://source.unsplash.com/600x400/?burger", coupon: "BOGO" },
-          { id: "4", name: "Wok & Roll", cuisine: "Chinese · Asian", rating: "4.2", eta: "30-45 min", cost: 280, img: "https://source.unsplash.com/600x400/?chinese-food", coupon: null },
-          { id: "5", name: "Green Bowl", cuisine: "Healthy · Salads", rating: "4.6", eta: "15-25 min", cost: 220, img: "https://source.unsplash.com/600x400/?salad", coupon: "HEALTHY20" },
-          { id: "6", name: "Dessert Den", cuisine: "Desserts · Sweets", rating: "4.7", eta: "20-30 min", cost: 180, img: "https://source.unsplash.com/600x400/?dessert", coupon: null },
+          { id: "1", name: "The Pizza Place", cuisine: "Italian · Pizza", rating: "4.5", eta: "30-40 min", cost: 300, img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=400&fit=crop", coupon: "PIZZA50" },
+          { id: "2", name: "Biryani House", cuisine: "Indian · Biryani", rating: "4.3", eta: "25-35 min", cost: 250, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&h=400&fit=crop", coupon: null },
+          { id: "3", name: "Burger Barn", cuisine: "American · Burgers", rating: "4.4", eta: "20-30 min", cost: 200, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop", coupon: "BOGO" },
+          { id: "4", name: "Wok & Roll", cuisine: "Chinese · Asian", rating: "4.2", eta: "30-45 min", cost: 280, img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&h=400&fit=crop", coupon: null },
+          { id: "5", name: "Green Bowl", cuisine: "Healthy · Salads", rating: "4.6", eta: "15-25 min", cost: 220, img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop", coupon: "HEALTHY20" },
+          { id: "6", name: "Dessert Den", cuisine: "Desserts · Sweets", rating: "4.7", eta: "20-30 min", cost: 180, img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&h=400&fit=crop", coupon: null },
         ];
-        setRestaurants(fallback);
-        setFiltered(fallback);
-      } finally {
-        setLoading(false);
-      }
+        setRestaurants(fallback); setFiltered(fallback);
+      } finally { setLoading(false); }
     }
     load();
   }, []);
 
+  /* Filter */
   useEffect(() => {
     let list = restaurants;
-    if (category !== "All") {
-      list = list.filter(r => r.cuisine?.toLowerCase().includes(category.toLowerCase()) || r.name?.toLowerCase().includes(category.toLowerCase()));
-    }
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(r => r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q));
-    }
+    if (category !== "All") list = list.filter(r => r.cuisine?.toLowerCase().includes(category.toLowerCase()) || r.name?.toLowerCase().includes(category.toLowerCase()));
+    if (query.trim()) { const q = query.toLowerCase(); list = list.filter(r => r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q)); }
     setFiltered(list);
   }, [query, category, restaurants]);
 
@@ -373,16 +801,28 @@ export default function LandingPage() {
   const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
   return (
-    <div className="min-h-screen bg-z-page text-white">
+    <div style={{ minHeight: "100vh", background: C.page, fontFamily: "'Poppins', system-ui, sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: ${C.page} !important; }
+        html.dark body { background: ${C.page} !important; }
+        .no-scrollbar::-webkit-scrollbar { display:none; }
+        .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up { animation: fadeUp 0.4s ease-out both; }
+        input::placeholder { color: #9CA3AF; }
+      `}</style>
 
+      {/* Address Modal */}
       {showAddressModal && (
-        <AddressModal
-          onConfirm={handleAddressConfirm}
-          onSkip={() => setShowAddressModal(false)}
-        />
+        <AddressModal onConfirm={handleAddressConfirm} onSkip={() => setShowAddressModal(false)} />
       )}
 
-      <Navbar
+      {/* Navbar */}
+      <LandingNavbar
         address={address}
         onAddressClick={() => setShowAddressModal(true)}
         cartCount={cartCount}
@@ -391,82 +831,292 @@ export default function LandingPage() {
         navigate={navigate}
       />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* ── HERO ── */}
+      <section style={{
+        background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+        paddingTop: 56, paddingBottom: 72, position: "relative", overflow: "hidden"
+      }}>
+        {/* Decorative orbs */}
+        <div style={{
+          position: "absolute", top: "-20%", right: "-5%", width: 400, height: 400,
+          borderRadius: "50%", background: "rgba(34,197,94,0.10)", pointerEvents: "none"
+        }} />
+        <div style={{
+          position: "absolute", bottom: "-30%", left: "-10%", width: 320, height: 320,
+          borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none"
+        }} />
 
-        {/* Hero Search — unchanged */}
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            What are you <span className="text-z-accent">craving</span> today?
-          </h1>
-          <p className="text-gray-500 text-sm mb-5">
-            {address ? `Delivering to ${address}` : "Set your location to see nearby restaurants"}
-          </p>
-          <div className="relative max-w-2xl">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-            <input
-              ref={searchRef}
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Search for restaurants, cuisines, dishes..."
-              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-z-accent text-sm transition"
-            />
-            {query && (
-              <button onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                <FiX size={16} />
-              </button>
-            )}
+        <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 1 }}>
+          <div className="fade-up" style={{ maxWidth: 600 }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "rgba(255,255,255,0.10)", backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999,
+              padding: "5px 14px", marginBottom: 20
+            }}>
+              <span style={{ width: 7, height: 7, background: C.accent, borderRadius: "50%" }} />
+              <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
+                FAST DELIVERY · 45+ CITIES
+              </span>
+            </div>
+
+            <h1 style={{
+              color: "#fff", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 700,
+              lineHeight: 1.1, letterSpacing: "-0.025em", marginBottom: 14
+            }}>
+              What are you{" "}
+              <span style={{ color: C.accent }}>craving</span>{" "}today?
+            </h1>
+            <p style={{
+              color: "rgba(255,255,255,0.65)", fontSize: 16, lineHeight: "24px",
+              marginBottom: 32, maxWidth: 480
+            }}>
+              {address ? `Delivering to ${address}` : "Set your location to see restaurants near you"}
+            </p>
+
+            {/* Search */}
+            <div style={{ position: "relative", maxWidth: 520 }}>
+              <div style={{
+                position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
+                color: C.textMuted, pointerEvents: "none"
+              }}>
+                <Icon.Search />
+              </div>
+              <input
+                ref={searchRef}
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search restaurants, cuisines, dishes..."
+                style={{
+                  width: "100%", height: 54, paddingLeft: 50, paddingRight: query ? 44 : 16,
+                  borderRadius: 16, border: "2px solid transparent", background: "#fff",
+                  fontSize: 15, color: C.textMain, outline: "none", fontFamily: "inherit",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.16)", transition: "border-color 120ms"
+                }}
+                onFocus={e => e.target.style.borderColor = C.accent}
+                onBlur={e => e.target.style.borderColor = "transparent"}
+              />
+              {query && (
+                <button onClick={() => setQuery("")}
+                  style={{
+                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", color: C.textMuted, cursor: "pointer",
+                    display: "flex", alignItems: "center"
+                  }}>
+                  <Icon.X size={15} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Category Pills — unchanged */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-8">
+      {/* ── CUISINE TICKER ── */}
+      <CuisineTicker />
+
+      {/* ── OFFER BANNER ── */}
+      <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 20px" }}>
+        <div style={{
+          marginTop: -28, position: "relative", zIndex: 10,
+          background: C.surface, borderRadius: 20, padding: "18px 24px",
+          boxShadow: "0 4px 24px rgba(15,61,46,0.10)", border: `1px solid ${C.borderSoft}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16
+        }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 3 }}>
+              LIMITED TIME OFFER
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: C.textMain }}>
+              Free delivery on your first 3 orders. No code needed.
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/signup")}
+            style={{
+              padding: "10px 20px", borderRadius: 12, border: "none",
+              background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+              color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer",
+              fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0,
+              transition: "box-shadow 120ms", boxShadow: "0 2px 10px rgba(15,61,46,0.25)"
+            }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(15,61,46,0.25)"}
+          >
+            Order now
+          </button>
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ── */}
+      <main style={{ maxWidth: 1152, margin: "0 auto", padding: "40px 20px 60px" }}>
+
+        {/* Category pills */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.textMain, letterSpacing: "-0.01em" }}>
+            Explore by cuisine
+          </h2>
+        </div>
+        <div className="no-scrollbar" style={{
+          display: "flex", gap: 8, overflowX: "auto",
+          paddingBottom: 4, marginBottom: 32
+        }}>
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition ${category === cat
-                  ? "bg-z-primary text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                  : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
-                }`}
+              style={{
+                flexShrink: 0, padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+                border: `1.5px solid ${category === cat ? C.primary : C.border}`,
+                background: category === cat ? C.primary : C.surface,
+                color: category === cat ? "#fff" : C.textSub,
+                boxShadow: category === cat ? "0 4px 14px rgba(15,61,46,0.22)" : "none",
+                transition: "all 120ms ease-out",
+              }}
             >
               {cat}
             </button>
           ))}
         </div>
 
-        {/* Restaurant Grid — unchanged */}
+        {/* Section heading */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.textMain, letterSpacing: "-0.01em" }}>
+            {query ? `Results for "${query}"` : address ? `Near ${address}` : "Restaurants near you"}
+          </h2>
+          {!loading && (
+            <span style={{ fontSize: 13, color: C.textMuted }}>
+              {filtered.length} available
+            </span>
+          )}
+        </div>
+
+        {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="rounded-2xl bg-white/5 animate-pulse">
-                <div className="h-44 bg-white/10 rounded-t-2xl" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-white/10 rounded w-3/4" />
-                  <div className="h-3 bg-white/10 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <img src="/zoomo-mascot.png" alt="No results" className="w-24 opacity-40 mb-4 animate-float" />
-            <p className="text-gray-500 text-lg font-medium">No restaurants found</p>
-            <p className="text-gray-600 text-sm mt-1">Try a different search or category</p>
-            <button onClick={() => { setQuery(""); setCategory("All"); }} className="mt-4 px-5 py-2 rounded-xl bg-z-primary text-white text-sm hover:bg-z-hover transition">
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center",
+            justifyContent: "center", padding: "72px 20px", textAlign: "center"
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🍽️</div>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>Nothing found</h3>
+            <p style={{ color: C.textSub, fontSize: 14, marginBottom: 20 }}>
+              Try a different search or pick another category
+            </p>
+            <button
+              onClick={() => { setQuery(""); setCategory("All"); }}
+              style={{
+                padding: "10px 22px", borderRadius: 12, border: `1.5px solid ${C.primary}`,
+                background: "transparent", color: C.primary, fontWeight: 600, fontSize: 14,
+                cursor: "pointer", fontFamily: "inherit", transition: "all 120ms"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.primary; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.primary; }}
+            >
               Clear filters
             </button>
           </div>
         ) : (
-          <>
-            <p className="text-gray-500 text-sm mb-4">{filtered.length} restaurants available</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filtered.map(r => <RestaurantCard key={r.id} r={r} navigate={navigate} />)}
-            </div>
-          </>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+            {filtered.map(r => <RestaurantCard key={r.id} r={r} navigate={navigate} />)}
+          </div>
         )}
+
+        {/* Why section */}
+        <div style={{ marginTop: 72, paddingTop: 48, borderTop: `1px solid ${C.borderSoft}` }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 8 }}>
+              WHY ZOOMO EATS
+            </div>
+            <h2 style={{
+              fontSize: 30, fontWeight: 700, color: C.textMain, letterSpacing: "-0.02em",
+              lineHeight: "38px"
+            }}>
+              Faster food. Simpler checkout.
+            </h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+            {[
+              { emoji: "⚡", title: "Under 60 seconds", desc: "Orders confirmed and dispatched before you've put your phone down." },
+              { emoji: "📍", title: "Real-time tracking", desc: "Watch every step of your delivery on a live map." },
+              { emoji: "✅", title: "Quality vetted", desc: "Every restaurant passes our hygiene and rating standards before listing." },
+            ].map(f => (
+              <div key={f.title}
+                style={{
+                  padding: 24, borderRadius: 20, background: C.surface,
+                  border: `1px solid ${C.borderSoft}`, boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+                }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>{f.emoji}</div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>{f.title}</h3>
+                <p style={{ fontSize: 13, color: C.textSub, lineHeight: "20px" }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
 
+      {/* ── FOOTER ── */}
+      <footer style={{ background: C.primary, padding: "48px 20px 28px", marginTop: 0 }}>
+        <div style={{ maxWidth: 1152, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 36 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.12)",
+                  display: "flex", alignItems: "center", justifyContent: "center"
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                    <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+                    <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+                    <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <span style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>
+                  Zoomo <span style={{ color: C.accent }}>Eats</span>
+                </span>
+              </div>
+              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: "20px", maxWidth: 220 }}>
+                Fastest food delivery with real-time tracking & great offers.
+              </p>
+            </div>
+            {[
+              { title: "Explore", links: [["Restaurants", "/restaurants"], ["Offers", "#"], ["Support", "#"]] },
+              { title: "Legal", links: [["Terms & Conditions", "#"], ["Privacy Policy", "#"], ["Cookie Policy", "#"]] },
+            ].map(col => (
+              <div key={col.title}>
+                <h4 style={{ color: "#fff", fontWeight: 600, fontSize: 13, marginBottom: 14, letterSpacing: "0.02em" }}>{col.title}</h4>
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                  {col.links.map(([label, href]) => (
+                    <li key={label}>
+                      <a href={href} style={{
+                        color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none",
+                        transition: "color 120ms"
+                      }}
+                        onMouseEnter={e => e.target.style.color = "#fff"}
+                        onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}
+                      >{label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.10)", paddingTop: 20,
+            color: "rgba(255,255,255,0.35)", fontSize: 12, textAlign: "center"
+          }}>
+            © {new Date().getFullYear()} Zoomo Eats. All rights reserved.
+          </div>
+        </div>
+      </footer>
+
+      {/* Profile Drawer */}
       {profileOpen && <ProfileDrawer user={user} onClose={() => setProfileOpen(false)} navigate={navigate} />}
+
+      {/* Chat Widget */}
       <ChatWidget />
     </div>
   );

@@ -1,13 +1,13 @@
 import { createContext } from "react";
 
-const ThemeContext = createContext(true);
+const ThemeContext = createContext(false);
 
 export const ThemeProvider = ({ children }) => {
-  // Force dark mode always — no toggle, no localStorage
-  document.documentElement.classList.add("dark");
-  document.documentElement.classList.remove("light");
+  // Light mode — remove dark class so Tailwind doesn't override
+  document.documentElement.classList.remove("dark");
+  document.documentElement.classList.add("light");
   return (
-    <ThemeContext.Provider value={true}>
+    <ThemeContext.Provider value={false}>
       {children}
     </ThemeContext.Provider>
   );
