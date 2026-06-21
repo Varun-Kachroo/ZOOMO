@@ -24,7 +24,10 @@ export default function Signup() {
     try {
       setLoading(true);
       await signup(form);
-      navigate("/dashboard");
+      // ✅ FIX: New merchants have no restaurant yet — send them to
+      // onboarding (CreateRestaurant) first. Dashboard assumes a
+      // restaurant already exists and will crash otherwise.
+      navigate("/onboarding", { replace: true });
     } catch {
       setError("Signup failed. Email may already exist.");
     } finally {

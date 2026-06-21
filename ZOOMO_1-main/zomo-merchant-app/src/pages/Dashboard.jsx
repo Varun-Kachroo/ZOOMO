@@ -9,12 +9,21 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         const restaurantRes = await api.get("/merchant/restaurants/me");
-        const restaurantId = restaurantRes.data.id;
+        const restaurantId = restaurantRes?.data?.id;
+
+        // ✅ FIX: a brand-new merchant has no restaurant yet.
+        // Instead of crashing on `.id` of an undefined object,
+        // send them to onboarding to create one.
+        if (!restaurantId) {
+          navigate("/onboarding", { replace: true });
+          return;
+        }
 
         const ordersRes = await api.get(
           `/merchant/restaurants/${restaurantId}/orders`
@@ -22,8 +31,8 @@ export default function Dashboard() {
 
         const dishesRes = await api.get("/merchant/dishes");
 
-        const orders = ordersRes.data;
-        const dishes = dishesRes.data;
+        const orders = ordersRes.data ?? [];
+        const dishes = dishesRes.data ?? [];
 
         const today = new Date().toDateString();
 
@@ -58,21 +67,51 @@ export default function Dashboard() {
             status: o.status,
           }))
         );
-      } catch {
-        // silent fail for dashboard
+      } catch (err) {
+        // ✅ FIX: if the restaurant lookup itself fails (404, network
+        // error, etc.) treat it the same way — go to onboarding rather
+        // than silently failing into a render crash.
+        const status = err?.response?.status;
+        if (status === 404) {
+          navigate("/onboarding", { replace: true });
+          return;
+        }
+        console.error("Dashboard load failed:", err);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
     };
 
     loadDashboard();
-  }, []);
+  }, [navigate]);
 
   if (loading) {
     return (
       <p className="text-gray-600 dark:text-gray-400">
         Loading dashboard...
       </p>
+    );
+  }
+
+  // ✅ FIX: render a real error state instead of crashing on `stats.x`
+  // when stats is null (e.g. an unexpected API failure).
+  if (loadError || !stats) {
+    return (
+      <div className="rounded-3xl bg-white/95 dark:bg-[#141414] border border-black/5 dark:border-white/10 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Couldn't load dashboard
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Something went wrong while fetching your restaurant data.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-sm text-emerald-600 font-semibold hover:underline"
+        >
+          Retry
+        </button>
+      </div>
     );
   }
 
