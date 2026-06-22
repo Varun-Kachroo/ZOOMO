@@ -1,10 +1,33 @@
 import React from "react";
 import ImageUpload from "./ImageUpload";
 
+// ✅ FIX: the backend stores address as a single merged string
+// ("Shop, Area, City, State, Pincode, Country"). When editing an
+// EXISTING restaurant, the form previously always started with
+// shop/area/city/state/pincode as empty strings — so the required-field
+// check in submit() always failed silently (just an alert(), no API
+// call), making "Save Changes" look like it does nothing.
+// This parses the existing address back into its parts so editing
+// a restaurant that already has an address actually works.
+function parseAddress(address) {
+  if (!address) {
+    return { shop: "", area: "", city: "", state: "", pincode: "", country: "India" };
+  }
+  const parts = address.split(",").map((p) => p.trim());
+  // Expected order from RestaurantForm's own merge: shop, area, city, state, pincode, country
+  // Some entries (esp. ones created via onboarding's free-text "Full Address")
+  // may not have exactly 6 parts, so we fill what we can and never leave
+  // the validation-required fields silently blank if there's *any* data.
+  const [shop = "", area = "", city = "", state = "", pincode = "", country = "India"] = parts;
+  return { shop, area, city, state, pincode, country: country || "India" };
+}
+
 export default function RestaurantForm({ restaurant, onSubmit }) {
   /* ===========================
      FORM STATE
   =========================== */
+  const parsedAddress = parseAddress(restaurant?.address);
+
   const [form, setForm] = React.useState({
     name: restaurant?.name || "",
     description: restaurant?.description || "",
@@ -15,24 +38,27 @@ export default function RestaurantForm({ restaurant, onSubmit }) {
     priceRange: restaurant?.priceRange || "",
     isActive: restaurant?.isActive ?? true,
 
-    // 🔥 STRUCTURED ADDRESS
-    shop: "",
-    area: "",
-    city: "",
-    state: "",
-    pincode: "",
-    country: "India",
+    // 🔥 STRUCTURED ADDRESS (now pre-filled from existing restaurant.address)
+    shop: parsedAddress.shop,
+    area: parsedAddress.area,
+    city: parsedAddress.city,
+    state: parsedAddress.state,
+    pincode: parsedAddress.pincode,
+    country: parsedAddress.country,
   });
 
   const [image, setImage] = React.useState(
     restaurant?.imageUrl ? { preview: restaurant.imageUrl } : null
   );
 
+  const [validationError, setValidationError] = React.useState("");
+
   /* ===========================
      SUBMIT
   =========================== */
   const submit = (e) => {
     e.preventDefault();
+    setValidationError("");
 
     if (
       !form.name ||
@@ -41,7 +67,11 @@ export default function RestaurantForm({ restaurant, onSubmit }) {
       !form.state ||
       !form.pincode
     ) {
-      alert("Please fill all required address fields");
+      // ✅ FIX: show this inline (not just a dismissible alert) so it's
+      // obvious why nothing was saved, instead of looking like a no-op.
+      setValidationError(
+        "Please fill all required fields marked with * (Restaurant Name, Shop/Building, City, State, Pincode)."
+      );
       return;
     }
 
@@ -73,6 +103,12 @@ export default function RestaurantForm({ restaurant, onSubmit }) {
 
   return (
     <form onSubmit={submit} className="space-y-10">
+      {validationError && (
+        <div className="rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3">
+          <p className="text-sm text-red-600 dark:text-red-300">{validationError}</p>
+        </div>
+      )}
+
       {/* ================= IMAGE ================= */}
       <Section title="Restaurant Image">
         <ImageUpload image={image} setImage={setImage} />

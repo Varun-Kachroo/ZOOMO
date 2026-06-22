@@ -37,7 +37,7 @@ export default function CreateRestaurant() {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Failed to create restaurant"
+        "Failed to create restaurant"
       );
     } finally {
       setLoading(false);
@@ -45,8 +45,8 @@ export default function CreateRestaurant() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="max-w-xl mx-auto bg-white dark:bg-[#141414] p-6 rounded-3xl shadow border border-black/5 dark:border-white/10">
+      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
         Create Your Restaurant
       </h1>
 
@@ -59,7 +59,7 @@ export default function CreateRestaurant() {
       <form onSubmit={submit} className="space-y-3">
         <input
           placeholder="Restaurant Name"
-          className="w-full border p-2 rounded"
+          className="input-zoomo"
           value={form.name}
           onChange={(e) =>
             setForm({ ...form, name: e.target.value })
@@ -68,7 +68,8 @@ export default function CreateRestaurant() {
 
         <textarea
           placeholder="Full Address"
-          className="w-full border p-2 rounded"
+          className="input-zoomo resize-none"
+          rows={3}
           value={form.address}
           onChange={(e) =>
             setForm({ ...form, address: e.target.value })
@@ -77,7 +78,7 @@ export default function CreateRestaurant() {
 
         <input
           placeholder="Restaurant Phone"
-          className="w-full border p-2 rounded"
+          className="input-zoomo"
           value={form.phone}
           onChange={(e) =>
             setForm({ ...form, phone: e.target.value })
@@ -86,7 +87,7 @@ export default function CreateRestaurant() {
 
         <input
           placeholder="Restaurant Email"
-          className="w-full border p-2 rounded"
+          className="input-zoomo"
           value={form.email}
           onChange={(e) =>
             setForm({ ...form, email: e.target.value })
@@ -95,7 +96,7 @@ export default function CreateRestaurant() {
 
         <input
           placeholder="Opening Hours (e.g. 9 AM - 11 PM)"
-          className="w-full border p-2 rounded"
+          className="input-zoomo"
           value={form.openingHours}
           onChange={(e) =>
             setForm({
@@ -107,7 +108,7 @@ export default function CreateRestaurant() {
 
         <input
           placeholder="Cuisine Type (e.g. Italian)"
-          className="w-full border p-2 rounded"
+          className="input-zoomo"
           value={form.cuisineType}
           onChange={(e) =>
             setForm({
@@ -118,7 +119,7 @@ export default function CreateRestaurant() {
         />
 
         <select
-          className="w-full border p-2 rounded"
+          className="input-zoomo"
           value={form.priceRange}
           onChange={(e) =>
             setForm({
@@ -137,7 +138,7 @@ export default function CreateRestaurant() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-red-500 text-white w-full py-2 rounded disabled:opacity-60"
+          className="btn-zoomo w-full disabled:opacity-60"
         >
           {loading ? "Saving..." : "Save Restaurant"}
         </button>

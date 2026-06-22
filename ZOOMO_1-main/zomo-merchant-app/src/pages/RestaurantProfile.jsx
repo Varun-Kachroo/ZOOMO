@@ -5,7 +5,9 @@ import api from "../services/api";
 export default function RestaurantProfile() {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   // Fetch restaurant profile
   useEffect(() => {
@@ -14,9 +16,9 @@ export default function RestaurantProfile() {
         const res = await api.get("/merchant/restaurants/me");
         setRestaurant(res.data);
       } catch (err) {
-        setError(
+        setLoadError(
           err.response?.data?.message ||
-            "Failed to load restaurant profile"
+          "Failed to load restaurant profile"
         );
       } finally {
         setLoading(false);
@@ -28,7 +30,8 @@ export default function RestaurantProfile() {
 
   // Save profile updates
   const saveProfile = async (data) => {
-    setError("");
+    setSaveError("");
+    setSaved(false);
     try {
       await api.patch(
         `/merchant/restaurants/${restaurant.id}`,
@@ -39,10 +42,17 @@ export default function RestaurantProfile() {
         ...prev,
         ...data,
       }));
+      setSaved(true);
+      // Clear the "saved" confirmation after a few seconds
+      setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      setError(
+      // ✅ FIX: this used to set the same `error` state that replaces
+      // the entire page with an error box, hiding the form. Now a
+      // failed save shows inline above the form instead, so you can
+      // see what went wrong and try again without losing your edits.
+      setSaveError(
         err.response?.data?.message ||
-          "Failed to update restaurant profile"
+        "Failed to update restaurant profile"
       );
     }
   };
@@ -55,7 +65,8 @@ export default function RestaurantProfile() {
     );
   }
 
-  if (error) {
+  // Only a failed INITIAL LOAD replaces the page — a failed save does not.
+  if (loadError) {
     return (
       <div
         className="
@@ -66,7 +77,7 @@ export default function RestaurantProfile() {
           p-6
         "
       >
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500">{loadError}</p>
       </div>
     );
   }
@@ -83,6 +94,20 @@ export default function RestaurantProfile() {
           Manage your restaurant’s information visible to customers
         </p>
       </div>
+
+      {saveError && (
+        <div className="rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 px-4 py-3">
+          <p className="text-sm text-red-600 dark:text-red-300">{saveError}</p>
+        </div>
+      )}
+
+      {saved && (
+        <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 px-4 py-3">
+          <p className="text-sm text-emerald-600 dark:text-emerald-300">
+            ✓ Restaurant profile saved successfully
+          </p>
+        </div>
+      )}
 
       {/* ================= FORM CARD ================= */}
       <div
