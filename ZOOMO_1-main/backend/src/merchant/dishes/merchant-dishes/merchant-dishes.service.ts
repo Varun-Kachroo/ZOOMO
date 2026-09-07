@@ -8,7 +8,7 @@ import { PrismaService } from '../../../common/prisma.service';
 
 @Injectable()
 export class MerchantDishesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // 🔹 helper: get merchant's restaurant
   private async getMerchantRestaurant(
@@ -47,6 +47,8 @@ export class MerchantDishesService {
         name: body.name,
         description: body.description,
         price: Number(body.price),
+        // ✅ FIX: was never read from body — every new dish had imageUrl = null
+        imageUrl: body.imageUrl ?? null,
         ingredients: body.ingredients,
         calories: body.calories,
         preparationTime: body.preparationTime,
@@ -104,6 +106,10 @@ export class MerchantDishesService {
           body.price !== undefined
             ? Number(body.price)
             : undefined,
+        // ✅ FIX: was never read from body — editing a dish could never
+        // change its image even if the frontend sent a real URL.
+        imageUrl:
+          body.imageUrl !== undefined ? body.imageUrl : undefined,
         ingredients: body.ingredients,
         calories: body.calories,
         preparationTime: body.preparationTime,
@@ -115,39 +121,28 @@ export class MerchantDishesService {
     });
   }
   async getDishById(
-  merchantId: string,
-  dishId: string,
-) {
-  const dish = await this.prisma.dish.findUnique({
-    where: { id: dishId },
-    include: { restaurant: true },
-  });
+    merchantId: string,
+    dishId: string,
+  ) {
+    const dish = await this.prisma.dish.findUnique({
+      where: { id: dishId },
+      include: { restaurant: true },
+    });
 
-   
 
-  if (!dish) {
-    throw new NotFoundException('Dish not found');
+
+    if (!dish) {
+      throw new NotFoundException('Dish not found');
+    }
+
+    if (dish.restaurant.ownerId !== merchantId) {
+      throw new ForbiddenException(
+        'You do not own this dish',
+      );
+    }
+
+    return dish;
   }
-
-  console.log('Merchant ID:', merchantId);
-    console.log(
-      'Dish Restaurant Owner ID:',
-      dish.restaurant.ownerId,
-    );
-
-  if (dish.restaurant.ownerId !== merchantId) {
-    console.log('Merchant ID:', merchantId);
-    console.log(
-      'Dish Restaurant Owner ID:',
-      dish.restaurant.ownerId,
-    );
-    throw new ForbiddenException(
-      'You do not own this dish',
-    );
-  }
-
-  return dish;
-}
 
   // ✅ TOGGLE AVAILABILITY
   async toggleAvailability(

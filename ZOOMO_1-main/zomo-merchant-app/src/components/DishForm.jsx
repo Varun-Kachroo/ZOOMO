@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../services/api";
 
 export default function DishForm({ initialData = {}, onSubmit }) {
   const [form, setForm] = useState({
@@ -18,6 +19,9 @@ export default function DishForm({ initialData = {}, onSubmit }) {
         : true,
   });
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({
@@ -26,17 +30,57 @@ export default function DishForm({ initialData = {}, onSubmit }) {
     });
   };
 
-  const handleImageUpload = (e) => {
+  // ✅ FIX: this used to just guess `/${file.name}` as the image path —
+  // a fake URL that assumed the file already existed in the deployed
+  // public/ folder. It never actually uploaded anything, which is why
+  // dish photos never appeared on the customer app. Now it really
+  // uploads the file and stores the permanent Cloudinary URL returned.
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // TEMP: public folder strategy (cloud-ready later)
-    const imagePath = `/${file.name}`;
-    setForm({ ...form, imageUrl: imagePath });
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be smaller than 5MB");
+      return;
+    }
+
+    setUploadError("");
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await api.post(
+        "/upload/image?folder=dishes",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      const uploadedUrl = res.data?.url;
+      if (!uploadedUrl) throw new Error("No URL returned from upload");
+
+      setForm((f) => ({ ...f, imageUrl: uploadedUrl }));
+    } catch (err) {
+      console.error("Dish image upload failed:", err);
+      setUploadError(
+        err.response?.data?.message || "Upload failed. Please try again."
+      );
+    } finally {
+      setUploading(false);
+    }
   };
 
   const submit = (e) => {
     e.preventDefault();
+    if (uploading) {
+      setUploadError("Please wait for the image to finish uploading.");
+      return;
+    }
     onSubmit(form);
   };
 
@@ -117,10 +161,11 @@ export default function DishForm({ initialData = {}, onSubmit }) {
       {/* ================= IMAGE ================= */}
       <Section title="Dish Image">
         <div className="flex flex-col sm:flex-row gap-6 items-center">
-          
+
           {/* Preview */}
           <div
             className="
+              relative
               w-40 h-40
               rounded-3xl
               bg-gray-100 dark:bg-[#1f1f1f]
@@ -143,6 +188,11 @@ export default function DishForm({ initialData = {}, onSubmit }) {
                 className="w-20 opacity-30"
               />
             )}
+            {uploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-xs font-medium">Uploading...</span>
+              </div>
+            )}
           </div>
 
           {/* Upload */}
@@ -154,11 +204,15 @@ export default function DishForm({ initialData = {}, onSubmit }) {
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
+              disabled={uploading}
               className="block w-full text-sm"
             />
             <p className="text-xs text-gray-500 mt-1">
               This image will be shown to customers
             </p>
+            {uploadError && (
+              <p className="text-xs text-red-500 mt-1">{uploadError}</p>
+            )}
           </div>
         </div>
       </Section>
@@ -197,14 +251,16 @@ export default function DishForm({ initialData = {}, onSubmit }) {
       <div className="pt-2">
         <button
           type="submit"
+          disabled={uploading}
           className="
             w-full py-3 rounded-2xl
             bg-emerald-600 hover:bg-emerald-700
             text-white font-semibold
             shadow-sm transition
+            disabled:opacity-60
           "
         >
-          Save Dish
+          {uploading ? "Uploading image..." : "Save Dish"}
         </button>
       </div>
     </form>

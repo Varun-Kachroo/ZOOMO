@@ -16,11 +16,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
 import { DriverModule } from './driver/driver.module';
 import { AdminModule } from './admin/admin.module';
+import { UploadModule } from './upload/upload.module';
 
 
 @Module({
-  imports: [AuthModule, UsersModule,PrismaModule, RestaurantsModule, DishesModule, CartModule, OrdersModule, PaymentsModule, AddressModule, MerchantModule, DriverModule, AdminModule],
+  imports: [AuthModule, UsersModule, PrismaModule, RestaurantsModule, DishesModule, CartModule, OrdersModule, PaymentsModule, AddressModule, MerchantModule, DriverModule, AdminModule, UploadModule],
   controllers: [AppController],
-  providers: [ AppService, PrismaService],
+  providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

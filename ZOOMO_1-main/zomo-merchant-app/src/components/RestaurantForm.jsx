@@ -75,6 +75,11 @@ export default function RestaurantForm({ restaurant, onSubmit }) {
       return;
     }
 
+    if (image?.uploading) {
+      setValidationError("Please wait for the image to finish uploading.");
+      return;
+    }
+
     // 🔥 MERGE ADDRESS (GEOCODER-FRIENDLY)
     const mergedAddress = [
       form.shop,
@@ -97,7 +102,10 @@ export default function RestaurantForm({ restaurant, onSubmit }) {
       cuisineType: form.cuisineType,
       priceRange: form.priceRange,
       isActive: form.isActive,
-      image,
+      // ✅ FIX: send the real uploaded URL string, not the whole
+      // { file, preview } object (which silently turned into "{}"
+      // over JSON and never reached the database).
+      imageUrl: image?.url ?? restaurant?.imageUrl ?? null,
     });
   };
 
@@ -111,7 +119,7 @@ export default function RestaurantForm({ restaurant, onSubmit }) {
 
       {/* ================= IMAGE ================= */}
       <Section title="Restaurant Image">
-        <ImageUpload image={image} setImage={setImage} />
+        <ImageUpload image={image} setImage={setImage} folder="restaurants" />
         <p className="text-xs text-gray-500 dark:text-gray-400">
           This image will be shown to customers
         </p>
