@@ -730,24 +730,33 @@ export default function LandingPage() {
     async function load() {
       try {
         const res = await api.get("/restaurants");
-        const mapped = res.map(r => ({
-          id: r.id, name: r.name,
-          img: r.imageUrl || `https://images.unsplash.com/photo-${1513104890138 + Math.floor(Math.random() * 1000000)}?w=600&h=400&fit=crop`,
-          cuisine: r.cuisineType || "Various", area: r.address || "Nearby",
-          rating: r.rating?.toFixed(1) ?? "4.3", eta: "25-40 min", cost: 250, coupon: r.coupon || null,
+        // Guard: api.js returns parsed JSON directly (not axios {data:...})
+        // If the response isn't an array (e.g. backend error / empty body
+        // returned as {}), fall back gracefully instead of crashing.
+        const list = Array.isArray(res) ? res : [];
+        if (!Array.isArray(res)) {
+          console.warn("⚠️ /restaurants did not return an array:", res);
+        }
+        const mapped = list.map(r => ({
+          id: r.id,
+          name: r.name,
+          img: r.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
+          cuisine: r.cuisineType || "Various",
+          area: r.address || "Nearby",
+          rating: typeof r.rating === "number" ? r.rating.toFixed(1) : "4.3",
+          eta: "25-40 min",
+          cost: 250,
+          coupon: r.coupon || null,
         }));
-        setRestaurants(mapped); setFiltered(mapped);
-      } catch {
-        const fallback = [
-          { id: "1", name: "The Pizza Place", cuisine: "Italian · Pizza", rating: "4.5", eta: "30-40 min", cost: 300, img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=400&fit=crop", coupon: "PIZZA50" },
-          { id: "2", name: "Biryani House", cuisine: "Indian · Biryani", rating: "4.3", eta: "25-35 min", cost: 250, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&h=400&fit=crop", coupon: null },
-          { id: "3", name: "Burger Barn", cuisine: "American · Burgers", rating: "4.4", eta: "20-30 min", cost: 200, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop", coupon: "BOGO" },
-          { id: "4", name: "Wok & Roll", cuisine: "Chinese · Asian", rating: "4.2", eta: "30-45 min", cost: 280, img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&h=400&fit=crop", coupon: null },
-          { id: "5", name: "Green Bowl", cuisine: "Healthy · Salads", rating: "4.6", eta: "15-25 min", cost: 220, img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop", coupon: "HEALTHY20" },
-          { id: "6", name: "Dessert Den", cuisine: "Desserts · Sweets", rating: "4.7", eta: "20-30 min", cost: 180, img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&h=400&fit=crop", coupon: null },
-        ];
-        setRestaurants(fallback); setFiltered(fallback);
-      } finally { setLoading(false); }
+        setRestaurants(mapped);
+        setFiltered(mapped);
+      } catch (err) {
+        console.error("❌ Failed to load restaurants:", err);
+        setRestaurants([]);
+        setFiltered([]);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);
@@ -869,7 +878,14 @@ export default function LandingPage() {
               <input
                 ref={searchRef}
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={e => {
+                  setQuery(e.target.value);
+                  if (e.target.value.trim()) {
+                    setTimeout(() => {
+                      restaurantSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 300);
+                  }
+                }}
                 placeholder="Search restaurants, cuisines, dishes..."
                 style={{
                   width: "100%", height: 54, paddingLeft: 50, paddingRight: query ? 44 : 16,
@@ -889,6 +905,78 @@ export default function LandingPage() {
                   }}>
                   <Icon.X size={15} />
                 </button>
+              )}
+
+              {/* ── LIVE SEARCH DROPDOWN ── */}
+              {query.trim() && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, zIndex: 50,
+                  background: C.surface, borderRadius: 16,
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.18)",
+                  border: `1px solid ${C.border}`,
+                  overflow: "hidden", maxHeight: 320, overflowY: "auto",
+                }}>
+                  {filtered.length === 0 ? (
+                    <div style={{ padding: "20px 16px", textAlign: "center", color: C.textMuted, fontSize: 14 }}>
+                      No restaurants found for "{query}"
+                    </div>
+                  ) : (
+                    filtered.slice(0, 6).map(r => (
+                      <div
+                        key={r.id}
+                        onClick={() => navigate(`/restaurant/${r.id}`)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 12,
+                          padding: "10px 14px", cursor: "pointer",
+                          borderBottom: `1px solid ${C.borderSoft}`,
+                          transition: "background 120ms",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = C.page}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        <img
+                          src={r.img}
+                          alt={r.name}
+                          style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontWeight: 600, fontSize: 14, color: C.textMain,
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+                          }}>
+                            {r.name}
+                          </div>
+                          <div style={{ fontSize: 12, color: C.textSub, marginTop: 2 }}>
+                            {r.cuisine} · {r.eta}
+                          </div>
+                        </div>
+                        <div style={{
+                          fontSize: 12, fontWeight: 700, color: C.primary,
+                          background: C.primary + "12", padding: "3px 8px", borderRadius: 6,
+                          flexShrink: 0
+                        }}>
+                          ₹{r.cost}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  {filtered.length > 6 && (
+                    <div
+                      onClick={() => {
+                        restaurantSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      style={{
+                        padding: "12px 16px", textAlign: "center", fontSize: 13,
+                        color: C.primary, fontWeight: 600, cursor: "pointer",
+                        borderTop: `1px solid ${C.borderSoft}`, transition: "background 120ms"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = C.page}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                    >
+                      See all {filtered.length} results ↓
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
