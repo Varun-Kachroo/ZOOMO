@@ -238,32 +238,6 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Divider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
-              <div style={{ flex: 1, height: 1, background: C.border }} />
-              <span style={{ color: C.textMuted, fontSize: 12 }}>or continue with</span>
-              <div style={{ flex: 1, height: 1, background: C.border }} />
-            </div>
-
-            {/* Social */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {[["🌐", "Google"], ["🍎", "Apple"]].map(([emoji, name]) => (
-                <button key={name}
-                  style={{
-                    height: 44, borderRadius: 12, border: `1.5px solid ${C.border}`,
-                    background: C.surface, color: C.textMain, fontSize: 13, fontWeight: 600,
-                    cursor: "pointer", fontFamily: "inherit", display: "flex",
-                    alignItems: "center", justifyContent: "center", gap: 6,
-                    transition: "all 120ms"
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.background = C.page; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}
-                >
-                  {emoji} {name}
-                </button>
-              ))}
-            </div>
-
             {/* Sign up link */}
             <p style={{ textAlign: "center", marginTop: 20, color: C.textSub, fontSize: 14 }}>
               Don't have an account?{" "}

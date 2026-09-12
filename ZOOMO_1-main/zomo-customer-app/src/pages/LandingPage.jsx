@@ -108,40 +108,7 @@ const Icon = {
   ),
 };
 
-/* ─── CUISINE TICKER (signature element) ─────────── */
-const TICKER_ITEMS = [
-  "🍕 Pizza", "🍔 Burgers", "🍛 Biryani", "🥡 Chinese",
-  "🥗 Healthy", "🍰 Desserts", "🧃 Beverages", "🌮 Tacos",
-  "🍜 Noodles", "🥩 BBQ", "🥪 Sandwiches", "🍣 Sushi",
-];
-
-function CuisineTicker() {
-  const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  return (
-    <div style={{ background: C.primary, overflow: "hidden", borderTop: `1px solid rgba(255,255,255,0.08)`, borderBottom: `1px solid rgba(255,255,255,0.08)` }}>
-      <style>{`
-        @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
-        .ticker-track { display:flex; width:max-content; animation: ticker 32s linear infinite; }
-        .ticker-track:hover { animation-play-state: paused; }
-      `}</style>
-      <div className="ticker-track" style={{ padding: "10px 0" }}>
-        {doubled.map((item, i) => (
-          <span key={i} style={{
-            color: "rgba(255,255,255,0.65)", fontSize: 13, fontWeight: 500,
-            padding: "4px 24px", whiteSpace: "nowrap", letterSpacing: "0.01em",
-            borderRight: i === doubled.length / 2 - 1 ? "none" : "1px solid rgba(255,255,255,0.12)",
-            transition: "color 120ms",
-          }}
-            onMouseEnter={e => e.target.style.color = C.accent}
-            onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
+/* ─── CUISINE TICKER REMOVED ─────────────────────── */
 
 /* ─── ADDRESS MODAL ───────────────────────────────── */
 function AddressModal({ onConfirm, onSkip }) {
@@ -257,89 +224,79 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
       boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
       transition: "all 180ms ease-out",
     }}>
-      <style>{`
-        .ze-nav-row { display:flex; align-items:center; gap:10px; }
-        .ze-nav-auth { display:flex; align-items:center; gap:8px; }
-        .ze-nav-auth-label { display:inline; }
-        @media (max-width: 560px) {
-          .ze-nav-row { gap:8px; }
-          .ze-nav-auth-label { display:none; }
-          .ze-nav-auth button, .ze-nav-auth a { padding:8px !important; }
-        }
-      `}</style>
-      <div className="ze-nav-row" style={{
-        maxWidth: 1152, margin: "0 auto", padding: "12px 16px",
-        justifyContent: "space-between"
+      <div style={{
+        maxWidth: 1152, margin: "0 auto", padding: "12px 20px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12
       }}>
 
         <div style={{ cursor: "pointer", flexShrink: 0 }} onClick={() => navigate("/")}>
           <ZLogo />
         </div>
 
-        {/* Address pill — always visible, shrinks but never disappears */}
+        {/* Address pill */}
         <button
           onClick={onAddressClick}
           style={{
-            display: "flex", alignItems: "center", gap: 7, padding: "8px 12px",
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
             borderRadius: 12, background: C.page, border: `1.5px solid ${C.border}`,
             fontSize: 13, color: address ? C.textMain : C.textSub, cursor: "pointer",
-            fontFamily: "inherit", flex: "1 1 auto", minWidth: 0, maxWidth: 260,
+            fontFamily: "inherit", flex: 1, maxWidth: 320, minWidth: 0,
             transition: "border-color 120ms, background 120ms", textAlign: "left"
           }}
           onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
           onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
         >
-          <span style={{ color: C.accent, flexShrink: 0, display: "flex" }}><Icon.MapPin /></span>
+          <span style={{ color: C.accent, flexShrink: 0 }}><Icon.MapPin /></span>
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: address ? 500 : 400 }}>
-            {address || "Set location"}
+            {address || "Set delivery location"}
           </span>
         </button>
 
-        {/* Right actions — fixed group, never wraps */}
-        <div className="ze-nav-auth" style={{ flexShrink: 0 }}>
+        {/* Right actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {user ? (
             <button
               onClick={onProfileOpen}
               style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
                 borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
                 color: C.textMain, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-                transition: "all 120ms", flexShrink: 0
+                transition: "all 120ms"
               }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
               onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
             >
               <Icon.User />
-              <span className="ze-nav-auth-label">{user.name?.split(" ")[0]}</span>
+              <span style={{ display: "none" }} className="sm:inline">{user.name?.split(" ")[0]}</span>
             </button>
           ) : (
             <>
               <button
                 onClick={() => navigate("/login")}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
                   borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
                   color: C.textSub, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 120ms", flexShrink: 0, whiteSpace: "nowrap"
+                  transition: "all 120ms"
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
               >
-                <Icon.LogIn /> <span className="ze-nav-auth-label">Login</span>
+                <Icon.LogIn /> Login
               </button>
               <button
                 onClick={() => navigate("/signup")}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "9px 14px",
+                  display: "flex", alignItems: "center", gap: 6, padding: "9px 16px",
                   borderRadius: 10, border: "none",
                   background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
                   color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 120ms", boxShadow: "0 2px 8px rgba(15,61,46,0.25)", flexShrink: 0, whiteSpace: "nowrap"
+                  transition: "all 120ms", boxShadow: "0 2px 8px rgba(15,61,46,0.25)"
                 }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,61,46,0.25)"}
               >
-                <Icon.UserPlus /> <span className="ze-nav-auth-label">Sign up</span>
+                <Icon.UserPlus /> Sign up
               </button>
             </>
           )}
@@ -347,7 +304,7 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
           <button
             onClick={() => navigate("/cart")}
             style={{
-              position: "relative", width: 38, height: 38, borderRadius: 10,
+              position: "relative", width: 40, height: 40, borderRadius: 10,
               border: `1.5px solid ${C.border}`, background: C.surface,
               display: "flex", alignItems: "center", justifyContent: "center",
               color: C.textSub, cursor: "pointer", transition: "all 120ms", flexShrink: 0
@@ -766,6 +723,7 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
   const searchRef = useRef(null);
+  const restaurantSectionRef = useRef(null);
 
   /* Load restaurants */
   useEffect(() => {
@@ -841,45 +799,61 @@ export default function LandingPage() {
         navigate={navigate}
       />
 
-      {/* ── HERO ── */}
+      {/* ── HERO WITH VIDEO BACKGROUND ── */}
       <section style={{
-        background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-        paddingTop: 56, paddingBottom: 72, position: "relative", overflow: "hidden"
+        position: "relative", overflow: "hidden", minHeight: 480,
+        display: "flex", alignItems: "center"
       }}>
-        {/* Decorative orbs */}
+
+        {/* Video background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", zIndex: 0
+          }}
+        >
+          <source src="https://res.cloudinary.com/dx2qaarhy/video/upload/v1789214802/5899705-uhd_2160_4096_30fps_1.mp4" type="video/mp4" />
+        </video>
+
+        {/* Dark overlay so text stays readable over any video */}
         <div style={{
-          position: "absolute", top: "-20%", right: "-5%", width: 400, height: 400,
-          borderRadius: "50%", background: "rgba(34,197,94,0.10)", pointerEvents: "none"
-        }} />
-        <div style={{
-          position: "absolute", bottom: "-30%", left: "-10%", width: 320, height: 320,
-          borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none"
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "linear-gradient(135deg, rgba(15,61,46,0.82) 0%, rgba(20,90,67,0.72) 100%)"
         }} />
 
-        <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 1 }}>
+        {/* Content */}
+        <div style={{
+          maxWidth: 1152, margin: "0 auto", padding: "72px 20px",
+          position: "relative", zIndex: 2, width: "100%"
+        }}>
           <div className="fade-up" style={{ maxWidth: 600 }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(255,255,255,0.10)", backdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999,
+              background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.20)", borderRadius: 999,
               padding: "5px 14px", marginBottom: 20
             }}>
               <span style={{ width: 7, height: 7, background: C.accent, borderRadius: "50%" }} />
-              <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
+              <span style={{ color: "rgba(255,255,255,0.90)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
                 FAST DELIVERY · 45+ CITIES
               </span>
             </div>
 
             <h1 style={{
               color: "#fff", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 700,
-              lineHeight: 1.1, letterSpacing: "-0.025em", marginBottom: 14
+              lineHeight: 1.1, letterSpacing: "-0.025em", marginBottom: 14,
+              textShadow: "0 2px 16px rgba(0,0,0,0.3)"
             }}>
               What are you{" "}
               <span style={{ color: C.accent }}>craving</span>{" "}today?
             </h1>
             <p style={{
-              color: "rgba(255,255,255,0.65)", fontSize: 16, lineHeight: "24px",
-              marginBottom: 32, maxWidth: 480
+              color: "rgba(255,255,255,0.80)", fontSize: 16, lineHeight: "24px",
+              marginBottom: 32, maxWidth: 480, textShadow: "0 1px 8px rgba(0,0,0,0.3)"
             }}>
               {address ? `Delivering to ${address}` : "Set your location to see restaurants near you"}
             </p>
@@ -899,9 +873,9 @@ export default function LandingPage() {
                 placeholder="Search restaurants, cuisines, dishes..."
                 style={{
                   width: "100%", height: 54, paddingLeft: 50, paddingRight: query ? 44 : 16,
-                  borderRadius: 16, border: "2px solid transparent", background: "#fff",
+                  borderRadius: 16, border: "2px solid transparent", background: "rgba(255,255,255,0.97)",
                   fontSize: 15, color: C.textMain, outline: "none", fontFamily: "inherit",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.16)", transition: "border-color 120ms"
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.25)", transition: "border-color 120ms"
                 }}
                 onFocus={e => e.target.style.borderColor = C.accent}
                 onBlur={e => e.target.style.borderColor = "transparent"}
@@ -921,9 +895,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CUISINE TICKER ── */}
-      <CuisineTicker />
-
       {/* ── OFFER BANNER ── */}
       <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 20px" }}>
         <div style={{
@@ -941,7 +912,15 @@ export default function LandingPage() {
             </div>
           </div>
           <button
-            onClick={() => navigate("/signup")}
+            onClick={() => {
+              if (user) {
+                // Already logged in — smooth scroll down to restaurant grid
+                restaurantSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              } else {
+                // Not logged in — go to login
+                navigate("/login");
+              }
+            }}
             style={{
               padding: "10px 20px", borderRadius: 12, border: "none",
               background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
@@ -989,8 +968,8 @@ export default function LandingPage() {
           ))}
         </div>
 
-        {/* Section heading */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        {/* Section heading — scroll target for "Order now" button */}
+        <div ref={restaurantSectionRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: C.textMain, letterSpacing: "-0.01em" }}>
             {query ? `Results for "${query}"` : address ? `Near ${address}` : "Restaurants near you"}
           </h2>
