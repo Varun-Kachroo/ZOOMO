@@ -201,6 +201,12 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // ORDER TYPE: "DELIVERY" | "DINE_IN" | "TAKEAWAY"
+  const [orderType, setOrderType] = useState("DELIVERY");
+  const [dineDate, setDineDate] = useState("");
+  const [dineTime, setDineTime] = useState("");
+  const [guestCount, setGuestCount] = useState(1);
+
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState("");
@@ -271,19 +277,26 @@ export default function Checkout() {
   }
 
   async function placeOrder() {
-    if (!selectedAddress) return alert("Select a delivery address");
+    if (orderType === "DELIVERY" && !selectedAddress) return alert("Select a delivery address");
     if (!paymentMethod) return alert("Select a payment method");
-    if (scheduleDelivery && (!scheduleDate || !scheduleTime)) return alert("Select a delivery date and time");
+    if (orderType === "DELIVERY" && scheduleDelivery && (!scheduleDate || !scheduleTime)) return alert("Select a delivery date and time");
+    if ((orderType === "DINE_IN" || orderType === "TAKEAWAY") && (!dineDate || !dineTime)) return alert(`Select a date and time for your ${orderType === "DINE_IN" ? "dine-in" : "takeaway"}`);
     setPlacing(true);
     try {
       await api.post("/orders", {
         restaurantId: cart.items[0].dish.restaurantId,
-        addressId: selectedAddress,
+        addressId: orderType === "DELIVERY" ? selectedAddress : null,
         items: cart.items.map(i => ({ dishId: i.dish.id, quantity: i.quantity })),
         paymentMethod,
+        orderType,
         promoCode: appliedPromo?.code ?? null,
         tip: tip,
-        scheduledFor: scheduleDelivery ? `${scheduleDate}T${scheduleTime}:00` : null,
+        guestCount: orderType === "DINE_IN" ? guestCount : null,
+        scheduledFor: orderType === "DELIVERY" && scheduleDelivery
+          ? `${scheduleDate}T${scheduleTime}:00`
+          : (orderType !== "DELIVERY")
+            ? `${dineDate}T${dineTime}:00`
+            : null,
       });
       clearCart().catch(() => { });
       setPlacing(false);
@@ -347,8 +360,73 @@ export default function Checkout() {
           <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textMain, letterSpacing: "-0.015em" }}>Checkout</h1>
         </div>
 
-        {/* Delivery Address */}
-        <Section title="Delivery Address">
+        {/* ── ORDER TYPE ── */}
+        <Section title="How would you like this order?">
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {[
+              { id: "DELIVERY", label: "🛵 Delivery", sub: "Delivered to your door" },
+              { id: "DINE_IN", label: "🍽️ Dine In", sub: "Eat at the restaurant" },
+              { id: "TAKEAWAY", label: "🥡 Takeaway", sub: "Pick up yourself" },
+            ].map(opt => (
+              <label key={opt.id} onClick={() => { setOrderType(opt.id); setPaymentMethod(null); }}
+                style={{
+                  flex: 1, minWidth: 120, display: "flex", flexDirection: "column", gap: 3,
+                  padding: "12px 14px", borderRadius: 14, cursor: "pointer",
+                  border: `1.5px solid ${orderType === opt.id ? C.accent : C.border}`,
+                  background: orderType === opt.id ? `${C.accent}0D` : C.page,
+                  transition: "all 120ms"
+                }}>
+                <span style={{ fontWeight: 700, fontSize: 13, color: C.textMain }}>{opt.label}</span>
+                <span style={{ fontSize: 11, color: C.textSub }}>{opt.sub}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Date + Time for Dine In / Takeaway */}
+          {(orderType === "DINE_IN" || orderType === "TAKEAWAY") && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+              <p style={{ fontSize: 12, color: C.textSub }}>
+                {orderType === "DINE_IN" ? "When would you like to dine in?" : "When will you pick up?"}
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Date</label>
+                  <input type="date" min={new Date().toISOString().split("T")[0]}
+                    value={dineDate} onChange={e => setDineDate(e.target.value)} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Time</label>
+                  <select value={dineTime} onChange={e => setDineTime(e.target.value)} style={inputStyle}>
+                    <option value="">Select time</option>
+                    {getTimeSlots().map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              {orderType === "DINE_IN" && (
+                <div>
+                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Number of guests</label>
+                  <select value={guestCount} onChange={e => setGuestCount(Number(e.target.value))} style={inputStyle}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>)}
+                  </select>
+                </div>
+              )}
+              {dineDate && dineTime && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                  borderRadius: 10, background: `${C.accent}15`, border: `1px solid ${C.accent}30`,
+                  color: C.primary, fontSize: 12
+                }}>
+                  ✓ {orderType === "DINE_IN" ? "Dine-in" : "Takeaway"} booked for{" "}
+                  {new Date(`${dineDate}T${dineTime}`).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                  {orderType === "DINE_IN" && ` · ${guestCount} ${guestCount === 1 ? "guest" : "guests"}`}
+                </div>
+              )}
+            </div>
+          )}
+        </Section>
+
+        {/* Delivery Address — only shown for DELIVERY orders */}
+        {orderType === "DELIVERY" && <Section title="Delivery Address">
           {!showForm && addresses.map(a => (
             <label key={a.id} style={{
               display: "flex", alignItems: "flex-start", gap: 10, padding: 14,
@@ -404,10 +482,10 @@ export default function Checkout() {
               + Add new address
             </button>
           )}
-        </Section>
+        </Section>}
 
-        {/* Schedule Delivery */}
-        <Section title={
+        {/* Schedule Delivery — only for delivery orders */}
+        {orderType === "DELIVERY" && <Section title={
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Icon.Clock color={C.accent} /><span>Schedule Delivery</span>
@@ -445,7 +523,7 @@ export default function Checkout() {
               )}
             </>
           )}
-        </Section>
+        </Section>}
 
         {/* Tip */}
         <Section title={
@@ -492,24 +570,47 @@ export default function Checkout() {
 
         {/* Payment Method */}
         <Section title="Payment Method">
-          {[
-            { id: "COD", label: "Cash on Delivery", sub: "Pay when your order arrives" },
-            { id: "ONLINE", label: "Online Payment", sub: "Coming soon", disabled: true },
-          ].map(p => (
-            <label key={p.id} style={{
-              display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: 14,
-              cursor: p.disabled ? "not-allowed" : "pointer", opacity: p.disabled ? 0.45 : 1,
-              border: `1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
-              background: paymentMethod === p.id ? `${C.accent}0D` : C.page
-            }}>
-              <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id}
-                onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor: C.primary }} />
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{p.label}</p>
-                <p style={{ color: C.textMuted, fontSize: 11 }}>{p.sub}</p>
-              </div>
-            </label>
-          ))}
+          {(orderType === "DINE_IN" || orderType === "TAKEAWAY") ? (
+            // Dine-in / Takeaway payment options
+            [
+              { id: "PAY_AT_RESTAURANT", label: "💵 Pay at Restaurant", sub: "Pay in cash or card when you arrive" },
+              { id: "ONLINE", label: "💳 Online Payment", sub: "Coming soon", disabled: true },
+            ].map(p => (
+              <label key={p.id} style={{
+                display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: 14,
+                cursor: p.disabled ? "not-allowed" : "pointer", opacity: p.disabled ? 0.45 : 1,
+                border: `1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
+                background: paymentMethod === p.id ? `${C.accent}0D` : C.page
+              }}>
+                <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id}
+                  onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor: C.primary }} />
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{p.label}</p>
+                  <p style={{ color: C.textMuted, fontSize: 11 }}>{p.sub}</p>
+                </div>
+              </label>
+            ))
+          ) : (
+            // Delivery payment options
+            [
+              { id: "COD", label: "💰 Cash on Delivery", sub: "Pay when your order arrives" },
+              { id: "ONLINE", label: "💳 Online Payment", sub: "Coming soon", disabled: true },
+            ].map(p => (
+              <label key={p.id} style={{
+                display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: 14,
+                cursor: p.disabled ? "not-allowed" : "pointer", opacity: p.disabled ? 0.45 : 1,
+                border: `1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
+                background: paymentMethod === p.id ? `${C.accent}0D` : C.page
+              }}>
+                <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id}
+                  onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor: C.primary }} />
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{p.label}</p>
+                  <p style={{ color: C.textMuted, fontSize: 11 }}>{p.sub}</p>
+                </div>
+              </label>
+            ))
+          )}
         </Section>
 
         {/* Promo Code */}
@@ -629,9 +730,13 @@ export default function Checkout() {
           }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(15,61,46,0.35)"}
           onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.25)"}>
-          {scheduleDelivery && scheduleDate && scheduleTime
-            ? `Schedule Order · ₹${total.toFixed(2)}`
-            : `Place Order · ₹${total.toFixed(2)}`}
+          {orderType === "DINE_IN"
+            ? `Book Dine-In · ₹${total.toFixed(2)}`
+            : orderType === "TAKEAWAY"
+              ? `Confirm Takeaway · ₹${total.toFixed(2)}`
+              : scheduleDelivery && scheduleDate && scheduleTime
+                ? `Schedule Delivery · ₹${total.toFixed(2)}`
+                : `Place Order · ₹${total.toFixed(2)}`}
         </button>
       </div>
     </div>

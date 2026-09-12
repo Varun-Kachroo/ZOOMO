@@ -223,10 +223,14 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
       borderBottom: `1px solid ${scrolled ? C.border : C.borderSoft}`,
       boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
       transition: "all 180ms ease-out",
+      overflow: "hidden",
+      width: "100%",
+      maxWidth: "100vw",
     }}>
       <div style={{
-        maxWidth: 1152, margin: "0 auto", padding: "12px 20px",
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12
+        maxWidth: 1152, margin: "0 auto", padding: "12px 16px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+        width: "100%", boxSizing: "border-box"
       }}>
 
         <div style={{ cursor: "pointer", flexShrink: 0 }} onClick={() => navigate("/")}>
@@ -237,23 +241,26 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
         <button
           onClick={onAddressClick}
           style={{
-            display: "flex", alignItems: "center", gap: 8, padding: "8px 14px",
-            borderRadius: 12, background: C.page, border: `1.5px solid ${C.border}`,
-            fontSize: 13, color: address ? C.textMain : C.textSub, cursor: "pointer",
-            fontFamily: "inherit", flex: 1, maxWidth: 320, minWidth: 0,
-            transition: "border-color 120ms, background 120ms", textAlign: "left"
+            display: "flex", alignItems: "center", gap: 6, padding: "7px 10px",
+            borderRadius: 10, background: C.page, border: `1.5px solid ${C.border}`,
+            fontSize: 12, color: address ? C.textMain : C.textSub, cursor: "pointer",
+            fontFamily: "inherit", flex: "1 1 0", minWidth: 0, maxWidth: 220,
+            transition: "border-color 120ms", textAlign: "left", overflow: "hidden"
           }}
           onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
           onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
         >
-          <span style={{ color: C.accent, flexShrink: 0 }}><Icon.MapPin /></span>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: address ? 500 : 400 }}>
-            {address || "Set delivery location"}
+          <span style={{ color: C.accent, flexShrink: 0, display: "flex" }}><Icon.MapPin /></span>
+          <span style={{
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            fontWeight: address ? 500 : 400, flex: 1, minWidth: 0
+          }}>
+            {address || "Set location"}
           </span>
         </button>
 
         {/* Right actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
           {user ? (
             <button
               onClick={onProfileOpen}
@@ -782,8 +789,9 @@ export default function LandingPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: ${C.page} !important; }
-        html.dark body { background: ${C.page} !important; }
+        body { background: ${C.page} !important; overflow-x: hidden; }
+        html { overflow-x: hidden; }
+        html.dark body { background: ${C.page} !important; overflow-x: hidden; }
         .no-scrollbar::-webkit-scrollbar { display:none; }
         .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
         @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
@@ -878,14 +886,7 @@ export default function LandingPage() {
               <input
                 ref={searchRef}
                 value={query}
-                onChange={e => {
-                  setQuery(e.target.value);
-                  if (e.target.value.trim()) {
-                    setTimeout(() => {
-                      restaurantSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }, 300);
-                  }
-                }}
+                onChange={e => setQuery(e.target.value)}
                 placeholder="Search restaurants, cuisines, dishes..."
                 style={{
                   width: "100%", height: 54, paddingLeft: 50, paddingRight: query ? 44 : 16,
@@ -961,19 +962,11 @@ export default function LandingPage() {
                     ))
                   )}
                   {filtered.length > 6 && (
-                    <div
-                      onClick={() => {
-                        restaurantSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                      style={{
-                        padding: "12px 16px", textAlign: "center", fontSize: 13,
-                        color: C.primary, fontWeight: 600, cursor: "pointer",
-                        borderTop: `1px solid ${C.borderSoft}`, transition: "background 120ms"
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = C.page}
-                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                    >
-                      See all {filtered.length} results ↓
+                    <div style={{
+                      padding: "10px 16px", textAlign: "center", fontSize: 12,
+                      color: C.textMuted, borderTop: `1px solid ${C.borderSoft}`
+                    }}>
+                      +{filtered.length - 6} more results below
                     </div>
                   )}
                 </div>
