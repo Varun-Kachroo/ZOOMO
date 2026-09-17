@@ -3,23 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const C = {
-  page: "#F5F7F6", surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43",
-  accent: "#22C55E", textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF",
-  border: "#E5E7EB", borderSoft: "#F0F2F1", error: "#DC2626",
+  page: "#F0F2EE", surface: "#FFFFFF", primary: "#1C3A2A", hover: "#142B1F",
+  accent: "#4A7C59", textMain: "#111827", textSub: "#6B7280", textMuted: "#9CA3AF",
+  border: "#E4E7E1", borderSoft: "#E9EBE6", error: "#DC2626",
 };
+
+const LOGO_URL = "https://res.cloudinary.com/dx2qaarhy/image/upload/v1789420327/2bb606dc-2292-40ba-a4e8-df6720a3b700.png";
 
 function ZMark() {
   return (
-    <div style={{
-      width: 48, height: 48, borderRadius: 16, background: C.primary,
-      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-    }}>
-      <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-        <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-        <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-        <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-      </svg>
-    </div>
+    <img
+      src={LOGO_URL}
+      alt="Zoomo Eats"
+      style={{ width: 48, height: 48, borderRadius: 16, objectFit: "contain", flexShrink: 0 }}
+    />
   );
 }
 
@@ -105,10 +102,10 @@ export default function Login() {
     <div style={{
       minHeight: "100vh", background: C.page,
       display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "24px 16px", fontFamily: "'Poppins', system-ui, sans-serif"
+      padding: "24px 16px", fontFamily: "'Inter', system-ui, sans-serif"
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         body { background: ${C.page} !important; }
         html.dark body { background: ${C.page} !important; }

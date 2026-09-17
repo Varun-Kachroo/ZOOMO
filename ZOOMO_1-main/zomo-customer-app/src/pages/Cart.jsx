@@ -3,8 +3,8 @@ import { useCart } from "../context/CartContext";
 import { MascotLoader } from "./LandingPage";
 
 const C = {
-  page: "#F5F7F6", surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
-  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E5E7EB", borderSoft: "#F0F2F1",
+  page: "#F0F2EE", surface: "#FFFFFF", primary: "#1C3A2A", hover: "#142B1F", accent: "#4A7C59",
+  textMain: "#111827", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E4E7E1", borderSoft: "#E9EBE6",
 };
 
 const Icon = {
@@ -40,7 +40,7 @@ export default function Cart() {
     <div style={{
       minHeight: "100vh", background: C.page, display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 20px",
-      fontFamily: "'Poppins', system-ui, sans-serif"
+      fontFamily: "'Inter', system-ui, sans-serif"
     }}>
       <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.6 }}>🛒</div>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>Your cart is empty</h2>
@@ -65,9 +65,9 @@ export default function Cart() {
   return (
     <div style={{
       minHeight: "100vh", background: C.page, paddingBottom: 32,
-      fontFamily: "'Poppins', system-ui, sans-serif"
+      fontFamily: "'Inter', system-ui, sans-serif"
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');`}</style>
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 20px" }}>
 

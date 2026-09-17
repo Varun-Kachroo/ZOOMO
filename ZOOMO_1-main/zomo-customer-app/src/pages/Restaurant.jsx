@@ -5,8 +5,8 @@ import { useCart } from "../context/CartContext";
 import { MascotLoader } from "./LandingPage";
 
 const C = {
-  page: "#F5F7F6", surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
-  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E5E7EB", borderSoft: "#F0F2F1",
+  page: "#F0F2EE", surface: "#FFFFFF", primary: "#1C3A2A", hover: "#142B1F", accent: "#4A7C59",
+  textMain: "#111827", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E4E7E1", borderSoft: "#E9EBE6",
 };
 
 const Icon = {
@@ -84,7 +84,7 @@ export default function Restaurant() {
   if (!restaurant) return (
     <div style={{
       minHeight: "100vh", background: C.page, display: "flex", alignItems: "center",
-      justifyContent: "center", fontFamily: "'Poppins', system-ui, sans-serif"
+      justifyContent: "center", fontFamily: "'Inter', system-ui, sans-serif"
     }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.5 }}>🍽️</div>
@@ -103,10 +103,10 @@ export default function Restaurant() {
   return (
     <div style={{
       minHeight: "100vh", background: C.page, paddingBottom: totalItems > 0 ? 96 : 32,
-      fontFamily: "'Poppins', system-ui, sans-serif"
+      fontFamily: "'Inter', system-ui, sans-serif"
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
       `}</style>
 

@@ -4,9 +4,9 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
 const C = {
-  surface: "#FFFFFF", primary: "#0F3D2E", hover: "#145A43", accent: "#22C55E",
-  textMain: "#0B0F0E", textSub: "#6B7280", textMuted: "#9CA3AF",
-  border: "#E5E7EB", borderSoft: "#F0F2F1",
+  surface: "#FFFFFF", primary: "#1C3A2A", hover: "#142B1F", accent: "#4A7C59",
+  textMain: "#111827", textSub: "#6B7280", textMuted: "#9CA3AF",
+  border: "#E4E7E1", borderSoft: "#E9EBE6",
 };
 
 const LOGO_URL = "https://res.cloudinary.com/dx2qaarhy/image/upload/v1789420327/2bb606dc-2292-40ba-a4e8-df6720a3b700.png";
@@ -72,7 +72,7 @@ export default function Navbar() {
       borderBottom: `1px solid ${scrolled ? C.border : C.borderSoft}`,
       boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
       transition: "all 180ms ease-out",
-      fontFamily: "'Poppins', system-ui, sans-serif",
+      fontFamily: "'Inter', system-ui, sans-serif",
       overflow: "hidden", width: "100%",
     }}>
       <div style={{
@@ -88,7 +88,7 @@ export default function Navbar() {
         {address && (
           <div style={{
             display: "flex", alignItems: "center", gap: 6, padding: "7px 10px",
-            borderRadius: 10, background: "#F5F7F6", border: `1px solid ${C.border}`,
+            borderRadius: 10, background: "#F0F2EE", border: `1px solid ${C.border}`,
             fontSize: 12, color: C.textMain,
             flex: "1 1 0", minWidth: 0, maxWidth: 200, overflow: "hidden"
           }}>

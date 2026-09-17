@@ -4,181 +4,176 @@ import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
-/* ─── DESIGN TOKENS ─────────────────────────────── */
-const C = {
-  page: "#F5F7F6",
-  surface: "#FFFFFF",
-  primary: "#0F3D2E",
-  hover: "#145A43",
-  accent: "#22C55E",
-  textMain: "#0B0F0E",
-  textSub: "#6B7280",
-  textMuted: "#9CA3AF",
-  border: "#E5E7EB",
-  borderSoft: "#F0F2F1",
-};
-
-/* ─── MASCOT LOADER (keep same API as original) ─── */
 export function MascotLoader({ text = "Loading..." }) {
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 999, background: "#F5F7F6",
+      position: "fixed", inset: 0, zIndex: 999, background: "#F0F2EE",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16
     }}>
       <div style={{
-        width: 64, height: 64, borderRadius: "50%", background: C.primary,
+        width: 56, height: 56, borderRadius: 14, background: "#1C3A2A",
         display: "flex", alignItems: "center", justifyContent: "center"
       }}>
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-          <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-          <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <path d="M6 10H22" stroke="#7BC67E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M22 10L10 22" stroke="#7BC67E" strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M10 22H26" stroke="#7BC67E" strokeWidth="2.8" strokeLinecap="round" />
         </svg>
       </div>
-      <p style={{ color: C.primary, fontWeight: 600, fontSize: 14, letterSpacing: "0.02em" }}>{text}</p>
+      <p style={{ color: "#1C3A2A", fontWeight: 600, fontSize: 14, fontFamily: "'Inter', system-ui, sans-serif" }}>{text}</p>
     </div>
   );
 }
 
-/* ─── ICONS ──────────────────────────────────────── */
-const Icon = {
-  Search: ({ size = 18, style }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
-      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-    </svg>
-  ),
-  MapPin: ({ size = 14 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
-    </svg>
-  ),
-  Cart: ({ size = 18 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </svg>
-  ),
-  User: ({ size = 16 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-    </svg>
-  ),
-  Star: () => (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  ),
-  Clock: () => (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-    </svg>
-  ),
-  Tag: () => (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
-      <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
-    </svg>
-  ),
-  X: ({ size = 16 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <path d="M18 6 6 18M6 6l12 12" />
-    </svg>
-  ),
-  ChevronRight: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  ),
-  LogIn: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" />
-      <line x1="15" y1="12" x2="3" y2="12" />
-    </svg>
-  ),
-  UserPlus: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
-    </svg>
-  ),
-  Send: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </svg>
-  ),
+// ── DESIGN TOKENS ─────────────────────────────────────
+const C = {
+  bg: "#F0F2EE",
+  surface: "#FFFFFF",
+  dark: "#1C3A2A",
+  darkHov: "#142B1F",
+  accent: "#4A7C59",
+  accentLt: "#7BC67E",
+  text: "#111827",
+  sub: "#6B7280",
+  muted: "#9CA3AF",
+  border: "#E4E7E1",
 };
 
-/* ─── CUISINE TICKER REMOVED ─────────────────────── */
+const LOGO = "https://res.cloudinary.com/dx2qaarhy/image/upload/v1789420327/2bb606dc-2292-40ba-a4e8-df6720a3b700.png";
 
-/* ─── ADDRESS MODAL ───────────────────────────────── */
+// ── ICONS ─────────────────────────────────────────────
+const MapPinIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
+  </svg>
+);
+const UserIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+  </svg>
+);
+const CartIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+  </svg>
+);
+const SearchIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+  </svg>
+);
+const ClockIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+const StarIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1C3A2A" stroke="#1C3A2A" strokeWidth="1">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+const HeartIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+const BoltIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+const PersonIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+const ArrowUpRightIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" />
+  </svg>
+);
+const LogOutIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
+// ── CATEGORY DATA ──────────────────────────────────────
+const CRAVINGS = [
+  { label: "Pizza", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&h=200&fit=crop" },
+  { label: "Burgers", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop" },
+  { label: "Indian", img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&h=200&fit=crop" },
+  { label: "Chinese", img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&h=200&fit=crop" },
+  { label: "Healthy", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop" },
+  { label: "Desserts", img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=200&h=200&fit=crop" },
+];
+
+const OFFERS = [
+  { badge: "₹80 OFF", timing: "WEDNESDAYS", title: "Wed: ₹80 off pizza", desc: "Buy 1 get 1 vibe on medium pies.", restaurant: "I Love Pizza", code: "BOGO", img: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=400&h=240&fit=crop" },
+  { badge: "50% OFF", timing: "EXPIRES SUNDAY", title: "50% off your pizza", desc: "On any Pizza Palace pie. Max ₹120.", restaurant: "Pizza Palace", code: "ZOOMO50", img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=240&fit=crop" },
+  { badge: "FREE DELIVERY", timing: "THIS WEEK", title: "Free delivery", desc: "On orders above ₹199. Any restaurant.", restaurant: "All restaurants", code: "FREESHIP", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=240&fit=crop" },
+  { badge: "20% OFF", timing: "EXPIRES SUNDAY", title: "20% off bowls", desc: "Healthy Bites salads and smoothies.", restaurant: "Healthy Bites", code: "HEALTHY20", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=240&fit=crop" },
+];
+
+const HOW_IT_WORKS = [
+  { icon: <BoltIcon />, num: "01", title: "One town. That's it.", desc: "Zoomo only cooks for your city. No other city, no thin routes, no cold bags." },
+  { icon: <PersonIcon />, num: "02", title: "Hot at the gate", desc: "The ride is short. Food doesn't go grey on a highway." },
+  { icon: <ShieldIcon />, num: "03", title: "Restaurants you know", desc: "Neighbours. Ratings from people who actually live here." },
+];
+
+const AREAS = ["Downtown", "Riverside", "Old Town", "Hillview", "Central", "Eastgate", "Westside", "Lakeview", "Greenwood"];
+
+// ── ADDRESS MODAL ──────────────────────────────────────
 function AddressModal({ onConfirm, onSkip }) {
   const [val, setVal] = useState("");
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 50, background: "rgba(15,61,46,0.7)",
+      position: "fixed", inset: 0, zIndex: 50, background: "rgba(28,58,42,0.6)",
       backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16
     }}>
       <div style={{
-        width: "100%", maxWidth: 440, background: C.surface, borderRadius: 28,
-        padding: 32, boxShadow: "0 24px 80px rgba(15,61,46,0.25)", border: `1px solid ${C.borderSoft}`
+        width: "100%", maxWidth: 420, background: C.surface, borderRadius: 24,
+        padding: 32, boxShadow: "0 24px 80px rgba(0,0,0,0.2)"
       }}>
-
         <div style={{
-          width: 52, height: 52, borderRadius: 16, background: C.primary,
-          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20
+          width: 44, height: 44, borderRadius: 12, background: C.dark,
+          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, color: C.accentLt
         }}>
-          <Icon.MapPin size={22} />
+          <MapPinIcon />
         </div>
-        <h2 style={{ color: C.textMain, fontSize: 24, fontWeight: 700, marginBottom: 6, lineHeight: "32px" }}>
-          Where should we deliver?
-        </h2>
-        <p style={{ color: C.textSub, fontSize: 14, marginBottom: 24 }}>
-          Enter your address to find nearby restaurants
-        </p>
-
-        <div style={{ position: "relative", marginBottom: 12 }}>
-          <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.accent }}>
-            <Icon.MapPin size={16} />
-          </div>
-          <input
-            value={val}
-            onChange={e => setVal(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && val.trim() && onConfirm(val.trim())}
-            placeholder="e.g. Koramangala, Bengaluru"
-            style={{
-              width: "100%", paddingLeft: 42, paddingRight: 16, paddingTop: 14, paddingBottom: 14,
-              borderRadius: 14, border: `1.5px solid ${C.border}`, fontSize: 14, color: C.textMain,
-              outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-              transition: "border-color 120ms"
-            }}
-            onFocus={e => e.target.style.borderColor = C.primary}
-            onBlur={e => e.target.style.borderColor = C.border}
-          />
-        </div>
-
-        <button
-          onClick={() => val.trim() && onConfirm(val.trim())}
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 6 }}>Where should we deliver?</h2>
+        <p style={{ color: C.sub, fontSize: 14, marginBottom: 20 }}>Set your street to see restaurants near you</p>
+        <input value={val} onChange={e => setVal(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && val.trim() && onConfirm(val.trim())}
+          placeholder="e.g. MG Road, Bengaluru"
           style={{
-            width: "100%", padding: "14px", borderRadius: 14, border: "none",
-            background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-            color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer", marginBottom: 10,
-            fontFamily: "inherit", transition: "opacity 120ms"
+            width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.border}`,
+            fontSize: 14, color: C.text, outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+            marginBottom: 10, transition: "border-color 120ms"
           }}
-          onMouseEnter={e => e.target.style.opacity = "0.9"}
-          onMouseLeave={e => e.target.style.opacity = "1"}
-        >
-          Find Food Near Me
+          onFocus={e => e.target.style.borderColor = C.dark}
+          onBlur={e => e.target.style.borderColor = C.border} />
+        <button onClick={() => val.trim() && onConfirm(val.trim())}
+          style={{
+            width: "100%", padding: "13px", borderRadius: 12, border: "none",
+            background: C.dark, color: "#fff", fontWeight: 700, fontSize: 14,
+            cursor: "pointer", fontFamily: "inherit", marginBottom: 8
+          }}>
+          Find Restaurants
         </button>
-        <button
-          onClick={onSkip}
+        <button onClick={onSkip}
           style={{
-            width: "100%", padding: "12px", borderRadius: 14, border: `1.5px solid ${C.border}`,
-            background: "transparent", color: C.textSub, fontSize: 14, cursor: "pointer",
-            fontFamily: "inherit", transition: "color 120ms, border-color 120ms"
-          }}
-          onMouseEnter={e => { e.target.style.color = C.textMain; e.target.style.borderColor = C.textMain; }}
-          onMouseLeave={e => { e.target.style.color = C.textSub; e.target.style.borderColor = C.border; }}
-        >
+            width: "100%", padding: "11px", borderRadius: 12, border: `1px solid ${C.border}`,
+            background: "transparent", color: C.sub, fontSize: 13, cursor: "pointer", fontFamily: "inherit"
+          }}>
           Set later
         </button>
       </div>
@@ -186,179 +181,126 @@ function AddressModal({ onConfirm, onSkip }) {
   );
 }
 
-/* ─── SEARCH RESULT ROW (used in overlay) ───────── */
-function SearchResultRow({ r, onSelect }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      onClick={onSelect}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex", alignItems: "center", gap: 14, padding: "10px 12px",
-        borderRadius: 14, cursor: "pointer",
-        background: hovered ? C.page : "transparent",
-        transition: "background 120ms"
-      }}
-    >
-      <img src={r.img} alt={r.name}
-        style={{ width: 52, height: 52, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontWeight: 600, fontSize: 14, color: C.textMain,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
-        }}>
-          {r.name}
-        </div>
-        <div style={{ fontSize: 12, color: C.textSub, marginTop: 2 }}>
-          {r.cuisine} · {r.eta}
-        </div>
-      </div>
-      <div style={{
-        fontSize: 12, fontWeight: 700, color: C.primary,
-        background: C.primary + "12", padding: "4px 10px", borderRadius: 8, flexShrink: 0
-      }}>
-        ₹{r.cost}
-      </div>
-    </div>
-  );
-}
-
-/* ─── NAVBAR ──────────────────────────────────────── */
-const LOGO_URL = "https://res.cloudinary.com/dx2qaarhy/image/upload/v1789420327/2bb606dc-2292-40ba-a4e8-df6720a3b700.png";
-
-function ZLogo() {
-  return (
-    <img
-      src={LOGO_URL}
-      alt="Zoomo Eats"
-      style={{ height: 36, width: "auto", objectFit: "contain", display: "block" }}
-    />
-  );
-}
-
-function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen, navigate }) {
+// ── NAVBAR ─────────────────────────────────────────────
+function Navbar({ address, onAddressClick, cartCount, user, navigate, onLogout, onSearchOpen }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 6);
+    const h = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", h);
     return () => window.removeEventListener("scroll", h);
   }, []);
 
   return (
     <header style={{
-      position: "sticky", top: 0, zIndex: 40,
-      background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.93)",
-      backdropFilter: "blur(16px)",
-      borderBottom: `1px solid ${scrolled ? C.border : C.borderSoft}`,
-      boxShadow: scrolled ? "0 2px 20px rgba(15,61,46,0.07)" : "none",
-      transition: "all 180ms ease-out",
-      overflow: "hidden",
-      width: "100%",
-      maxWidth: "100vw",
+      position: "sticky", top: 0, zIndex: 40, width: "100%",
+      background: scrolled ? "rgba(255,255,255,0.97)" : "#fff",
+      backdropFilter: "blur(12px)",
+      borderBottom: `1px solid ${scrolled ? C.border : "transparent"}`,
+      boxShadow: scrolled ? "0 1px 12px rgba(0,0,0,0.06)" : "none",
+      transition: "all 200ms ease",
+      fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       <div style={{
-        maxWidth: 1152, margin: "0 auto", padding: "12px 16px",
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-        width: "100%", boxSizing: "border-box"
+        maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 60,
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16
       }}>
 
+        {/* Logo */}
         <div style={{ cursor: "pointer", flexShrink: 0 }} onClick={() => navigate("/")}>
-          <ZLogo />
+          <img src={LOGO} alt="Zoomo Eats" style={{ height: 34, width: "auto", display: "block" }} />
         </div>
 
-        {/* Address pill */}
-        <button
-          onClick={onAddressClick}
+        {/* Address pill — center */}
+        <button onClick={onAddressClick}
           style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "7px 10px",
-            borderRadius: 10, background: C.page, border: `1.5px solid ${C.border}`,
-            fontSize: 12, color: address ? C.textMain : C.textSub, cursor: "pointer",
-            fontFamily: "inherit", flex: "1 1 0", minWidth: 0, maxWidth: 220,
-            transition: "border-color 120ms", textAlign: "left", overflow: "hidden"
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 18px",
+            borderRadius: 999, border: `1.5px solid ${C.border}`, background: C.surface,
+            fontSize: 13, cursor: "pointer", fontFamily: "inherit", transition: "all 120ms",
+            flex: "0 0 auto", maxWidth: 280
           }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+          onMouseEnter={e => e.currentTarget.style.borderColor = C.dark}
           onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
         >
-          <span style={{ color: C.accent, flexShrink: 0, display: "flex" }}><Icon.MapPin /></span>
-          <span style={{
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-            fontWeight: address ? 500 : 400, flex: 1, minWidth: 0
-          }}>
-            {address || "Set location"}
-          </span>
+          <span style={{ color: C.accent, display: "inline-flex", alignItems: "center" }}><MapPinIcon /></span>
+          <div style={{ textAlign: "left", minWidth: 0 }}>
+            {address && <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", color: C.muted, lineHeight: 1 }}>
+              {address.toUpperCase()}
+            </div>}
+            <div style={{
+              fontWeight: 600, fontSize: 13, color: C.text, overflow: "hidden",
+              textOverflow: "ellipsis", whiteSpace: "nowrap"
+            }}>
+              {address || "Set location"}
+            </div>
+          </div>
         </button>
 
-        {/* Right actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+        {/* Right */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {user ? (
-            <button
-              onClick={onProfileOpen}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
-                borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
-                color: C.textMain, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-                transition: "all 120ms"
-              }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
-            >
-              <Icon.User />
-              <span style={{ display: "none" }} className="sm:inline">{user.name?.split(" ")[0]}</span>
-            </button>
-          ) : (
             <>
-              <button
-                onClick={() => navigate("/login")}
+              <button onClick={() => navigate("/orders")}
                 style={{
                   display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
-                  borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.surface,
-                  color: C.textSub, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+                  borderRadius: 999, border: `1.5px solid ${C.border}`, background: "transparent",
+                  color: C.text, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
                   transition: "all 120ms"
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
+                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <Icon.LogIn /> Login
+                <UserIcon /> {user.name?.split(" ")[0]}
               </button>
-              <button
-                onClick={() => navigate("/signup")}
+              <button onClick={onLogout} title="Logout"
                 style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "9px 16px",
-                  borderRadius: 10, border: "none",
-                  background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-                  color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all 120ms", boxShadow: "0 2px 8px rgba(15,61,46,0.25)"
+                  width: 36, height: 36, borderRadius: 999, border: "1.5px solid #FECACA",
+                  background: "#FFF5F5", color: "#DC2626", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", transition: "all 120ms"
                 }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,61,46,0.25)"}
-              >
-                <Icon.UserPlus /> Sign up
-              </button>
+                onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
+                onMouseLeave={e => e.currentTarget.style.background = "#FFF5F5"}
+              ><LogOutIcon /></button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => navigate("/login")}
+                style={{
+                  padding: "8px 16px", borderRadius: 999, border: `1.5px solid ${C.border}`,
+                  background: "transparent", color: C.text, fontSize: 13, fontWeight: 500,
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 120ms"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >Login</button>
+              <button onClick={() => navigate("/signup")}
+                style={{
+                  padding: "9px 18px", borderRadius: 999, border: "none",
+                  background: C.dark, color: "#fff", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit", transition: "opacity 120ms"
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              >Sign up</button>
             </>
           )}
-
-          <button
-            onClick={() => navigate("/cart")}
+          <button onClick={() => navigate("/cart")}
             style={{
-              position: "relative", width: 40, height: 40, borderRadius: 10,
-              border: `1.5px solid ${C.border}`, background: C.surface,
+              position: "relative", width: 36, height: 36, borderRadius: 999,
+              border: `1.5px solid ${C.border}`, background: "transparent",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: C.textSub, cursor: "pointer", transition: "all 120ms", flexShrink: 0
+              color: C.sub, cursor: "pointer", transition: "all 120ms"
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
+            onMouseEnter={e => e.currentTarget.style.background = C.bg}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
           >
-            <Icon.Cart />
+            <CartIcon />
             {cartCount > 0 && (
               <span style={{
-                position: "absolute", top: -6, right: -6, width: 18, height: 18,
-                background: C.accent, color: "#fff", fontSize: 10, fontWeight: 700,
+                position: "absolute", top: -5, right: -5, width: 17, height: 17,
+                background: C.dark, color: "#fff", fontSize: 9, fontWeight: 700,
                 borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
                 border: "2px solid #fff"
-              }}>
-                {cartCount}
-              </span>
+              }}>{cartCount}</span>
             )}
           </button>
         </div>
@@ -367,876 +309,637 @@ function LandingNavbar({ address, onAddressClick, cartCount, user, onProfileOpen
   );
 }
 
-/* ─── CATEGORY PILLS ─────────────────────────────── */
-const CATEGORIES = ["All", "Pizza", "Burgers", "Indian", "Chinese", "Biryani", "Desserts", "Beverages", "Healthy", "Street Food"];
+// ── SEARCH OVERLAY ─────────────────────────────────────
+function SearchOverlay({ restaurants, onClose, navigate }) {
+  const [q, setQ] = useState("");
+  const inputRef = useRef(null);
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
 
-/* ─── RESTAURANT CARD ────────────────────────────── */
-function RestaurantCard({ r, navigate }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      onClick={() => navigate(`/restaurant/${r.id}`)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: C.surface, borderRadius: 20, cursor: "pointer", overflow: "hidden",
-        border: `1px solid ${hovered ? C.primary + "50" : C.border}`,
-        boxShadow: hovered ? "0 12px 40px rgba(15,61,46,0.13)" : "0 2px 10px rgba(0,0,0,0.04)",
-        transform: hovered ? "translateY(-3px)" : "translateY(0)",
-        transition: "all 180ms ease-out",
-      }}
-    >
-      {/* Image */}
-      <div style={{ position: "relative", height: 176, overflow: "hidden" }}>
-        <img
-          src={r.img}
-          alt={r.name}
-          style={{
-            width: "100%", height: "100%", objectFit: "cover",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
-            transition: "transform 240ms ease"
-          }}
-        />
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)"
-        }} />
-
-        {r.coupon && (
-          <div style={{
-            position: "absolute", bottom: 10, left: 10,
-            display: "flex", alignItems: "center", gap: 4,
-            background: "rgba(15,61,46,0.85)", backdropFilter: "blur(4px)",
-            color: C.accent, fontSize: 10, fontWeight: 600,
-            padding: "4px 8px", borderRadius: 8, border: `1px solid ${C.accent}40`
-          }}>
-            <Icon.Tag /> {r.coupon}
-          </div>
-        )}
-
-        <div style={{
-          position: "absolute", top: 10, right: 10,
-          display: "flex", alignItems: "center", gap: 4,
-          background: "rgba(0,0,0,0.70)", backdropFilter: "blur(4px)",
-          color: "#fff", fontSize: 11, fontWeight: 600,
-          padding: "4px 8px", borderRadius: 8
-        }}>
-          <Icon.Star /> {r.rating}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div style={{ padding: "14px 16px 16px" }}>
-        <h3 style={{
-          color: C.textMain, fontWeight: 700, fontSize: 15, marginBottom: 3,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
-        }}>
-          {r.name}
-        </h3>
-        <p style={{
-          color: C.textSub, fontSize: 12, marginBottom: 12,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
-        }}>
-          {r.cuisine}
-        </p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.textMuted, fontSize: 12 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <Icon.Clock /> {r.eta}
-            </span>
-            <span>·</span>
-            <span>₹{r.cost} for two</span>
-          </div>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 2, padding: "4px 10px",
-            background: C.primary + "14", color: C.primary, fontSize: 11, fontWeight: 700,
-            borderRadius: 8, letterSpacing: "0.01em"
-          }}>
-            Order <Icon.ChevronRight />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── RESTAURANT SKELETON ────────────────────────── */
-function SkeletonCard() {
-  return (
-    <div style={{ background: C.surface, borderRadius: 20, overflow: "hidden", border: `1px solid ${C.border}` }}>
-      <div style={{ height: 176, background: "#F0F2F1", position: "relative", overflow: "hidden" }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)",
-          animation: "shimmer 1.4s infinite"
-        }} />
-      </div>
-      <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ height: 16, width: "70%", background: "#F0F2F1", borderRadius: 8, marginBottom: 8 }} />
-        <div style={{ height: 12, width: "50%", background: "#F0F2F1", borderRadius: 8 }} />
-      </div>
-    </div>
-  );
-}
-
-/* ─── PROFILE DRAWER ────────────────────────────── */
-function ProfileDrawer({ user, onClose, navigate }) {
-  const { logout } = useAuth();
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex" }}>
-      {/* Backdrop */}
-      <div style={{ flex: 1, background: "rgba(15,61,46,0.4)", backdropFilter: "blur(2px)" }} onClick={onClose} />
-      {/* Panel */}
-      <div style={{
-        width: "100%", maxWidth: 320, background: C.surface,
-        borderLeft: `1px solid ${C.border}`, display: "flex", flexDirection: "column",
-        boxShadow: "-8px 0 40px rgba(0,0,0,0.12)"
-      }}>
-
-        <div style={{
-          padding: "16px 20px", borderBottom: `1px solid ${C.borderSoft}`,
-          display: "flex", alignItems: "center", justifyContent: "space-between"
-        }}>
-          <span style={{ fontWeight: 700, color: C.textMain, fontSize: 16 }}>Your profile</span>
-          <button onClick={onClose}
-            style={{
-              width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`,
-              background: "transparent", display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", color: C.textSub
-            }}>
-            <Icon.X size={14} />
-          </button>
-        </div>
-
-        <div style={{ padding: 20, flex: 1 }}>
-          {/* Avatar card */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 12, padding: 16,
-            borderRadius: 16, background: C.page, border: `1px solid ${C.borderSoft}`, marginBottom: 16
-          }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: 14, background: C.primary,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontWeight: 700, fontSize: 20, flexShrink: 0
-            }}>
-              {user?.name?.[0]?.toUpperCase() || "U"}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{
-                fontWeight: 600, color: C.textMain, fontSize: 15,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
-              }}>
-                {user?.name}
-              </div>
-              <div style={{
-                color: C.textSub, fontSize: 12, marginTop: 2,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
-              }}>
-                {user?.email}
-              </div>
-            </div>
-          </div>
-
-          {[{ label: "My Orders", path: "/orders" }, { label: "My Cart", path: "/cart" },
-          { label: "All Restaurants", path: "/restaurants" }].map(item => (
-            <button
-              key={item.path}
-              onClick={() => { navigate(item.path); onClose(); }}
-              style={{
-                width: "100%", padding: "12px 16px", borderRadius: 12,
-                border: `1px solid ${C.border}`, background: C.surface,
-                color: C.textMain, fontSize: 14, fontWeight: 500, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                fontFamily: "inherit", marginBottom: 8, transition: "all 120ms"
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = C.page; e.currentTarget.style.borderColor = C.primary + "60"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = C.surface; e.currentTarget.style.borderColor = C.border; }}
-            >
-              {item.label} <Icon.ChevronRight />
-            </button>
-          ))}
-
-          <button
-            onClick={() => { logout(); onClose(); }}
-            style={{
-              width: "100%", padding: "12px 16px", borderRadius: 12, marginTop: 8,
-              border: `1px solid #FECACA`, background: "#FFF5F5",
-              color: "#DC2626", fontSize: 14, fontWeight: 600, cursor: "pointer",
-              fontFamily: "inherit", transition: "all 120ms"
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = "#FEE2E2"}
-            onMouseLeave={e => e.currentTarget.style.background = "#FFF5F5"}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── CHAT WIDGET ────────────────────────────────── */
-function ChatWidget() {
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: "bot", text: "Hey! I'm Zoomo 👋 What can I help you with?" }
-  ]);
-  const [text, setText] = useState("");
-  const [typing, setTyping] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
-  }, [messages, typing]);
-
-  function send(msg = text) {
-    const val = msg.trim();
-    if (!val) return;
-    setMessages(m => [...m, { role: "user", text: val }]);
-    setText("");
-    setTyping(true);
-    setTimeout(() => {
-      const s = val.toLowerCase();
-      let reply = "Hmm, I didn't get that! Try asking about deals, orders, or restaurants.";
-      if (s.includes("deal") || s.includes("offer")) reply = "🔥 Use ZOOMO50 for 50% off, BOGO for Buy 1 Get 1, or FREESHIP for free delivery above ₹199!";
-      else if (s.includes("track") || s.includes("order")) reply = "Go to My Orders to track your delivery in real-time!";
-      else if (s.includes("deliver")) reply = "We deliver to 45+ cities! Set your location on the home screen.";
-      else if (s.includes("pay")) reply = "We support UPI, Cards, Wallets, Net Banking & Cash on Delivery!";
-      setMessages(m => [...m, { role: "bot", text: reply }]);
-      setTyping(false);
-    }, 1000 + Math.random() * 600);
-  }
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          position: "fixed", bottom: 20, right: 20, zIndex: 50,
-          width: 52, height: 52, borderRadius: "50%", border: "none",
-          background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-          color: "#fff", cursor: "pointer", display: "flex", alignItems: "center",
-          justifyContent: "center", boxShadow: "0 4px 20px rgba(15,61,46,0.35)",
-          transition: "transform 120ms"
-        }}
-        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
-        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-        title="Chat with Zoomo"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
-    );
-  }
+  const results = q.trim()
+    ? restaurants.filter(r =>
+      r.name.toLowerCase().includes(q.toLowerCase()) ||
+      r.cuisine?.toLowerCase().includes(q.toLowerCase()))
+    : restaurants;
 
   return (
     <div style={{
-      position: "fixed", bottom: 20, right: 20, zIndex: 50, width: 320,
-      borderRadius: 24, overflow: "hidden", background: C.surface,
-      border: `1px solid ${C.border}`, boxShadow: "0 16px 60px rgba(0,0,0,0.15)"
-    }}>
-
-      {/* Header */}
+      position: "fixed", inset: 0, zIndex: 200, background: "rgba(17,24,39,0.4)",
+      backdropFilter: "blur(4px)", display: "flex", flexDirection: "column"
+    }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
       <div style={{
-        padding: "14px 16px", display: "flex", alignItems: "center",
-        justifyContent: "space-between", background: C.primary
+        background: C.surface, borderBottomLeftRadius: 20, borderBottomRightRadius: 20,
+        boxShadow: "0 16px 48px rgba(0,0,0,0.15)", maxHeight: "85vh", display: "flex", flexDirection: "column"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+        {/* Input */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "16px 20px",
+          borderBottom: `1px solid ${C.border}`
+        }}>
           <div style={{
-            width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.15)",
-            display: "flex", alignItems: "center", justifyContent: "center"
+            flex: 1, display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
+            borderRadius: 999, background: C.bg, border: `1.5px solid ${C.border}`
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-          </div>
-          <span style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Zoomo Assist</span>
-          <div style={{ width: 7, height: 7, background: C.accent, borderRadius: "50%" }} />
-        </div>
-        <button onClick={() => setOpen(false)}
-          style={{
-            background: "none", border: "none", color: "rgba(255,255,255,0.7)",
-            cursor: "pointer", padding: 4, display: "flex", alignItems: "center"
-          }}>
-          <Icon.X size={14} />
-        </button>
-      </div>
-
-      {/* Messages */}
-      <div ref={ref} style={{
-        height: 220, overflowY: "auto", padding: 12, display: "flex",
-        flexDirection: "column", gap: 8, background: C.page
-      }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-            <div style={{
-              maxWidth: "82%", padding: "8px 12px", borderRadius: 14, fontSize: 13, lineHeight: "18px",
-              background: m.role === "user" ? C.primary : C.surface,
-              color: m.role === "user" ? "#fff" : C.textMain,
-              border: m.role === "user" ? "none" : `1px solid ${C.border}`,
-              borderBottomRightRadius: m.role === "user" ? 4 : 14,
-              borderBottomLeftRadius: m.role === "bot" ? 4 : 14,
-            }}>
-              {m.text}
-            </div>
-          </div>
-        ))}
-        {typing && (
-          <div style={{ display: "flex", gap: 4, paddingLeft: 4 }}>
-            {[0, 0.2, 0.4].map((d, i) => (
-              <div key={i} style={{
-                width: 7, height: 7, background: C.textMuted, borderRadius: "50%",
-                animation: "bounce 0.8s ease-in-out infinite", animationDelay: `${d}s`
+            <span style={{ color: C.muted, display: "inline-flex" }}><SearchIcon /></span>
+            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
+              placeholder="Search food or restaurants"
+              style={{
+                border: "none", outline: "none", background: "transparent", flex: 1,
+                fontSize: 15, color: C.text, fontFamily: "'Inter', system-ui, sans-serif"
               }} />
-            ))}
           </div>
-        )}
-      </div>
-
-      {/* Quick replies */}
-      <div style={{
-        display: "flex", gap: 6, padding: "8px 12px 0", background: C.surface,
-        borderTop: `1px solid ${C.borderSoft}`
-      }}>
-        {["Deals 🔥", "Track order", "Payment"].map(q => (
-          <button key={q} onClick={() => send(q)}
+          <button onClick={onClose}
             style={{
-              fontSize: 11, padding: "4px 10px", borderRadius: 20,
-              border: `1px solid ${C.border}`, background: C.page,
-              color: C.textSub, cursor: "pointer", fontFamily: "inherit",
-              transition: "all 120ms", whiteSpace: "nowrap"
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.color = C.primary; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSub; }}
-          >{q}</button>
-        ))}
-      </div>
+              padding: "9px 18px", borderRadius: 999, border: `1px solid ${C.border}`,
+              background: "transparent", fontSize: 13, color: C.sub, cursor: "pointer", fontFamily: "inherit",
+              whiteSpace: "nowrap"
+            }}>
+            Cancel
+          </button>
+        </div>
 
-      {/* Input */}
-      <div style={{ display: "flex", gap: 8, padding: 12, background: C.surface }}>
-        <input
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && send()}
-          placeholder="Ask something..."
-          style={{
-            flex: 1, padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${C.border}`,
-            fontSize: 13, color: C.textMain, outline: "none", fontFamily: "inherit",
-            transition: "border-color 120ms"
-          }}
-          onFocus={e => e.target.style.borderColor = C.primary}
-          onBlur={e => e.target.style.borderColor = C.border}
-        />
-        <button onClick={() => send()}
-          style={{
-            width: 38, height: 38, borderRadius: 10, border: "none",
-            background: C.primary, color: "#fff", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0, transition: "background 120ms"
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = C.hover}
-          onMouseLeave={e => e.currentTarget.style.background = C.primary}
-        >
-          <Icon.Send />
-        </button>
+        {/* Results */}
+        <div style={{ overflowY: "auto", padding: "8px 0" }}>
+          {q.trim() && results.length === 0 ? (
+            <div style={{ padding: "40px 20px", textAlign: "center" }}>
+              <p style={{ fontSize: 32, marginBottom: 8 }}>🔍</p>
+              <p style={{ fontWeight: 600, color: C.text, marginBottom: 4 }}>No results for "{q}"</p>
+              <p style={{ color: C.sub, fontSize: 13 }}>Try a different name or cuisine</p>
+            </div>
+          ) : (
+            <>
+              {q.trim() && <p style={{
+                padding: "4px 20px 8px", fontSize: 11, fontWeight: 700,
+                letterSpacing: "0.08em", color: C.accent
+              }}>
+                {results.length} RESULT{results.length !== 1 ? "S" : ""}
+              </p>}
+              {!q.trim() && <p style={{
+                padding: "4px 20px 8px", fontSize: 11, fontWeight: 700,
+                letterSpacing: "0.08em", color: C.accent
+              }}>ALL RESTAURANTS</p>}
+              {results.map(r => (
+                <div key={r.id} onClick={() => { onClose(); navigate(`/restaurant/${r.id}`); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "10px 20px",
+                    cursor: "pointer", transition: "background 100ms"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
+                  <img src={r.img} alt={r.name}
+                    style={{ width: 48, height: 48, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: C.text }}>{r.name}</div>
+                    <div style={{ fontSize: 12, color: C.sub, marginTop: 1 }}>{r.cuisine} · {r.eta}</div>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.dark }}>₹{r.cost}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-/* ─── MAIN LANDING PAGE ──────────────────────────── */
+// ── MAIN LANDING ───────────────────────────────────────
 export default function LandingPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { cart } = useCart();
   const navigate = useNavigate();
 
   const [address, setAddress] = useState(() => localStorage.getItem("ze_address") || "");
   const [showAddressModal, setShowAddressModal] = useState(!localStorage.getItem("ze_address") && !user);
-  const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [category, setCategory] = useState("All");
   const [restaurants, setRestaurants] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const searchRef = useRef(null);
-  const restaurantSectionRef = useRef(null);
+  const restaurantRef = useRef(null);
 
-  /* Load restaurants */
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await api.get("/restaurants");
-        // Guard: api.js returns parsed JSON directly (not axios {data:...})
-        // If the response isn't an array (e.g. backend error / empty body
-        // returned as {}), fall back gracefully instead of crashing.
-        const list = Array.isArray(res) ? res : [];
-        if (!Array.isArray(res)) {
-          console.warn("⚠️ /restaurants did not return an array:", res);
-        }
-        const mapped = list.map(r => ({
-          id: r.id,
-          name: r.name,
-          img: r.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
-          cuisine: r.cuisineType || "Various",
-          area: r.address || "Nearby",
-          rating: typeof r.rating === "number" ? r.rating.toFixed(1) : "4.3",
-          eta: "25-40 min",
-          cost: 250,
-          coupon: r.coupon || null,
-        }));
-        setRestaurants(mapped);
-        setFiltered(mapped);
-      } catch (err) {
-        console.error("❌ Failed to load restaurants:", err);
-        setRestaurants([]);
-        setFiltered([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    api.get("/restaurants").then(res => {
+      const list = Array.isArray(res) ? res : [];
+      setRestaurants(list.map(r => ({
+        id: r.id, name: r.name,
+        img: r.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
+        cuisine: r.cuisineType || "Various",
+        rating: r.rating?.toFixed(1) ?? "4.5",
+        eta: "20–35 min", cost: r.priceRange === "$" ? 200 : r.priceRange === "$$$" ? 500 : 350,
+        coupon: r.coupon || null,
+      })));
+    }).catch(() => setRestaurants([])).finally(() => setLoading(false));
   }, []);
 
-  /* Filter */
-  useEffect(() => {
-    let list = restaurants;
-    if (category !== "All") list = list.filter(r => r.cuisine?.toLowerCase().includes(category.toLowerCase()) || r.name?.toLowerCase().includes(category.toLowerCase()));
-    if (query.trim()) { const q = query.toLowerCase(); list = list.filter(r => r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q)); }
-    setFiltered(list);
-  }, [query, category, restaurants]);
+  const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
 
-  function handleAddressConfirm(addr) {
+  function confirmAddress(addr) {
     setAddress(addr);
     localStorage.setItem("ze_address", addr);
     setShowAddressModal(false);
   }
 
-  const cartCount = cart?.items?.reduce((t, i) => t + i.quantity, 0) ?? 0;
-
   return (
-    <div style={{ minHeight: "100vh", background: C.page, fontFamily: "'Poppins', system-ui, sans-serif" }}>
+    <div style={{
+      minHeight: "100vh", background: C.bg,
+      fontFamily: "'Inter', system-ui, sans-serif", color: C.text, overflowX: "hidden"
+    }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: ${C.page} !important; overflow-x: hidden; }
+        body { background: ${C.bg} !important; overflow-x: hidden; }
         html { overflow-x: hidden; }
-        html.dark body { background: ${C.page} !important; overflow-x: hidden; }
-        .no-scrollbar::-webkit-scrollbar { display:none; }
-        .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
-        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        .fade-up { animation: fadeUp 0.4s ease-out both; }
+        html.dark body { background: ${C.bg} !important; color: ${C.text} !important; }
         input::placeholder { color: #9CA3AF; }
+        .no-scroll { scrollbar-width: none; }
+        .no-scroll::-webkit-scrollbar { display: none; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up { animation: fadeUp 0.5s ease-out both; }
+        @keyframes fadeUp2 { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up-2 { animation: fadeUp2 0.5s 0.1s ease-out both; }
+        @keyframes fadeUp3 { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up-3 { animation: fadeUp3 0.5s 0.2s ease-out both; }
       `}</style>
 
-      {/* Address Modal */}
-      {showAddressModal && (
-        <AddressModal onConfirm={handleAddressConfirm} onSkip={() => setShowAddressModal(false)} />
-      )}
+      {showAddressModal && <AddressModal onConfirm={confirmAddress} onSkip={() => setShowAddressModal(false)} />}
+      {searchOpen && <SearchOverlay restaurants={restaurants} onClose={() => setSearchOpen(false)} navigate={navigate} />}
 
-      {/* Navbar */}
-      <LandingNavbar
+      {/* ── NAVBAR ── */}
+      <Navbar
         address={address}
         onAddressClick={() => setShowAddressModal(true)}
         cartCount={cartCount}
         user={user}
-        onProfileOpen={() => setProfileOpen(true)}
         navigate={navigate}
+        onLogout={logout}
+        onSearchOpen={() => setSearchOpen(true)}
       />
 
-      {/* ── HERO WITH VIDEO BACKGROUND ── */}
+      {/* ── HERO ── */}
       <section style={{
-        position: "relative", overflow: "hidden", minHeight: 480,
-        display: "flex", alignItems: "center"
+        position: "relative", height: "calc(100vh - 60px)", minHeight: 520,
+        maxHeight: 760, overflow: "hidden", display: "flex", alignItems: "flex-end"
       }}>
 
         {/* Video background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover", zIndex: 0
-          }}
-        >
+        <video autoPlay muted loop playsInline
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}>
           <source src="https://res.cloudinary.com/dx2qaarhy/video/upload/v1789214802/5899705-uhd_2160_4096_30fps_1.mp4" type="video/mp4" />
         </video>
 
-        {/* Dark overlay so text stays readable over any video */}
+        {/* Gradient overlay */}
         <div style={{
           position: "absolute", inset: 0, zIndex: 1,
-          background: "linear-gradient(135deg, rgba(15,61,46,0.82) 0%, rgba(20,90,67,0.72) 100%)"
+          background: "linear-gradient(to top, rgba(15,25,18,0.88) 0%, rgba(15,25,18,0.45) 50%, rgba(15,25,18,0.25) 100%)"
         }} />
 
         {/* Content */}
         <div style={{
-          maxWidth: 1152, margin: "0 auto", padding: "72px 20px",
-          position: "relative", zIndex: 2, width: "100%"
+          position: "relative", zIndex: 2, width: "100%",
+          maxWidth: 1200, margin: "0 auto", padding: "0 24px 64px"
         }}>
-          <div className="fade-up" style={{ maxWidth: 600 }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
+
+          {/* Location badge */}
+          {address && (
+            <div className="fade-up" style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
               background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.20)", borderRadius: 999,
-              padding: "5px 14px", marginBottom: 20
+              border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999,
+              padding: "5px 14px", marginBottom: 24, color: "rgba(255,255,255,0.9)",
+              fontSize: 12, fontWeight: 600, letterSpacing: "0.05em"
             }}>
-              <span style={{ width: 7, height: 7, background: C.accent, borderRadius: "50%" }} />
-              <span style={{ color: "rgba(255,255,255,0.90)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
-                FAST DELIVERY · 45+ CITIES
-              </span>
+              LIVE IN {address.toUpperCase()}
             </div>
+          )}
 
-            <h1 style={{
-              color: "#fff", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 700,
-              lineHeight: 1.1, letterSpacing: "-0.025em", marginBottom: 14,
-              textShadow: "0 2px 16px rgba(0,0,0,0.3)"
-            }}>
-              What are you{" "}
-              <span style={{ color: C.accent }}>craving</span>{" "}today?
-            </h1>
-            <p style={{
-              color: "rgba(255,255,255,0.80)", fontSize: 16, lineHeight: "24px",
-              marginBottom: 32, maxWidth: 480, textShadow: "0 1px 8px rgba(0,0,0,0.3)"
-            }}>
-              {address ? `Delivering to ${address}` : "Set your location to see restaurants near you"}
-            </p>
+          {/* Headline */}
+          <h1 className="fade-up-2" style={{
+            fontSize: "clamp(44px,7vw,88px)", fontWeight: 800,
+            lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 0, color: "#fff"
+          }}>
+            Whatever<br />you're craving.
+          </h1>
+          <h1 className="fade-up-2" style={{
+            fontSize: "clamp(44px,7vw,88px)", fontWeight: 800,
+            lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 20,
+            color: "rgba(255,255,255,0.35)"
+          }}>
+            At the door.
+          </h1>
 
-            {/* Search — clicking opens the full overlay */}
-            <div style={{ position: "relative", maxWidth: 520 }}>
-              <div style={{
-                position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
-                color: C.textMuted, pointerEvents: "none"
-              }}>
-                <Icon.Search />
-              </div>
-              <input
-                ref={searchRef}
-                readOnly
-                onClick={() => setSearchOpen(true)}
-                placeholder="Search restaurants, cuisines, dishes..."
-                style={{
-                  width: "100%", height: 54, paddingLeft: 50, paddingRight: 16,
-                  borderRadius: 16, border: "2px solid transparent", background: "rgba(255,255,255,0.97)",
-                  fontSize: 15, color: C.textMain, outline: "none", fontFamily: "inherit",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.25)", cursor: "pointer"
-                }}
-              />
-            </div>
+          <p className="fade-up-3" style={{ fontSize: 18, fontWeight: 600, color: "#fff", marginBottom: 4 }}>
+            Zoom it. Eat it. Love it.
+          </p>
+          <p className="fade-up-3" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 28 }}>
+            Set your street, pick a restaurant, watch the bag move.
+          </p>
+
+          {/* Search bar */}
+          <div className="fade-up-3" style={{ maxWidth: 520 }}>
+            <button onClick={() => setSearchOpen(true)}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", gap: 12,
+                padding: "16px 22px", borderRadius: 999, background: "#fff",
+                border: "none", cursor: "pointer", fontFamily: "inherit",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.2)", transition: "transform 120ms"
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.01)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >
+              <span style={{ color: C.muted, display: "inline-flex" }}><SearchIcon /></span>
+              <span style={{ color: C.muted, fontSize: 15 }}>Search food or restaurants</span>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* ── OFFER BANNER ── */}
-      <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 20px" }}>
-        <div style={{
-          marginTop: 24, position: "relative", zIndex: 10,
-          background: C.surface, borderRadius: 20, padding: "18px 24px",
-          boxShadow: "0 4px 24px rgba(15,61,46,0.10)", border: `1px solid ${C.borderSoft}`,
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16
-        }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 3 }}>
-              LIMITED TIME OFFER
-            </div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: C.textMain }}>
-              Free delivery on your first 3 orders. No code needed.
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              if (user) {
-                // Already logged in — smooth scroll down to restaurant grid
-                restaurantSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-              } else {
-                // Not logged in — go to login
-                navigate("/login");
-              }
-            }}
-            style={{
-              padding: "10px 20px", borderRadius: 12, border: "none",
-              background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-              color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer",
-              fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0,
-              transition: "box-shadow 120ms", boxShadow: "0 2px 10px rgba(15,61,46,0.25)"
-            }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.35)"}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(15,61,46,0.25)"}
-          >
-            Order now
-          </button>
-        </div>
-      </div>
-
-      {/* ── MAIN CONTENT ── */}
-      <main style={{ maxWidth: 1152, margin: "0 auto", padding: "40px 20px 60px" }}>
-
-        {/* Category pills */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.textMain, letterSpacing: "-0.01em" }}>
-            Explore by cuisine
-          </h2>
-        </div>
-        <div className="no-scrollbar" style={{
-          display: "flex", gap: 8, overflowX: "auto",
-          paddingBottom: 4, marginBottom: 32
-        }}>
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              style={{
-                flexShrink: 0, padding: "8px 18px", borderRadius: 999, fontSize: 13, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-                border: `1.5px solid ${category === cat ? C.primary : C.border}`,
-                background: category === cat ? C.primary : C.surface,
-                color: category === cat ? "#fff" : C.textSub,
-                boxShadow: category === cat ? "0 4px 14px rgba(15,61,46,0.22)" : "none",
-                transition: "all 120ms ease-out",
-              }}
+      {/* ── CRAVINGS ── */}
+      <section style={{ padding: "52px 24px 40px", maxWidth: 1200, margin: "0 auto" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 20 }}>CRAVINGS</p>
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          {CRAVINGS.map(cat => (
+            <div key={cat.label}
+              onClick={() => setSearchOpen(true)}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, cursor: "pointer" }}
             >
-              {cat}
-            </button>
+              <div style={{
+                width: 88, height: 88, borderRadius: "50%", overflow: "hidden",
+                border: `3px solid ${C.surface}`,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.10)", transition: "transform 180ms, box-shadow 180ms"
+              }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.07)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.10)"; }}
+              >
+                <img src={cat.img} alt={cat.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{cat.label}</span>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* Section heading — scroll target for "Order now" button */}
-        <div ref={restaurantSectionRef} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: C.textMain, letterSpacing: "-0.01em" }}>
-            {query ? `Results for "${query}"` : address ? `Near ${address}` : "Restaurants near you"}
-          </h2>
-          {!loading && (
-            <span style={{ fontSize: 13, color: C.textMuted }}>
-              {filtered.length} available
-            </span>
-          )}
-        </div>
-
-        {/* Grid */}
-        {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{
-            display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", padding: "72px 20px", textAlign: "center"
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🍽️</div>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>Nothing found</h3>
-            <p style={{ color: C.textSub, fontSize: 14, marginBottom: 20 }}>
-              Try a different search or pick another category
-            </p>
-            <button
-              onClick={() => { setQuery(""); setCategory("All"); }}
+      {/* ── TONIGHT'S USUALS (Popular dishes) ── */}
+      <section style={{ padding: "0 0 52px", maxWidth: 1200, margin: "0 auto", paddingLeft: 24, paddingRight: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 6 }}>TONIGHT'S USUALS</p>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: C.text, marginBottom: 24, letterSpacing: "-0.02em" }}>
+          Popular in {address || "your area"}
+        </h2>
+        <div className="no-scroll" style={{ display: "flex", gap: 14, overflowX: "auto", paddingRight: 24 }}>
+          {[
+            { name: "Farm House", rest: "I Love Pizza", price: 199, veg: true, img: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&h=200&fit=crop" },
+            { name: "Cheese Burst", rest: "I Love Pizza", price: 229, veg: true, img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop" },
+            { name: "Barn Smash", rest: "Burger Barn", price: 249, veg: false, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop" },
+            { name: "Hyderabadi Dum Biryani", rest: "Spice Route", price: 349, veg: false, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&h=200&fit=crop" },
+            { name: "Prawn Dumplings", rest: "Dragon Wok", price: 269, veg: false, img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=300&h=200&fit=crop" },
+          ].map((dish, i) => (
+            <div key={i} onClick={() => setSearchOpen(true)}
               style={{
-                padding: "10px 22px", borderRadius: 12, border: `1.5px solid ${C.primary}`,
-                background: "transparent", color: C.primary, fontWeight: 600, fontSize: 14,
-                cursor: "pointer", fontFamily: "inherit", transition: "all 120ms"
+                flexShrink: 0, width: 210, background: C.surface, borderRadius: 16,
+                overflow: "hidden", cursor: "pointer", border: `1px solid ${C.border}`,
+                transition: "box-shadow 180ms, transform 180ms"
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = C.primary; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.primary; }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              Clear filters
-            </button>
+              <div style={{ height: 140, overflow: "hidden" }}>
+                <img src={dish.img} alt={dish.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+              <div style={{ padding: "12px 14px" }}>
+                <p style={{ fontWeight: 700, fontSize: 14, color: C.text, marginBottom: 2 }}>{dish.name}</p>
+                <p style={{ fontSize: 11, color: C.sub, marginBottom: 8 }}>{dish.rest}</p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: C.text }}>₹{dish.price}</span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, color: dish.veg ? "#16A34A" : "#DC2626",
+                    padding: "2px 8px", borderRadius: 4,
+                    border: `1px solid ${dish.veg ? "#16A34A" : "#DC2626"}`
+                  }}>
+                    {dish.veg ? "Veg" : "Non-veg"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── OFFERS ── */}
+      <section style={{ padding: "0 0 52px", maxWidth: 1200, margin: "0 auto", paddingLeft: 24, paddingRight: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 6, paddingRight: 24 }}>FOR YOU THIS WEEK</p>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: C.text, marginBottom: 24, letterSpacing: "-0.02em", paddingRight: 24 }}>Offers</h2>
+        <div className="no-scroll" style={{ display: "flex", gap: 14, overflowX: "auto", paddingRight: 24 }}>
+          {OFFERS.map((o, i) => (
+            <div key={i} style={{
+              flexShrink: 0, width: 280, background: C.surface,
+              borderRadius: 16, overflow: "hidden", border: `1px solid ${C.border}`
+            }}>
+              <div style={{ position: "relative", height: 168 }}>
+                <img src={o.img} alt={o.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{
+                  position: "absolute", bottom: 10, left: 10,
+                  background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)",
+                  color: "#fff", fontSize: 10, fontWeight: 700, padding: "4px 10px",
+                  borderRadius: 6, letterSpacing: "0.05em"
+                }}>
+                  {o.badge}
+                </div>
+              </div>
+              <div style={{ padding: "16px 16px 18px" }}>
+                <p style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
+                  color: C.muted, marginBottom: 6
+                }}>{o.timing}</p>
+                <p style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>{o.title}</p>
+                <p style={{ fontSize: 12, color: C.sub, marginBottom: 4 }}>{o.desc}</p>
+                <p style={{ fontSize: 11, color: C.accent, fontWeight: 600, marginBottom: 14 }}>{o.restaurant}</p>
+                <button
+                  style={{
+                    width: "100%", padding: "11px", borderRadius: 10, border: "none",
+                    background: C.dark, color: "#fff", fontSize: 13, fontWeight: 700,
+                    cursor: "pointer", fontFamily: "inherit", transition: "opacity 120ms"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                >
+                  Activate
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{ paddingRight: 24, fontSize: 12, color: C.muted, marginTop: 12 }}>
+          Two offers at a time. They apply at checkout.
+        </p>
+      </section>
+
+      {/* ── RESTAURANTS NEARBY ── */}
+      <section ref={restaurantRef} style={{ padding: "0 24px 60px", maxWidth: 1200, margin: "0 auto" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 6 }}>OPEN NOW</p>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: C.text, marginBottom: 24, letterSpacing: "-0.02em" }}>Restaurants nearby</h2>
+
+        {loading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 16 }}>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} style={{ background: C.surface, borderRadius: 16, overflow: "hidden", border: `1px solid ${C.border}` }}>
+                <div style={{ height: 200, background: "#E4E7E1" }} />
+                <div style={{ padding: 16 }}>
+                  <div style={{ height: 16, background: "#E4E7E1", borderRadius: 6, width: "60%", marginBottom: 8 }} />
+                  <div style={{ height: 12, background: "#E4E7E1", borderRadius: 6, width: "40%" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : restaurants.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "48px 0" }}>
+            <p style={{ fontSize: 40, marginBottom: 10 }}>🍽️</p>
+            <p style={{ fontWeight: 600, color: C.text, marginBottom: 4 }}>No restaurants yet</p>
+            <p style={{ color: C.sub, fontSize: 13 }}>Check back soon — we're growing fast.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-            {filtered.map(r => <RestaurantCard key={r.id} r={r} navigate={navigate} />)}
-          </div>
-        )}
-
-        {/* Why section */}
-        <div style={{ marginTop: 72, paddingTop: 48, borderTop: `1px solid ${C.borderSoft}` }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 8 }}>
-              WHY ZOOMO EATS
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 16 }}>
+              {restaurants.map(r => (
+                <div key={r.id} onClick={() => navigate(`/restaurant/${r.id}`)}
+                  style={{
+                    background: C.surface, borderRadius: 16, overflow: "hidden",
+                    border: `1px solid ${C.border}`, cursor: "pointer",
+                    transition: "box-shadow 180ms, transform 180ms"
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 32px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
+                    <img src={r.img} alt={r.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {/* Rating badge */}
+                    <div style={{
+                      position: "absolute", top: 10, left: 10,
+                      display: "flex", alignItems: "center", gap: 4,
+                      background: "rgba(255,255,255,0.95)", backdropFilter: "blur(4px)",
+                      padding: "4px 8px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: C.dark
+                    }}>
+                      <StarIcon /> {r.rating}
+                    </div>
+                    {/* Coupon badge */}
+                    {r.coupon && (
+                      <div style={{
+                        position: "absolute", top: 10, right: 10,
+                        background: C.dark, color: "#fff", fontSize: 9, fontWeight: 700,
+                        padding: "4px 8px", borderRadius: 6, letterSpacing: "0.05em"
+                      }}>
+                        {r.coupon}
+                      </div>
+                    )}
+                    {/* Heart */}
+                    <div style={{
+                      position: "absolute", bottom: 10, right: 10,
+                      width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.9)",
+                      display: "flex", alignItems: "center", justifyContent: "center"
+                    }}>
+                      <HeartIcon />
+                    </div>
+                  </div>
+                  <div style={{ padding: "14px 16px 16px" }}>
+                    <p style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
+                      color: C.muted, marginBottom: 4
+                    }}>
+                      {r.cuisine?.toUpperCase()} · {(address || "YOUR AREA").toUpperCase()}
+                    </p>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 6 }}>{r.name}</p>
+                    <p style={{ fontSize: 13, color: C.sub, display: "flex", alignItems: "center", gap: 4 }}>
+                      <ClockIcon /> {r.eta} · ₹{r.cost} for two
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <h2 style={{
-              fontSize: 30, fontWeight: 700, color: C.textMain, letterSpacing: "-0.02em",
-              lineHeight: "38px"
-            }}>
-              Faster food. Simpler checkout.
-            </h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {[
-              { emoji: "⚡", title: "Under 60 seconds", desc: "Orders confirmed and dispatched before you've put your phone down." },
-              { emoji: "📍", title: "Real-time tracking", desc: "Watch every step of your delivery on a live map." },
-              { emoji: "✅", title: "Quality vetted", desc: "Every restaurant passes our hygiene and rating standards before listing." },
-            ].map(f => (
-              <div key={f.title}
-                style={{
-                  padding: 24, borderRadius: 20, background: C.surface,
-                  border: `1px solid ${C.borderSoft}`, boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
-                }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{f.emoji}</div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>{f.title}</h3>
-                <p style={{ fontSize: 13, color: C.textSub, lineHeight: "20px" }}>{f.desc}</p>
+            {restaurants.length > 4 && (
+              <div style={{ textAlign: "center", marginTop: 24 }}>
+                <button onClick={() => navigate("/restaurants")}
+                  style={{
+                    padding: "13px 32px", borderRadius: 12, border: `1.5px solid ${C.border}`,
+                    background: C.surface, color: C.text, fontSize: 14, fontWeight: 600,
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 120ms"
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.dark; e.currentTarget.style.background = C.bg; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}
+                >
+                  View more restaurants
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ padding: "60px 24px", maxWidth: 1200, margin: "0 auto" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.accent, marginBottom: 10 }}>HOW ZOOMO WORKS HERE</p>
+        <h2 style={{
+          fontSize: clamp("28px", "4vw", "42px"), fontWeight: 700, color: C.text,
+          marginBottom: 36, letterSpacing: "-0.02em"
+        }}>
+          Three taps. Then your gate.
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
+          {HOW_IT_WORKS.map((h, i) => (
+            <div key={i} style={{
+              background: C.surface, borderRadius: 16, padding: 24,
+              border: `1px solid ${C.border}`
+            }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10,
+                  background: "#EBF3EE", display: "flex", alignItems: "center", justifyContent: "center"
+                }}>
+                  {h.icon}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: "0.05em" }}>{h.num}</span>
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 8 }}>{h.title}</p>
+              <p style={{ fontSize: 13, color: C.sub, lineHeight: "19px" }}>{h.desc}</p>
+            </div>
+          ))}
         </div>
-      </main>
+      </section>
+
+      {/* ── CTA BANNER ── */}
+      <section style={{ padding: "0 24px 60px", maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{
+          background: C.dark, borderRadius: 20, padding: "36px 40px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 20
+        }}>
+          <div>
+            <p style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.45)", marginBottom: 6
+            }}>ZOOM IT. EAT IT. LOVE IT.</p>
+            <p style={{ fontSize: 28, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>
+              Dinner at the door in {address || "your city"}.
+            </p>
+          </div>
+          <button
+            onClick={() => user ? restaurantRef.current?.scrollIntoView({ behavior: "smooth" }) : navigate("/signup")}
+            style={{
+              display: "flex", alignItems: "center", gap: 8, padding: "14px 24px",
+              borderRadius: 999, background: "#fff", color: C.dark, fontSize: 14, fontWeight: 700,
+              border: "none", cursor: "pointer", fontFamily: "inherit",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.2)", transition: "transform 120ms"
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+          >
+            Order now <ArrowUpRightIcon />
+          </button>
+        </div>
+      </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: C.primary, padding: "48px 20px 28px", marginTop: 0 }}>
-        <div style={{ maxWidth: 1152, margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 32, marginBottom: 36 }}>
+      <footer style={{ background: C.dark, padding: "52px 24px 28px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          {/* 4-col grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 36, marginBottom: 44 }}>
+            {/* Brand */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                <div style={{
-                  width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.12)",
-                  display: "flex", alignItems: "center", justifyContent: "center"
-                }}>
-                  <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-                    <path d="M6 10H22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-                    <path d="M22 10L10 22" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-                    <path d="M10 22H26" stroke="#22C55E" strokeWidth="2.8" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <span style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>
-                  Zoomo <span style={{ color: C.accent }}>Eats</span>
-                </span>
+                <img src={LOGO} alt="Zoomo Eats" style={{ height: 30, width: "auto" }} />
               </div>
-              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: "20px", maxWidth: 220 }}>
-                Fastest food delivery with real-time tracking & great offers.
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, lineHeight: "19px" }}>
+                Fast delivery from restaurants near you, in every neighbourhood we serve.
               </p>
             </div>
-            {[
-              { title: "Explore", links: [["Restaurants", "/restaurants"], ["Offers", "#"], ["Support", "#"]] },
-              { title: "Legal", links: [["Terms & Conditions", "#"], ["Privacy Policy", "#"], ["Cookie Policy", "#"]] },
-            ].map(col => (
-              <div key={col.title}>
-                <h4 style={{ color: "#fff", fontWeight: 600, fontSize: 13, marginBottom: 14, letterSpacing: "0.02em" }}>{col.title}</h4>
-                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-                  {col.links.map(([label, href]) => (
-                    <li key={label}>
-                      <a href={href} style={{
-                        color: "rgba(255,255,255,0.5)", fontSize: 13, textDecoration: "none",
-                        transition: "color 120ms"
-                      }}
-                        onMouseEnter={e => e.target.style.color = "#fff"}
-                        onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.5)"}
-                      >{label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Company */}
+            <div>
+              <p style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)",
+                marginBottom: 16
+              }}>COMPANY</p>
+              {["Home", "Restaurants", "Search", "Track order"].map(l => (
+                <a key={l} href="#" style={{
+                  display: "block", color: "rgba(255,255,255,0.65)", fontSize: 14,
+                  textDecoration: "none", marginBottom: 10, transition: "color 120ms"
+                }}
+                  onMouseEnter={e => e.target.style.color = "#fff"}
+                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+                >{l}</a>
+              ))}
+            </div>
+            {/* Get Help */}
+            <div>
+              <p style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)",
+                marginBottom: 16
+              }}>GET HELP</p>
+              {["Login", "Create account", "Account", "Your bags"].map(l => (
+                <a key={l} href="#" style={{
+                  display: "block", color: "rgba(255,255,255,0.65)", fontSize: 14,
+                  textDecoration: "none", marginBottom: 10, transition: "color 120ms"
+                }}
+                  onMouseEnter={e => e.target.style.color = "#fff"}
+                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+                >{l}</a>
+              ))}
+            </div>
+            {/* For Restaurants */}
+            <div>
+              <p style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)",
+                marginBottom: 16
+              }}>FOR RESTAURANTS</p>
+              {["Partner with Zoomo", "Rider sign-up", "support@zoomo.eats"].map(l => (
+                <a key={l} href="#" style={{
+                  display: "block", color: "rgba(255,255,255,0.65)", fontSize: 14,
+                  textDecoration: "none", marginBottom: 10, transition: "color 120ms"
+                }}
+                  onMouseEnter={e => e.target.style.color = "#fff"}
+                  onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.65)"}
+                >{l}</a>
+              ))}
+            </div>
           </div>
+
+          {/* Areas */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24, marginBottom: 24 }}>
+            <p style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.35)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6
+            }}>
+              <MapPinIcon /> AREAS WE RIDE
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {AREAS.map(a => (
+                <span key={a} style={{
+                  padding: "5px 14px", borderRadius: 999,
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "rgba(255,255,255,0.65)", fontSize: 12
+                }}>
+                  {a}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom bar */}
           <div style={{
-            borderTop: "1px solid rgba(255,255,255,0.10)", paddingTop: 20,
-            color: "rgba(255,255,255,0.35)", fontSize: 12, textAlign: "center"
+            borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20,
+            display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8
           }}>
-            © {new Date().getFullYear()} Zoomo Eats. All rights reserved.
+            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+              © {new Date().getFullYear()} Zoomo Eats. All rights reserved.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+              Zoom it. Eat it. Love it.
+            </p>
           </div>
         </div>
       </footer>
-
-      {/* ── FULL SCREEN SEARCH OVERLAY ── */}
-      {searchOpen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 200, display: "flex", flexDirection: "column",
-          background: "rgba(11,15,14,0.55)", backdropFilter: "blur(6px)"
-        }}
-          onClick={e => { if (e.target === e.currentTarget) { setSearchOpen(false); setQuery(""); } }}
-        >
-          <div style={{
-            background: C.surface, width: "100%", maxHeight: "90vh",
-            borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
-            boxShadow: "0 20px 60px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column",
-            overflow: "hidden"
-          }}>
-
-            {/* Search input row */}
-            <div style={{
-              padding: "16px 20px", borderBottom: `1px solid ${C.borderSoft}`,
-              display: "flex", alignItems: "center", gap: 12
-            }}>
-              <div style={{ flex: 1, position: "relative", display: "flex", alignItems: "center" }}>
-                <Icon.Search size={18} style={{ position: "absolute", left: 14, color: C.textMuted, pointerEvents: "none" }} />
-                <input
-                  autoFocus
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="Search restaurants, cuisines, dishes..."
-                  style={{
-                    width: "100%", height: 48, paddingLeft: 44, paddingRight: 16,
-                    borderRadius: 14, border: `1.5px solid ${C.border}`, background: C.page,
-                    fontSize: 15, color: C.textMain, outline: "none", fontFamily: "inherit",
-                    transition: "border-color 120ms"
-                  }}
-                  onFocus={e => e.target.style.borderColor = C.primary}
-                  onBlur={e => e.target.style.borderColor = C.border}
-                />
-              </div>
-              <button onClick={() => { setSearchOpen(false); setQuery(""); }}
-                style={{
-                  padding: "10px 16px", borderRadius: 12, border: `1.5px solid ${C.border}`,
-                  background: "transparent", color: C.textSub, fontSize: 13, fontWeight: 600,
-                  cursor: "pointer", fontFamily: "inherit", flexShrink: 0, whiteSpace: "nowrap"
-                }}>
-                Cancel
-              </button>
-            </div>
-
-            {/* Results */}
-            <div style={{ overflowY: "auto", flex: 1 }}>
-              {!query.trim() ? (
-                /* Empty state — show all restaurants */
-                <div style={{ padding: "16px 20px" }}>
-                  <p style={{
-                    fontSize: 12, fontWeight: 600, color: C.textMuted,
-                    letterSpacing: "0.08em", marginBottom: 12
-                  }}>ALL RESTAURANTS</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {restaurants.map(r => (
-                      <SearchResultRow key={r.id} r={r} onSelect={() => {
-                        setSearchOpen(false); setQuery(""); navigate(`/restaurant/${r.id}`);
-                      }} />
-                    ))}
-                  </div>
-                </div>
-              ) : filtered.length === 0 ? (
-                <div style={{ padding: "48px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: 40, marginBottom: 10 }}>🔍</div>
-                  <p style={{ fontSize: 16, fontWeight: 600, color: C.textMain, marginBottom: 6 }}>
-                    No results for "{query}"
-                  </p>
-                  <p style={{ fontSize: 13, color: C.textSub }}>Try a different name or cuisine</p>
-                </div>
-              ) : (
-                <div style={{ padding: "16px 20px" }}>
-                  <p style={{
-                    fontSize: 12, fontWeight: 600, color: C.textMuted,
-                    letterSpacing: "0.08em", marginBottom: 12
-                  }}>
-                    {filtered.length} RESULT{filtered.length !== 1 ? "S" : ""} FOR "{query.toUpperCase()}"
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {filtered.map(r => (
-                      <SearchResultRow key={r.id} r={r} onSelect={() => {
-                        setSearchOpen(false); setQuery(""); navigate(`/restaurant/${r.id}`);
-                      }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Profile Drawer */}
-      {profileOpen && <ProfileDrawer user={user} onClose={() => setProfileOpen(false)} navigate={navigate} />}
-
-      {/* Chat Widget */}
-      <ChatWidget />
     </div>
   );
+}
+
+function clamp(min, val, max) {
+  return `clamp(${min}, ${val}, ${max})`;
 }

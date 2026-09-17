@@ -1,12 +1,12 @@
 const C = {
-  primary: "#0F3D2E", accent: "#22C55E",
+  primary: "#1C3A2A", accent: "#4A7C59",
 };
 
 export default function Footer() {
   return (
     <footer style={{
       background: C.primary, padding: "48px 20px 28px", marginTop: 64,
-      fontFamily: "'Poppins', system-ui, sans-serif"
+      fontFamily: "'Inter', system-ui, sans-serif"
     }}>
       <div style={{ maxWidth: 1152, margin: "0 auto" }}>
         <div style={{
