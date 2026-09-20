@@ -6,41 +6,41 @@ import { useAuth } from "../context/AuthContext";
 import { MascotLoader } from "./LandingPage";
 
 const C = {
-  page: "#F0F2EE", surface: "#FFFFFF", primary: "#1C3A2A", hover: "#142B1F", accent: "#4A7C59",
-  textMain: "#111827", textSub: "#6B7280", textMuted: "#9CA3AF", border: "#E4E7E1", borderSoft: "#E9EBE6",
-  error: "#DC2626", pink: "#EC4899",
+  page:"#F4F7F5", surface:"#FFFFFF", primary:"#0F3D2D", hover:"#164A39", accent:"#1F7A52",
+  textMain:"#0C1612", textSub:"#6B7280", textMuted:"#9CA3AF", border:"#DCE6E0", borderSoft:"#EEF3F0",
+  error:"#DC2626", pink:"#EC4899",
 };
 
 const PROMO_CODES = {
-  ZOOMO50: { type: "percent", value: 50, label: "50% off", max: 100 },
-  BOGO: { type: "flat", value: 60, label: "₹60 off", max: null },
-  FREESHIP: { type: "ship", value: 29, label: "Free delivery", max: null },
-  HEALTHY20: { type: "percent", value: 20, label: "20% off", max: 80 },
-  NEWUSER: { type: "flat", value: 80, label: "₹80 off", max: null },
+  ZOOMO50: { type:"percent", value:50, label:"50% off", max:100 },
+  BOGO: { type:"flat", value:60, label:"₹60 off", max:null },
+  FREESHIP: { type:"ship", value:29, label:"Free delivery", max:null },
+  HEALTHY20: { type:"percent", value:20, label:"20% off", max:80 },
+  NEWUSER: { type:"flat", value:80, label:"₹80 off", max:null },
 };
 const TIP_OPTIONS = [0, 10, 20, 30, 50];
 
 const Icon = {
   ArrowLeft: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
   ),
   MapPin: ({ color }) => (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color||"currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
   ),
-  Tag: ({ size = 15 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg>
+  Tag: ({ size=15 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>
   ),
-  X: ({ size = 14 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+  X: ({ size=14 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
   ),
-  Check: ({ size = 12 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+  Check: ({ size=12 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
   ),
-  Clock: ({ size = 15 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+  Clock: ({ size=15 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
   ),
-  Heart: ({ size = 15, color }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color || "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+  Heart: ({ size=15, color }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color||"currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
   ),
 };
 
@@ -55,61 +55,49 @@ function OrderSuccessAnimation({ onDone }) {
   }, []);
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 999, background: C.page,
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24,
-      opacity: stage === "exit" ? 0 : 1, transition: "opacity 500ms"
-    }}>
+    <div style={{ position:"fixed", inset:0, zIndex:999, background:C.page,
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:24,
+      opacity: stage === "exit" ? 0 : 1, transition:"opacity 500ms" }}>
       <style>{`
         @keyframes ping { 75%,100%{transform:scale(1.8);opacity:0} }
         @keyframes confettiFall { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(30px) rotate(180deg)} }
       `}</style>
-      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
         {stage === "celebrate" && (
           <>
-            <div style={{
-              position: "absolute", width: 140, height: 140, borderRadius: "50%",
-              border: `2px solid ${C.accent}40`, animation: "ping 1.5s infinite"
-            }} />
-            <div style={{
-              position: "absolute", width: 190, height: 190, borderRadius: "50%",
-              border: `1px solid ${C.accent}20`, animation: "ping 1.5s infinite", animationDelay: "0.3s"
-            }} />
+            <div style={{ position:"absolute", width:140, height:140, borderRadius:"50%",
+              border:`2px solid ${C.accent}40`, animation:"ping 1.5s infinite" }} />
+            <div style={{ position:"absolute", width:190, height:190, borderRadius:"50%",
+              border:`1px solid ${C.accent}20`, animation:"ping 1.5s infinite", animationDelay:"0.3s" }} />
           </>
         )}
-        <div style={{
-          position: "relative", zIndex: 10, width: 110, height: 110, borderRadius: "50%",
-          background: C.primary, display: "flex", alignItems: "center", justifyContent: "center",
+        <div style={{ position:"relative", zIndex:10, width:110, height:110, borderRadius:"50%",
+          background:C.primary, display:"flex", alignItems:"center", justifyContent:"center",
           transform: stage === "enter" ? "scale(0)" : stage === "celebrate" ? "scale(1.1)" : "scale(1)",
-          transition: "all 500ms"
-        }}>
+          transition:"all 500ms" }}>
           <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
-            <path d="M6 10H22" stroke="#4A7C59" strokeWidth="2.8" strokeLinecap="round" />
-            <path d="M22 10L10 22" stroke="#4A7C59" strokeWidth="2.8" strokeLinecap="round" />
-            <path d="M10 22H26" stroke="#4A7C59" strokeWidth="2.8" strokeLinecap="round" />
+            <path d="M6 10H22" stroke="#1F7A52" strokeWidth="2.8" strokeLinecap="round"/>
+            <path d="M22 10L10 22" stroke="#1F7A52" strokeWidth="2.8" strokeLinecap="round"/>
+            <path d="M10 22H26" stroke="#1F7A52" strokeWidth="2.8" strokeLinecap="round"/>
           </svg>
         </div>
         {stage === "celebrate" && [...Array(16)].map((_, i) => (
-          <div key={i} style={{
-            position: "absolute", width: 7, height: 7, borderRadius: "50%",
-            background: ["#4A7C59", "#34D399", "#6EE7B7", "#1C3A2A", "#F59E0B"][i % 5],
-            left: `${50 + Math.cos(i * 22.5 * Math.PI / 180) * 90}px`,
-            top: `${50 + Math.sin(i * 22.5 * Math.PI / 180) * 90}px`,
-            animation: `confettiFall 1.2s ease-in ${i * 0.05}s infinite`
-          }} />
+          <div key={i} style={{ position:"absolute", width:7, height:7, borderRadius:"50%",
+            background:["#1F7A52","#34D399","#6EE7B7","#0F3D2D","#F59E0B"][i % 5],
+            left:`${50 + Math.cos(i * 22.5 * Math.PI/180) * 90}px`,
+            top:`${50 + Math.sin(i * 22.5 * Math.PI/180) * 90}px`,
+            animation:`confettiFall 1.2s ease-in ${i * 0.05}s infinite` }} />
         ))}
       </div>
-      <div style={{ textAlign: "center", opacity: stage === "enter" ? 0 : 1, transition: "opacity 500ms" }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: C.textMain, marginBottom: 6 }}>Order Placed! 🎉</h2>
-        <p style={{ color: C.primary, fontWeight: 600, fontSize: 14 }}>Zoomo is on it! Your food is being prepared.</p>
-        <p style={{ color: C.textMuted, fontSize: 12, marginTop: 4 }}>You'll receive updates in My Orders</p>
+      <div style={{ textAlign:"center", opacity: stage === "enter" ? 0 : 1, transition:"opacity 500ms" }}>
+        <h2 style={{ fontSize:24, fontWeight:700, color:C.textMain, marginBottom:6 }}>Order Placed! 🎉</h2>
+        <p style={{ color:C.primary, fontWeight:600, fontSize:14 }}>Zoomo is on it! Your food is being prepared.</p>
+        <p style={{ color:C.textMuted, fontSize:12, marginTop:4 }}>You'll receive updates in My Orders</p>
       </div>
-      <div style={{ width: 200, height: 4, background: C.borderSoft, borderRadius: 999, overflow: "hidden" }}>
-        <div style={{
-          height: "100%", background: C.accent, borderRadius: 999,
+      <div style={{ width:200, height:4, background:C.borderSoft, borderRadius:999, overflow:"hidden" }}>
+        <div style={{ height:"100%", background:C.accent, borderRadius:999,
           width: stage === "celebrate" ? "100%" : "0%",
-          transition: stage === "celebrate" ? "width 2600ms linear" : "none"
-        }} />
+          transition: stage === "celebrate" ? "width 2600ms linear" : "none" }} />
       </div>
     </div>
   );
@@ -127,30 +115,24 @@ function PromoFlash({ promo, onDone }) {
   }, []);
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 998, pointerEvents: "none", display: "flex",
-      alignItems: "flex-end", justifyContent: "center", paddingBottom: 112,
+    <div style={{ position:"fixed", inset:0, zIndex:998, pointerEvents:"none", display:"flex",
+      alignItems:"flex-end", justifyContent:"center", paddingBottom:112,
       opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-      transition: "all 500ms"
-    }}>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 14, padding: "16px 22px", borderRadius: 18,
-        background: C.surface, border: `1px solid ${C.accent}50`, boxShadow: "0 8px 40px rgba(34,197,94,0.25)",
+      transition:"all 500ms" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 22px", borderRadius:18,
+        background:C.surface, border:`1px solid ${C.accent}50`, boxShadow:"0 8px 40px rgba(34,197,94,0.25)",
         transform: popped ? "scale(1) translateY(0)" : "scale(0.8) translateY(20px)",
-        opacity: popped ? 1 : 0, transition: "all 400ms ease-out"
-      }}>
-        <div style={{
-          width: 38, height: 38, borderRadius: "50%", background: `${C.accent}20`,
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          transform: popped ? "rotate(0)" : "rotate(-45deg)", transition: "transform 600ms"
-        }}>
+        opacity: popped ? 1 : 0, transition:"all 400ms ease-out" }}>
+        <div style={{ width:38, height:38, borderRadius:"50%", background:`${C.accent}20`,
+          display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+          transform: popped ? "rotate(0)" : "rotate(-45deg)", transition:"transform 600ms" }}>
           <Icon.Tag size={17} />
         </div>
         <div>
-          <p style={{ fontWeight: 700, fontSize: 14, color: C.textMain }}>
-            🎉 <span style={{ color: C.accent }}>{promo.code}</span> applied!
+          <p style={{ fontWeight:700, fontSize:14, color:C.textMain }}>
+            🎉 <span style={{ color:C.accent }}>{promo.code}</span> applied!
           </p>
-          <p style={{ color: C.primary, fontSize: 12, marginTop: 1 }}>{promo.label} saved on your order</p>
+          <p style={{ color:C.primary, fontSize:12, marginTop:1 }}>{promo.label} saved on your order</p>
         </div>
       </div>
     </div>
@@ -160,12 +142,10 @@ function PromoFlash({ promo, onDone }) {
 /* ── Section wrapper ── */
 function Section({ title, children }) {
   return (
-    <div style={{
-      marginBottom: 16, padding: 20, borderRadius: 20, background: C.surface,
-      border: `1px solid ${C.border}`
-    }}>
-      <h3 style={{ fontWeight: 700, fontSize: 14, color: C.textMain, marginBottom: 14 }}>{title}</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
+    <div style={{ marginBottom:16, padding:20, borderRadius:20, background:C.surface,
+      border:`1px solid ${C.border}` }}>
+      <h3 style={{ fontWeight:700, fontSize:14, color:C.textMain, marginBottom:14 }}>{title}</h3>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>{children}</div>
     </div>
   );
 }
@@ -174,15 +154,11 @@ function Section({ title, children }) {
 function Toggle({ checked, onChange }) {
   return (
     <button onClick={onChange}
-      style={{
-        position: "relative", width: 44, height: 24, borderRadius: 999, border: "none",
-        background: checked ? C.primary : C.borderSoft, cursor: "pointer", transition: "background 200ms"
-      }}>
-      <span style={{
-        position: "absolute", top: 2, left: checked ? 22 : 2, width: 20, height: 20,
-        borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-        transition: "left 200ms"
-      }} />
+      style={{ position:"relative", width:44, height:24, borderRadius:999, border:"none",
+        background: checked ? C.primary : C.borderSoft, cursor:"pointer", transition:"background 200ms" }}>
+      <span style={{ position:"absolute", top:2, left: checked ? 22 : 2, width:20, height:20,
+        borderRadius:"50%", background:"#fff", boxShadow:"0 1px 3px rgba(0,0,0,0.2)",
+        transition:"left 200ms" }} />
     </button>
   );
 }
@@ -195,7 +171,7 @@ export default function Checkout() {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ street: "", city: "", state: "", zipCode: "", country: "India" });
+  const [form, setForm] = useState({ street:"", city:"", state:"", zipCode:"", country:"India" });
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
@@ -234,6 +210,16 @@ export default function Checkout() {
     load();
   }, []);
 
+  // Auto-apply whatever offer was activated on the homepage — no manual
+  // "Apply" click needed here, it's already on when the person arrives.
+  useEffect(() => {
+    const activeCode = localStorage.getItem("ze_active_offer");
+    if (activeCode && PROMO_CODES[activeCode]) {
+      setAppliedPromo({ code: activeCode, ...PROMO_CODES[activeCode] });
+      setShowPromoFlash(true);
+    }
+  }, []);
+
   const minDate = new Date().toISOString().split("T")[0];
 
   function getTimeSlots() {
@@ -259,10 +245,13 @@ export default function Checkout() {
     setAppliedPromo({ code, ...found });
     setPromoInput("");
     setShowPromoFlash(true);
+    // Keep the homepage's "Activated" state in sync with whatever's actually applied here
+    localStorage.setItem("ze_active_offer", code);
   }
 
   function removePromo() {
     setAppliedPromo(null); setPromoError(""); setPromoInput("");
+    localStorage.removeItem("ze_active_offer");
   }
 
   async function saveAddress() {
@@ -295,10 +284,10 @@ export default function Checkout() {
         scheduledFor: orderType === "DELIVERY" && scheduleDelivery
           ? `${scheduleDate}T${scheduleTime}:00`
           : (orderType !== "DELIVERY")
-            ? `${dineDate}T${dineTime}:00`
-            : null,
+          ? `${dineDate}T${dineTime}:00`
+          : null,
       });
-      clearCart().catch(() => { });
+      clearCart().catch(() => {});
       setPlacing(false);
       setShowSuccess(true);
     } catch (err) {
@@ -331,71 +320,65 @@ export default function Checkout() {
   ) / 100;
 
   const inputStyle = {
-    width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${C.border}`,
-    background: C.surface, color: C.textMain, fontSize: 13, outline: "none", fontFamily: "inherit",
-    transition: "border-color 120ms",
+    width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${C.border}`,
+    background:C.surface, color:C.textMain, fontSize:13, outline:"none", fontFamily:"inherit",
+    transition:"border-color 120ms",
   };
 
   return (
-    <div style={{
-      minHeight: "100vh", background: C.page, paddingBottom: 40,
-      fontFamily: "'Inter', system-ui, sans-serif"
-    }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');`}</style>
+    <div style={{ minHeight:"100vh", background:C.page, paddingBottom:40,
+      fontFamily:"'Satoshi', system-ui, sans-serif" }}>
+      <style>{`@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');`}</style>
 
       {showSuccess && <OrderSuccessAnimation onDone={() => navigate("/orders")} />}
       {showPromoFlash && appliedPromo && <PromoFlash promo={appliedPromo} onDone={() => setShowPromoFlash(false)} />}
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 20px" }}>
+      <div style={{ maxWidth:680, margin:"0 auto", padding:"28px 20px" }}>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
           <button onClick={() => navigate(-1)}
-            style={{
-              width: 38, height: 38, borderRadius: 12, border: `1.5px solid ${C.border}`,
-              background: C.surface, display: "flex", alignItems: "center", justifyContent: "center",
-              color: C.textSub, cursor: "pointer"
-            }}>
+            style={{ width:38, height:38, borderRadius:12, border:`1.5px solid ${C.border}`,
+              background:C.surface, display:"flex", alignItems:"center", justifyContent:"center",
+              color:C.textSub, cursor:"pointer" }}>
             <Icon.ArrowLeft />
           </button>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: C.textMain, letterSpacing: "-0.015em" }}>Checkout</h1>
+          <h1 style={{ fontSize:24, fontWeight:700, color:C.textMain, letterSpacing:"-0.015em" }}>Checkout</h1>
         </div>
 
         {/* ── ORDER TYPE ── */}
         <Section title="How would you like this order?">
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
             {[
-              { id: "DELIVERY", label: "🛵 Delivery", sub: "Delivered to your door" },
-              { id: "DINE_IN", label: "🍽️ Dine In", sub: "Eat at the restaurant" },
-              { id: "TAKEAWAY", label: "🥡 Takeaway", sub: "Pick up yourself" },
+              { id:"DELIVERY", label:"🛵 Delivery", sub:"Delivered to your door" },
+              { id:"DINE_IN",  label:"🍽️ Dine In",  sub:"Eat at the restaurant" },
+              { id:"TAKEAWAY", label:"🥡 Takeaway",  sub:"Pick up yourself" },
             ].map(opt => (
               <label key={opt.id} onClick={() => { setOrderType(opt.id); setPaymentMethod(null); }}
-                style={{
-                  flex: 1, minWidth: 120, display: "flex", flexDirection: "column", gap: 3,
-                  padding: "12px 14px", borderRadius: 14, cursor: "pointer",
-                  border: `1.5px solid ${orderType === opt.id ? C.accent : C.border}`,
+                style={{ flex:1, minWidth:120, display:"flex", flexDirection:"column", gap:3,
+                  padding:"12px 14px", borderRadius:14, cursor:"pointer",
+                  border:`1.5px solid ${orderType === opt.id ? C.accent : C.border}`,
                   background: orderType === opt.id ? `${C.accent}0D` : C.page,
-                  transition: "all 120ms"
-                }}>
-                <span style={{ fontWeight: 700, fontSize: 13, color: C.textMain }}>{opt.label}</span>
-                <span style={{ fontSize: 11, color: C.textSub }}>{opt.sub}</span>
+                  transition:"all 120ms" }}>
+                <span style={{ fontWeight:700, fontSize:13, color:C.textMain }}>{opt.label}</span>
+                <span style={{ fontSize:11, color:C.textSub }}>{opt.sub}</span>
               </label>
             ))}
           </div>
 
           {/* Date + Time for Dine In / Takeaway */}
           {(orderType === "DINE_IN" || orderType === "TAKEAWAY") && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-              <p style={{ fontSize: 12, color: C.textSub }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:10, marginTop:4 }}>
+              <p style={{ fontSize:12, color:C.textSub }}>
                 {orderType === "DINE_IN" ? "When would you like to dine in?" : "When will you pick up?"}
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                 <div>
-                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Date</label>
+                  <label style={{ fontSize:11, color:C.textMuted, marginBottom:4, display:"block" }}>Date</label>
                   <input type="date" min={new Date().toISOString().split("T")[0]}
                     value={dineDate} onChange={e => setDineDate(e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Time</label>
+                  <label style={{ fontSize:11, color:C.textMuted, marginBottom:4, display:"block" }}>Time</label>
                   <select value={dineTime} onChange={e => setDineTime(e.target.value)} style={inputStyle}>
                     <option value="">Select time</option>
                     {getTimeSlots().map(t => <option key={t} value={t}>{t}</option>)}
@@ -404,20 +387,18 @@ export default function Checkout() {
               </div>
               {orderType === "DINE_IN" && (
                 <div>
-                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Number of guests</label>
+                  <label style={{ fontSize:11, color:C.textMuted, marginBottom:4, display:"block" }}>Number of guests</label>
                   <select value={guestCount} onChange={e => setGuestCount(Number(e.target.value))} style={inputStyle}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>)}
+                    {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>)}
                   </select>
                 </div>
               )}
               {dineDate && dineTime && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
-                  borderRadius: 10, background: `${C.accent}15`, border: `1px solid ${C.accent}30`,
-                  color: C.primary, fontSize: 12
-                }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 12px",
+                  borderRadius:10, background:`${C.accent}15`, border:`1px solid ${C.accent}30`,
+                  color:C.primary, fontSize:12 }}>
                   ✓ {orderType === "DINE_IN" ? "Dine-in" : "Takeaway"} booked for{" "}
-                  {new Date(`${dineDate}T${dineTime}`).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                  {new Date(`${dineDate}T${dineTime}`).toLocaleString("en-IN", { dateStyle:"medium", timeStyle:"short" })}
                   {orderType === "DINE_IN" && ` · ${guestCount} ${guestCount === 1 ? "guest" : "guests"}`}
                 </div>
               )}
@@ -428,45 +409,39 @@ export default function Checkout() {
         {/* Delivery Address — only shown for DELIVERY orders */}
         {orderType === "DELIVERY" && <Section title="Delivery Address">
           {!showForm && addresses.map(a => (
-            <label key={a.id} style={{
-              display: "flex", alignItems: "flex-start", gap: 10, padding: 14,
-              borderRadius: 14, border: `1.5px solid ${selectedAddress === a.id ? C.accent : C.border}`,
-              background: selectedAddress === a.id ? `${C.accent}0D` : C.page, cursor: "pointer"
-            }}>
+            <label key={a.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:14,
+              borderRadius:14, border:`1.5px solid ${selectedAddress === a.id ? C.accent : C.border}`,
+              background: selectedAddress === a.id ? `${C.accent}0D` : C.page, cursor:"pointer" }}>
               <input type="radio" checked={selectedAddress === a.id} onChange={() => setSelectedAddress(a.id)}
-                style={{ marginTop: 3, accentColor: C.primary }} />
+                style={{ marginTop:3, accentColor:C.primary }} />
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                   <Icon.MapPin color={C.accent} />
-                  <span style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{a.street}</span>
+                  <span style={{ fontWeight:600, fontSize:13, color:C.textMain }}>{a.street}</span>
                 </div>
-                <p style={{ color: C.textSub, fontSize: 12, marginTop: 3 }}>{a.city}, {a.state} - {a.zipCode}</p>
+                <p style={{ color:C.textSub, fontSize:12, marginTop:3 }}>{a.city}, {a.state} - {a.zipCode}</p>
               </div>
             </label>
           ))}
           {showForm && (
             <>
-              {["street", "city", "state", "zipCode"].map(f => (
+              {["street","city","state","zipCode"].map(f => (
                 <input key={f} placeholder={f[0].toUpperCase() + f.slice(1)} value={form[f]}
                   onChange={e => setForm({ ...form, [f]: e.target.value })}
                   style={inputStyle}
                   onFocus={e => e.target.style.borderColor = C.primary}
                   onBlur={e => e.target.style.borderColor = C.border} />
               ))}
-              <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ display:"flex", gap:10 }}>
                 <button onClick={saveAddress}
-                  style={{
-                    flex: 1, padding: "12px", borderRadius: 12, border: "none", background: C.primary,
-                    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
-                  }}>
+                  style={{ flex:1, padding:"12px", borderRadius:12, border:"none", background:C.primary,
+                    color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
                   Save Address
                 </button>
                 {addresses.length > 0 && (
                   <button onClick={() => setShowForm(false)}
-                    style={{
-                      flex: 1, padding: "12px", borderRadius: 12, border: `1.5px solid ${C.border}`,
-                      background: "transparent", color: C.textSub, fontSize: 13, cursor: "pointer", fontFamily: "inherit"
-                    }}>
+                    style={{ flex:1, padding:"12px", borderRadius:12, border:`1.5px solid ${C.border}`,
+                      background:"transparent", color:C.textSub, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
                     Cancel
                   </button>
                 )}
@@ -475,10 +450,8 @@ export default function Checkout() {
           )}
           {!showForm && (
             <button onClick={() => setShowForm(true)}
-              style={{
-                background: "none", border: "none", color: C.primary, fontSize: 13, fontWeight: 600,
-                cursor: "pointer", fontFamily: "inherit", textAlign: "left", padding: 0
-              }}>
+              style={{ background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600,
+                cursor:"pointer", fontFamily:"inherit", textAlign:"left", padding:0 }}>
               + Add new address
             </button>
           )}
@@ -486,26 +459,26 @@ export default function Checkout() {
 
         {/* Schedule Delivery — only for delivery orders */}
         {orderType === "DELIVERY" && <Section title={
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <Icon.Clock color={C.accent} /><span>Schedule Delivery</span>
             </div>
             <Toggle checked={scheduleDelivery} onChange={() => setScheduleDelivery(v => !v)} />
           </div>
         }>
           {!scheduleDelivery ? (
-            <p style={{ color: C.textMuted, fontSize: 12 }}>Deliver as soon as possible (25–40 min)</p>
+            <p style={{ color:C.textMuted, fontSize:12 }}>Deliver as soon as possible (25–40 min)</p>
           ) : (
             <>
-              <p style={{ color: C.textSub, fontSize: 12 }}>Pick a date and time for your delivery</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <p style={{ color:C.textSub, fontSize:12 }}>Pick a date and time for your delivery</p>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                 <div>
-                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Date</label>
+                  <label style={{ fontSize:11, color:C.textMuted, marginBottom:4, display:"block" }}>Date</label>
                   <input type="date" min={minDate} value={scheduleDate}
                     onChange={e => setScheduleDate(e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: C.textMuted, marginBottom: 4, display: "block" }}>Time</label>
+                  <label style={{ fontSize:11, color:C.textMuted, marginBottom:4, display:"block" }}>Time</label>
                   <select value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} style={inputStyle}>
                     <option value="">Select time</option>
                     {getTimeSlots().map(t => <option key={t} value={t}>{t}</option>)}
@@ -513,12 +486,10 @@ export default function Checkout() {
                 </div>
               </div>
               {scheduleDate && scheduleTime && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10,
-                  background: `${C.accent}15`, border: `1px solid ${C.accent}30`, color: C.primary, fontSize: 12
-                }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 12px", borderRadius:10,
+                  background:`${C.accent}15`, border:`1px solid ${C.accent}30`, color:C.primary, fontSize:12 }}>
                   <Icon.Check />
-                  Scheduled for {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                  Scheduled for {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString("en-IN", { dateStyle:"medium", timeStyle:"short" })}
                 </div>
               )}
             </>
@@ -527,41 +498,37 @@ export default function Checkout() {
 
         {/* Tip */}
         <Section title={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <Icon.Heart color={C.pink} /><span>Tip Your Delivery Partner</span>
           </div>
         }>
-          <p style={{ color: C.textMuted, fontSize: 12 }}>100% of the tip goes directly to your delivery partner 💚</p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <p style={{ color:C.textMuted, fontSize:12 }}>100% of the tip goes directly to your delivery partner 💚</p>
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
             {TIP_OPTIONS.map(t => (
               <button key={t} onClick={() => { setTip(t); setShowCustomTip(false); setCustomTip(""); }}
-                style={{
-                  padding: "8px 16px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  fontFamily: "inherit",
-                  border: `1.5px solid ${tip === t && !showCustomTip ? C.pink : C.border}`,
+                style={{ padding:"8px 16px", borderRadius:12, fontSize:13, fontWeight:600, cursor:"pointer",
+                  fontFamily:"inherit",
+                  border:`1.5px solid ${tip === t && !showCustomTip ? C.pink : C.border}`,
                   background: tip === t && !showCustomTip ? `${C.pink}12` : C.page,
-                  color: tip === t && !showCustomTip ? C.pink : C.textSub
-                }}>
+                  color: tip === t && !showCustomTip ? C.pink : C.textSub }}>
                 {t === 0 ? "No tip" : `₹${t}`}
               </button>
             ))}
             <button onClick={() => { setShowCustomTip(true); setTip(0); }}
-              style={{
-                padding: "8px 16px", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                fontFamily: "inherit",
-                border: `1.5px solid ${showCustomTip ? C.pink : C.border}`,
+              style={{ padding:"8px 16px", borderRadius:12, fontSize:13, fontWeight:600, cursor:"pointer",
+                fontFamily:"inherit",
+                border:`1.5px solid ${showCustomTip ? C.pink : C.border}`,
                 background: showCustomTip ? `${C.pink}12` : C.page,
-                color: showCustomTip ? C.pink : C.textSub
-              }}>
+                color: showCustomTip ? C.pink : C.textSub }}>
               Custom
             </button>
           </div>
           {showCustomTip && (
-            <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.textMuted, fontSize: 13 }}>₹</span>
+            <div style={{ position:"relative" }}>
+              <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:C.textMuted, fontSize:13 }}>₹</span>
               <input type="number" min="0" max="500" placeholder="Enter amount" value={customTip}
                 onChange={e => setCustomTip(e.target.value)}
-                style={{ ...inputStyle, paddingLeft: 28 }}
+                style={{ ...inputStyle, paddingLeft:28 }}
                 onFocus={e => e.target.style.borderColor = C.pink}
                 onBlur={e => e.target.style.borderColor = C.border} />
             </div>
@@ -573,40 +540,36 @@ export default function Checkout() {
           {(orderType === "DINE_IN" || orderType === "TAKEAWAY") ? (
             // Dine-in / Takeaway payment options
             [
-              { id: "PAY_AT_RESTAURANT", label: "💵 Pay at Restaurant", sub: "Pay in cash or card when you arrive" },
-              { id: "ONLINE", label: "💳 Online Payment", sub: "Coming soon", disabled: true },
+              { id:"PAY_AT_RESTAURANT", label:"💵 Pay at Restaurant", sub:"Pay in cash or card when you arrive" },
+              { id:"ONLINE", label:"💳 Online Payment", sub:"Coming soon", disabled:true },
             ].map(p => (
-              <label key={p.id} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: 14,
+              <label key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:14, borderRadius:14,
                 cursor: p.disabled ? "not-allowed" : "pointer", opacity: p.disabled ? 0.45 : 1,
-                border: `1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
-                background: paymentMethod === p.id ? `${C.accent}0D` : C.page
-              }}>
+                border:`1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
+                background: paymentMethod === p.id ? `${C.accent}0D` : C.page }}>
                 <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id}
-                  onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor: C.primary }} />
+                  onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor:C.primary }} />
                 <div>
-                  <p style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{p.label}</p>
-                  <p style={{ color: C.textMuted, fontSize: 11 }}>{p.sub}</p>
+                  <p style={{ fontWeight:600, fontSize:13, color:C.textMain }}>{p.label}</p>
+                  <p style={{ color:C.textMuted, fontSize:11 }}>{p.sub}</p>
                 </div>
               </label>
             ))
           ) : (
             // Delivery payment options
             [
-              { id: "COD", label: "💰 Cash on Delivery", sub: "Pay when your order arrives" },
-              { id: "ONLINE", label: "💳 Online Payment", sub: "Coming soon", disabled: true },
+              { id:"COD", label:"💰 Cash on Delivery", sub:"Pay when your order arrives" },
+              { id:"ONLINE", label:"💳 Online Payment", sub:"Coming soon", disabled:true },
             ].map(p => (
-              <label key={p.id} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: 14, borderRadius: 14,
+              <label key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:14, borderRadius:14,
                 cursor: p.disabled ? "not-allowed" : "pointer", opacity: p.disabled ? 0.45 : 1,
-                border: `1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
-                background: paymentMethod === p.id ? `${C.accent}0D` : C.page
-              }}>
+                border:`1.5px solid ${paymentMethod === p.id ? C.accent : C.border}`,
+                background: paymentMethod === p.id ? `${C.accent}0D` : C.page }}>
                 <input type="radio" name="payment" disabled={p.disabled} checked={paymentMethod === p.id}
-                  onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor: C.primary }} />
+                  onChange={() => !p.disabled && setPaymentMethod(p.id)} style={{ accentColor:C.primary }} />
                 <div>
-                  <p style={{ fontWeight: 600, fontSize: 13, color: C.textMain }}>{p.label}</p>
-                  <p style={{ color: C.textMuted, fontSize: 11 }}>{p.sub}</p>
+                  <p style={{ fontWeight:600, fontSize:13, color:C.textMain }}>{p.label}</p>
+                  <p style={{ color:C.textMuted, fontSize:11 }}>{p.sub}</p>
                 </div>
               </label>
             ))
@@ -615,61 +578,53 @@ export default function Checkout() {
 
         {/* Promo Code */}
         <Section title={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <Icon.Tag color={C.accent} /><span>Promo Code</span>
           </div>
         }>
           {appliedPromo ? (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px",
-              borderRadius: 14, background: `${C.accent}12`, border: `1px solid ${C.accent}40`
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px",
+              borderRadius:14, background:`${C.accent}12`, border:`1px solid ${C.accent}40` }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                 <Icon.Tag color={C.primary} size={15} />
                 <div>
-                  <p style={{ fontWeight: 700, fontSize: 13, color: C.primary }}>{appliedPromo.code}</p>
-                  <p style={{ color: C.hover, fontSize: 11 }}>{appliedPromo.label} applied!</p>
+                  <p style={{ fontWeight:700, fontSize:13, color:C.primary }}>{appliedPromo.code}</p>
+                  <p style={{ color:C.hover, fontSize:11 }}>{appliedPromo.label} applied!</p>
                 </div>
               </div>
               <button onClick={removePromo}
-                style={{
-                  padding: 6, borderRadius: 8, background: C.surface, border: "none",
-                  color: C.textMuted, cursor: "pointer"
-                }}>
+                style={{ padding:6, borderRadius:8, background:C.surface, border:"none",
+                  color:C.textMuted, cursor:"pointer" }}>
                 <Icon.X />
               </button>
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display:"flex", gap:8 }}>
                 <input value={promoInput}
                   onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); }}
                   onKeyDown={e => e.key === "Enter" && applyPromo()}
                   placeholder="Enter promo code"
-                  style={{ ...inputStyle, flex: 1, textTransform: "uppercase", letterSpacing: "0.03em" }}
+                  style={{ ...inputStyle, flex:1, textTransform:"uppercase", letterSpacing:"0.03em" }}
                   onFocus={e => e.target.style.borderColor = C.primary}
                   onBlur={e => e.target.style.borderColor = C.border} />
                 <button onClick={applyPromo}
-                  style={{
-                    padding: "0 20px", borderRadius: 12, border: "none", background: C.primary,
-                    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
-                  }}>
+                  style={{ padding:"0 20px", borderRadius:12, border:"none", background:C.primary,
+                    color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
                   Apply
                 </button>
               </div>
               {promoError && (
-                <p style={{ color: C.error, fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
+                <p style={{ color:C.error, fontSize:12, display:"flex", alignItems:"center", gap:5 }}>
                   <Icon.X size={11} /> {promoError}
                 </p>
               )}
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                 {Object.entries(PROMO_CODES).map(([code, info]) => (
                   <button key={code} onClick={() => { setPromoInput(code); setPromoError(""); }}
-                    style={{
-                      fontSize: 10, padding: "5px 10px", borderRadius: 10, border: `1px solid ${C.border}`,
-                      background: C.page, color: C.textMuted, cursor: "pointer", fontFamily: "inherit",
-                      transition: "all 120ms"
-                    }}
+                    style={{ fontSize:10, padding:"5px 10px", borderRadius:10, border:`1px solid ${C.border}`,
+                      background:C.page, color:C.textMuted, cursor:"pointer", fontFamily:"inherit",
+                      transition:"all 120ms" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.primary; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}>
                     {code} · {info.label}
@@ -683,60 +638,54 @@ export default function Checkout() {
         {/* Order Summary */}
         <Section title="Order Summary">
           {cart.items.map(i => (
-            <div key={i.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+            <div key={i.id} style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>{i.dish.name} × {i.quantity}</span>
               <span>₹{(i.dish.price * i.quantity).toFixed(2)}</span>
             </div>
           ))}
-          <div style={{
-            borderTop: `1px solid ${C.borderSoft}`, paddingTop: 12, marginTop: 4,
-            display: "flex", flexDirection: "column", gap: 8
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+          <div style={{ borderTop:`1px solid ${C.borderSoft}`, paddingTop:12, marginTop:4,
+            display:"flex", flexDirection:"column", gap:8 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>Delivery</span>
-              {appliedPromo?.type === "ship" ? <span style={{ color: C.accent, fontWeight: 600 }}>FREE</span> : <span>₹{delivery.toFixed(2)}</span>}
+              {appliedPromo?.type === "ship" ? <span style={{ color:C.accent, fontWeight:600 }}>FREE</span> : <span>₹{delivery.toFixed(2)}</span>}
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.textSub }}>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span>
             </div>
             {tipAmount > 0 && (
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.pink }}>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.pink }}>
                 <span>Tip 💚</span><span>₹{tipAmount.toFixed(2)}</span>
               </div>
             )}
             {discount > 0 && (
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.accent, fontWeight: 600 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.accent, fontWeight:600 }}>
                 <span>Discount ({appliedPromo?.code})</span><span>− ₹{discount.toFixed(2)}</span>
               </div>
             )}
-            <div style={{
-              borderTop: `1px solid ${C.borderSoft}`, paddingTop: 10, marginTop: 2,
-              display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 16, color: C.textMain
-            }}>
+            <div style={{ borderTop:`1px solid ${C.borderSoft}`, paddingTop:10, marginTop:2,
+              display:"flex", justifyContent:"space-between", fontWeight:700, fontSize:16, color:C.textMain }}>
               <span>Total</span><span>₹{total.toFixed(2)}</span>
             </div>
           </div>
         </Section>
 
         <button onClick={placeOrder}
-          style={{
-            width: "100%", padding: "16px", borderRadius: 16, border: "none",
-            background: `linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-            color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit",
-            boxShadow: "0 4px 16px rgba(15,61,46,0.25)", transition: "box-shadow 120ms"
-          }}
+          style={{ width:"100%", padding:"16px", borderRadius:16, border:"none",
+            background:`linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
+            color:"#fff", fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"inherit",
+            boxShadow:"0 4px 16px rgba(15,61,46,0.25)", transition:"box-shadow 120ms" }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(15,61,46,0.35)"}
           onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.25)"}>
           {orderType === "DINE_IN"
             ? `Book Dine-In · ₹${total.toFixed(2)}`
             : orderType === "TAKEAWAY"
-              ? `Confirm Takeaway · ₹${total.toFixed(2)}`
-              : scheduleDelivery && scheduleDate && scheduleTime
-                ? `Schedule Delivery · ₹${total.toFixed(2)}`
-                : `Place Order · ₹${total.toFixed(2)}`}
+            ? `Confirm Takeaway · ₹${total.toFixed(2)}`
+            : scheduleDelivery && scheduleDate && scheduleTime
+            ? `Schedule Delivery · ₹${total.toFixed(2)}`
+            : `Place Order · ₹${total.toFixed(2)}`}
         </button>
       </div>
     </div>

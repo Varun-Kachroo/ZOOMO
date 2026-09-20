@@ -17,11 +17,12 @@ import { RolesGuard } from './auth/roles.guard';
 import { DriverModule } from './driver/driver.module';
 import { AdminModule } from './admin/admin.module';
 import { UploadModule } from './upload/upload.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 
 @Module({
-  imports: [AuthModule, UsersModule, PrismaModule, RestaurantsModule, DishesModule, CartModule, OrdersModule, PaymentsModule, AddressModule, MerchantModule, DriverModule, AdminModule, UploadModule],
+  imports: [AuthModule, UsersModule,PrismaModule, RestaurantsModule, DishesModule, CartModule, OrdersModule, PaymentsModule, AddressModule, MerchantModule, DriverModule, AdminModule, UploadModule, ReviewsModule],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [ AppService, PrismaService],
 })
-export class AppModule { }
+export class AppModule {}
