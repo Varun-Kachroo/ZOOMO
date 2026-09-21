@@ -11,6 +11,7 @@ import Cart from "../pages/Cart";
 import Checkout from "../pages/Checkout";
 import Orders from "../pages/Orders";
 import OrderDetails from "../pages/OrderDetails";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
 
 export default function AppRoutes() {
   return (
@@ -21,6 +22,9 @@ export default function AppRoutes() {
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+
+      {/* Legal — public, no layout (has its own header) */}
+      <Route path="/privacy" element={<PrivacyPolicy />} />
 
       {/* Pages wrapped inside MainLayout */}
       <Route

@@ -42,8 +42,13 @@ export default function AuthProvider({ children }) {
     const token = res.accesstoken ?? res.access_token;
     const userData = res.user;
 
-    if (!token || !userData) throw new Error("❌ Invalid login response from server");
-    if (userData.role !== "USER") throw new Error("🚫 Please login from Merchant app!");
+    // ✅ FIX: api.js never throws on 4xx/5xx — it just resolves with the
+    // error body NestJS sends back ({ message, statusCode, error }).
+    // Surface that real message instead of a generic one whenever we
+    // don't get a token back, so e.g. "Invalid email or password" or
+    // "This account uses Google Sign-In" actually reaches the person.
+    if (!token || !userData) throw new Error(res.message || "Invalid login response from server");
+    if (userData.role !== "USER") throw new Error("Please login from the Merchant app.");
 
     localStorage.setItem("access_token", token);
     setUser(userData);
@@ -60,7 +65,25 @@ export default function AuthProvider({ children }) {
     const token = res.accesstoken ?? res.access_token;
     const userData = res.user;
 
-    if (!token) throw new Error("❌ Signup didn't return token");
+    if (!token || !userData) throw new Error(res.message || "Signup failed — please try again.");
+
+    localStorage.setItem("access_token", token);
+    setUser(userData);
+    return userData;
+  };
+
+  /* =========================================
+     GOOGLE SIGN-IN — used by both Login and Signup pages.
+     `credential` is the ID token string Google's button hands back.
+  ========================================= */
+  const loginWithGoogle = async (credential) => {
+    const res = await api.post("/auth/google", { credential });
+
+    const token = res.accesstoken ?? res.access_token;
+    const userData = res.user;
+
+    if (!token || !userData) throw new Error(res.message || "Google sign-in failed — please try again.");
+    if (userData.role !== "USER") throw new Error("This email belongs to a merchant/staff account.");
 
     localStorage.setItem("access_token", token);
     setUser(userData);
@@ -82,9 +105,9 @@ export default function AuthProvider({ children }) {
         loading,
         login,
         signup,
+        loginWithGoogle,
         logout,
         isAuthenticated: !!user,
-        isUser: user?.role === "USER",
       }}
     >
       {children}

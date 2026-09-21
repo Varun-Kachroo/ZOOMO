@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoogleButton from "../components/GoogleButton";
 
 const C = {
   page:"#F4F7F5", surface:"#FFFFFF", primary:"#0F3D2D", hover:"#164A39",
@@ -70,13 +71,27 @@ const EyeIcon = ({ open }) => (
 );
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  async function handleGoogleCredential(credential) {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      navigate("/");
+    } catch (err) {
+      setError(err?.message || "Google sign-in failed. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -85,8 +100,8 @@ export default function Login() {
     try {
       await login(email, password);
       navigate("/");
-    } catch {
-      setError("Invalid email or password. Please try again.");
+    } catch (err) {
+      setError(err?.message || "Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -206,6 +221,32 @@ export default function Login() {
                 ) : "Login to Zoomo Eats"}
               </button>
             </form>
+
+            {/* Divider */}
+            <div style={{ display:"flex", alignItems:"center", gap:12, margin:"20px 0 16px" }}>
+              <div style={{ flex:1, height:1, background:C.border }} />
+              <span style={{ color:C.textMuted, fontSize:12 }}>or</span>
+              <div style={{ flex:1, height:1, background:C.border }} />
+            </div>
+
+            {/* Google Sign-In */}
+            {googleLoading ? (
+              <div style={{ height:44, display:"flex", alignItems:"center", justifyContent:"center",
+                gap:8, color:C.textSub, fontSize:13 }}>
+                <span style={{ display:"flex", gap:4 }}>
+                  {[0, 0.15, 0.3].map((d, i) => (
+                    <span key={i} style={{ width:6, height:6, background:C.primary, borderRadius:"50%",
+                      display:"inline-block", animation:"bounce 0.8s ease-in-out infinite", animationDelay:`${d}s` }} />
+                  ))}
+                </span>
+                Signing you in...
+              </div>
+            ) : (
+              <GoogleButton
+                onCredential={handleGoogleCredential}
+                onError={msg => setError(msg)}
+              />
+            )}
 
             {/* Sign up link */}
             <p style={{ textAlign:"center", marginTop:20, color:C.textSub, fontSize:14 }}>

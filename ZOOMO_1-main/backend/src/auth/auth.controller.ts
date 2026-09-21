@@ -50,4 +50,22 @@ export class AuthController {
       user: result.user,
     };
   }
+
+  /** GOOGLE SIGN-IN — used by both the Login page and Signup page */
+  @Post("google")
+  async google(@Body() body: any) {
+    const { credential } = body;
+
+    if (!credential) {
+      throw new BadRequestException("Missing Google credential");
+    }
+
+    const result = await this.authService.googleAuth(credential);
+
+    return {
+      message: "Google sign-in successful",
+      access_token: result.access_token,
+      user: result.user,
+    };
+  }
 }
