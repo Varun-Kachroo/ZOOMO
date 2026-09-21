@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
-import BottomNav from "../components/BottomNav";
 
 export function MascotLoader({ text = "Loading..." }) {
   return (
@@ -873,8 +872,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      <BottomNav />
     </div>
   );
 }

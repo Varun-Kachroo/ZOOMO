@@ -315,7 +315,9 @@ export default function Checkout() {
   const subtotal = parseFloat(
     restaurantItems.reduce((sum, i) => sum + i.quantity * i.dish.price, 0).toFixed(2)
   );
-  const delivery = appliedPromo?.type === "ship" ? 0 : 29;
+  const delivery = orderType === "DELIVERY"
+    ? (appliedPromo?.type === "ship" ? 0 : 29)
+    : 0;
   const tax = parseFloat((subtotal * 0.05).toFixed(2));
   const tipAmount = showCustomTip && customTip ? parseFloat(parseFloat(customTip).toFixed(2)) || 0 : tip;
 
@@ -665,10 +667,12 @@ export default function Checkout() {
             <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
             </div>
-            <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
-              <span>Delivery</span>
-              {appliedPromo?.type === "ship" ? <span style={{ color:C.accent, fontWeight:600 }}>FREE</span> : <span>₹{delivery.toFixed(2)}</span>}
-            </div>
+            {orderType === "DELIVERY" && (
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
+                <span>Delivery</span>
+                {appliedPromo?.type === "ship" ? <span style={{ color:C.accent, fontWeight:600 }}>FREE</span> : <span>₹{delivery.toFixed(2)}</span>}
+              </div>
+            )}
             <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>Tax (5%)</span><span>₹{tax.toFixed(2)}</span>
             </div>

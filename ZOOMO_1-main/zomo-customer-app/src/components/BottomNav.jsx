@@ -43,6 +43,11 @@ export default function BottomNav() {
   const { getTotalItemCount } = useCart();
   const [profileOpen, setProfileOpen] = useState(false);
 
+  // ✅ Now mounted once globally (see App.jsx), so it would otherwise show
+  // on every route including auth/legal pages that shouldn't have it.
+  const HIDDEN_ON = ["/login", "/signup", "/privacy"];
+  if (HIDDEN_ON.includes(location.pathname)) return null;
+
   const bagCount = user ? getTotalItemCount() : 0;
 
   // Which of the 3 tabs is "active" right now
@@ -82,7 +87,7 @@ export default function BottomNav() {
 
           {/* Sliding indicator — one circle, glides via transform */}
           <div style={{
-            position:"absolute", top:2, left:0, width:"33.3333%", height:44,
+            position:"absolute", top:-6, left:0, width:"33.3333%", height:60,
             display:"flex", alignItems:"center", justifyContent:"center",
             transform:`translateX(${activeIndex >= 0 ? activeIndex * 100 : 0}%)`,
             opacity: activeIndex >= 0 ? 1 : 0,
@@ -90,8 +95,8 @@ export default function BottomNav() {
             pointerEvents:"none",
           }}>
             <div style={{
-              width:44, height:44, borderRadius:"50%",
-              border:`2px solid ${C.primary}`,
+              width:60, height:60, borderRadius:"50%",
+              border:`2.5px solid ${C.primary}`,
               background:`${C.primary}0D`,
             }} />
           </div>
