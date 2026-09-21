@@ -283,8 +283,14 @@ function Navbar({ address, onAddressClick, cartCount, user, navigate, onLogout, 
 // ── SEARCH OVERLAY ─────────────────────────────────────
 function SearchOverlay({ restaurants, onClose, navigate }) {
   const [q, setQ] = useState("");
+  const [closing, setClosing] = useState(false);
   const inputRef = useRef(null);
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(onClose, 200);
+  };
 
   const results = q.trim()
     ? restaurants.filter(r =>
@@ -294,11 +300,20 @@ function SearchOverlay({ restaurants, onClose, navigate }) {
 
   return (
     <div style={{ position:"fixed", inset:0, zIndex:200, background:"rgba(17,24,39,0.4)",
-      backdropFilter:"blur(4px)", display:"flex", flexDirection:"column" }}
-      onClick={e => e.target === e.currentTarget && onClose()}
+      backdropFilter:"blur(4px)", display:"flex", flexDirection:"column",
+      animation:`${closing ? "ze-fade-out" : "ze-fade-in"} 200ms ease forwards` }}
+      onClick={e => e.target === e.currentTarget && handleClose()}
     >
+      <style>{`
+        @keyframes ze-fade-in { from { opacity:0 } to { opacity:1 } }
+        @keyframes ze-fade-out { from { opacity:1 } to { opacity:0 } }
+        @keyframes ze-panel-in { from { opacity:0; transform:translateY(-18px) scale(0.98) } to { opacity:1; transform:translateY(0) scale(1) } }
+        @keyframes ze-panel-out { from { opacity:1; transform:translateY(0) scale(1) } to { opacity:0; transform:translateY(-18px) scale(0.98) } }
+      `}</style>
       <div style={{ background:C.surface, borderBottomLeftRadius:20, borderBottomRightRadius:20,
-        boxShadow:"0 16px 48px rgba(0,0,0,0.15)", maxHeight:"85vh", display:"flex", flexDirection:"column" }}>
+        boxShadow:"0 16px 48px rgba(0,0,0,0.15)", maxHeight:"85vh", display:"flex", flexDirection:"column",
+        transformOrigin:"top center",
+        animation:`${closing ? "ze-panel-out" : "ze-panel-in"} 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards` }}>
 
         {/* Input */}
         <div style={{ display:"flex", alignItems:"center", gap:12, padding:"16px 20px",
@@ -311,7 +326,7 @@ function SearchOverlay({ restaurants, onClose, navigate }) {
               style={{ border:"none", outline:"none", background:"transparent", flex:1,
                 fontSize:15, color:C.text, fontFamily:"'Satoshi', system-ui, sans-serif" }} />
           </div>
-          <button onClick={onClose}
+          <button onClick={handleClose}
             style={{ padding:"9px 18px", borderRadius:999, border:`1px solid ${C.border}`,
               background:"transparent", fontSize:13, color:C.sub, cursor:"pointer", fontFamily:"inherit",
               whiteSpace:"nowrap" }}>
@@ -336,7 +351,7 @@ function SearchOverlay({ restaurants, onClose, navigate }) {
               {!q.trim() && <p style={{ padding:"4px 20px 8px", fontSize:11, fontWeight:700,
                 letterSpacing:"0.08em", color:C.accent }}>ALL RESTAURANTS</p>}
               {results.map(r => (
-                <div key={r.id} onClick={() => { onClose(); navigate(`/restaurant/${r.id}`); }}
+                <div key={r.id} onClick={() => { handleClose(); navigate(`/restaurant/${r.id}`); }}
                   style={{ display:"flex", alignItems:"center", gap:14, padding:"10px 20px",
                     cursor:"pointer", transition:"background 100ms" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.bg}
