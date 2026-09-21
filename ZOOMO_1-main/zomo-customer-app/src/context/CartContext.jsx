@@ -2,22 +2,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { useAuth } from "./AuthContext";
 
-
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
-
 const EMPTY_CART = { items: [] };
-
 
 export default function CartProvider({ children }) {
   const { isAuthenticated } = useAuth();
 
-
   const [cart, setCart] = useState(EMPTY_CART);
   const [loading, setLoading] = useState(true);
-  const [restaurantConflict, setRestaurantConflict] = useState(null);
-
 
   /* ================= LOAD CART ================== */
   useEffect(() => {
@@ -29,21 +23,11 @@ export default function CartProvider({ children }) {
     loadCart();
   }, [isAuthenticated]);
 
-
   async function loadCart() {
     setLoading(true);
     try {
       const res = await api.get("/cart");
-
-
-      const normalized = {
-        items: Array.isArray(res?.items) ? res.items : [],
-      };
-
-
-      setCart(normalized);
-
-
+      setCart({ items: Array.isArray(res?.items) ? res.items : [] });
     } catch (err) {
       console.warn("❌ Could not load cart:", err);
       setCart(EMPTY_CART);
@@ -52,75 +36,18 @@ export default function CartProvider({ children }) {
     }
   }
 
-
-
   /* ================= ADD ITEM ================== */
-  /* ================= ADD ITEM ================== */
-  async function addToCart(dishId) {
+  // ✅ FIX: the Bag now holds items from any number of restaurants at
+  // once — no more client-side conflict check, no more wiping the cart
+  // when a dish from a different restaurant is added. Just add it.
+  async function addToCart(dishId, quantity = 1) {
     try {
-      console.log("🛒 Add clicked:", dishId);
-
-
-      const dishRes = await api.get(`/dishes/${dishId}`);
-      console.log("🔍 Raw dish response:", dishRes);
-
-
-      const dish = dishRes?.data || dishRes; // normalize
-      console.log("🍽 Normalized dish:", dish);
-
-
-      if (!dish || !dish.restaurantId) {
-        console.warn("❌ Dish missing restaurantId → Check backend response", dish);
-        return;
-      }
-
-
-      const newRestaurantId = dish.restaurantId;
-
-
-      const currentItems = Array.isArray(cart?.items) ? cart.items : [];
-
-
-      // 🍽️ Restaurant conflict check
-      if (
-        currentItems.length > 0 &&
-        currentItems[0]?.dish?.restaurantId !== newRestaurantId
-      ) {
-        console.warn("⚠️ Conflict detected → opening confirmation modal");
-        setRestaurantConflict({ newDishId: dishId, newRestaurantId });
-        return;
-      }
-
-
-      console.log("📦 Sending add item request to backend...");
-      const added = await api.post("/cart/items", { dishId, quantity: 1 });
-      console.log("📩 Backend response to add:", added);
-
-
+      await api.post("/cart/items", { dishId, quantity });
       await loadCart();
-
-
     } catch (error) {
       console.error("❌ Add to cart failed:", error);
     }
   }
-
-
-
-
-  /* ============ CONFLICT HANDLING ============ */
-  async function confirmReplaceCart() {
-    if (!restaurantConflict) return;
-    await clearCart();
-    await addToCart(restaurantConflict.newDishId);
-    setRestaurantConflict(null);
-  }
-
-
-  function cancelReplaceCart() {
-    setRestaurantConflict(null);
-  }
-
 
   /* ============ UPDATE / REMOVE ITEMS ============ */
   async function increaseQuantity(item) {
@@ -128,41 +55,63 @@ export default function CartProvider({ children }) {
     await loadCart();
   }
 
-
   async function decreaseQuantity(item) {
     const newQty = item.quantity - 1;
-
-
-    if (newQty <= 0) {
-      return removeItem(item.id);
-    }
-
-
+    if (newQty <= 0) return removeItem(item.id);
     await api.patch(`/cart/items/${item.id}`, { quantity: newQty });
     await loadCart();
   }
-
 
   async function removeItem(id) {
     await api.delete(`/cart/items/${id}`);
     await loadCart();
   }
 
-
   async function clearCart() {
     await api.delete("/cart");
     setCart(EMPTY_CART);
   }
 
+  // ✅ NEW — clears just one restaurant's items after checking out with
+  // them, leaving the rest of the bag (other restaurants) intact.
+  async function clearRestaurantItems(restaurantId) {
+    await api.delete(`/cart/restaurant/${restaurantId}`);
+    await loadCart();
+  }
 
   /* ============ DERIVED GETTERS ============ */
   const getTotalItemCount = () =>
     cart.items.reduce((sum, i) => sum + i.quantity, 0);
 
-
+  // Subtotal across the WHOLE bag (all restaurants combined)
   const getSubtotal = () =>
     cart.items.reduce((sum, i) => sum + i.quantity * i.dish.price, 0);
 
+  // ✅ NEW — groups bag items by restaurant, so the Bag page can show
+  // one section per restaurant with its own subtotal and checkout button.
+  // Each dish already carries its restaurant (backend include), so this
+  // is a pure client-side grouping — no extra API calls needed.
+  function getRestaurantGroups() {
+    const groups = {};
+    for (const item of cart.items) {
+      const r = item.dish?.restaurant;
+      if (!r) continue;
+      if (!groups[r.id]) {
+        groups[r.id] = {
+          restaurantId: r.id,
+          restaurantName: r.name,
+          restaurantImage: r.imageUrl,
+          items: [],
+          subtotal: 0,
+          itemCount: 0,
+        };
+      }
+      groups[r.id].items.push(item);
+      groups[r.id].subtotal += item.quantity * item.dish.price;
+      groups[r.id].itemCount += item.quantity;
+    }
+    return Object.values(groups);
+  }
 
   /* ============ EXPORT ============ */
   return (
@@ -175,11 +124,10 @@ export default function CartProvider({ children }) {
         decreaseQuantity,
         removeItem,
         clearCart,
+        clearRestaurantItems,
         getTotalItemCount,
         getSubtotal,
-        restaurantConflict,
-        confirmReplaceCart,
-        cancelReplaceCart,
+        getRestaurantGroups,
       }}
     >
       {children}

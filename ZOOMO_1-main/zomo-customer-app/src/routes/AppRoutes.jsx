@@ -7,11 +7,13 @@ import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import Restaurants from "../pages/Restaurants";
 import Restaurant from "../pages/Restaurant";
-import Cart from "../pages/Cart";
+import Bag from "../pages/Bag";
 import Checkout from "../pages/Checkout";
 import Orders from "../pages/Orders";
 import OrderDetails from "../pages/OrderDetails";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
+import MyAddresses from "../pages/MyAddresses";
+import AccountSettings from "../pages/AccountSettings";
 
 export default function AppRoutes() {
   return (
@@ -45,17 +47,29 @@ export default function AppRoutes() {
         }
       />
 
+      {/* ✅ Bag — replaces the old single-restaurant Cart page.
+          /cart is kept as an alias so any old links still work. */}
+      <Route
+        path="/bag"
+        element={
+          <MainLayout>
+            <Bag />
+          </MainLayout>
+        }
+      />
       <Route
         path="/cart"
         element={
           <MainLayout>
-            <Cart />
+            <Bag />
           </MainLayout>
         }
       />
 
+      {/* ✅ Checkout now takes a restaurantId — chosen from the Bag page,
+          since the bag can hold items from several restaurants at once. */}
       <Route
-        path="/checkout"
+        path="/checkout/:restaurantId"
         element={
           <MainLayout>
             <Checkout />
@@ -77,6 +91,25 @@ export default function AppRoutes() {
         element={
           <MainLayout>
             <OrderDetails />
+          </MainLayout>
+        }
+      />
+
+      {/* ✅ New — reached from the profile drawer ("You" tab) */}
+      <Route
+        path="/addresses"
+        element={
+          <MainLayout>
+            <MyAddresses />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/account"
+        element={
+          <MainLayout>
+            <AccountSettings />
           </MainLayout>
         }
       />

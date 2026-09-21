@@ -52,7 +52,7 @@ export default function Restaurant() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { cart, addToCart, increaseQuantity, decreaseQuantity, restaurantConflict, confirmReplaceCart, cancelReplaceCart } = useCart();
+  const { cart, addToCart, increaseQuantity, decreaseQuantity } = useCart();
 
   const [restaurant, setRestaurant] = useState(null);
   const [dishes, setDishes] = useState([]);
@@ -405,13 +405,18 @@ export default function Restaurant() {
         )}
       </div>
 
-      {/* Sticky Cart Footer */}
+      {/* Sticky Bag Footer */}
       {totalItems > 0 && (
-        <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:40, padding:14,
+        <div className="ze-sticky-bag-bar" style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:40, padding:14,
           background:"rgba(255,255,255,0.97)", backdropFilter:"blur(16px)",
           borderTop:`1px solid ${C.border}`, boxShadow:"0 -4px 20px rgba(0,0,0,0.06)" }}>
+          <style>{`
+            @media (max-width: 860px) {
+              .ze-sticky-bag-bar { bottom: 68px !important; }
+            }
+          `}</style>
           <div style={{ maxWidth:920, margin:"0 auto" }}>
-            <button onClick={() => navigate("/cart")}
+            <button onClick={() => navigate("/bag")}
               style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between",
                 padding:"14px 22px", borderRadius:16, border:"none",
                 background:`linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
@@ -420,37 +425,9 @@ export default function Restaurant() {
               <span style={{ background:"rgba(255,255,255,0.18)", padding:"3px 10px", borderRadius:8, fontSize:13 }}>
                 {totalItems}
               </span>
-              <span>View Cart</span>
+              <span>View Bag</span>
               <Icon.Cart />
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Conflict Modal */}
-      {restaurantConflict && (
-        <div style={{ position:"fixed", inset:0, zIndex:50, background:"rgba(15,61,46,0.6)",
-          backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-          <div style={{ background:C.surface, borderRadius:24, padding:28, maxWidth:380, width:"100%",
-            textAlign:"center", boxShadow:"0 20px 60px rgba(0,0,0,0.2)" }}>
-            <div style={{ fontSize:36, marginBottom:10 }}>🛒</div>
-            <h2 style={{ fontSize:18, fontWeight:700, color:C.textMain, marginBottom:8 }}>Start a new cart?</h2>
-            <p style={{ color:C.textSub, fontSize:13, marginBottom:22, lineHeight:"19px" }}>
-              Your cart has items from another restaurant. Adding this will clear your current cart.
-            </p>
-            <div style={{ display:"flex", gap:10 }}>
-              <button onClick={cancelReplaceCart}
-                style={{ flex:1, padding:"11px", borderRadius:12, border:`1.5px solid ${C.border}`,
-                  background:"transparent", color:C.textSub, fontSize:13, fontWeight:600,
-                  cursor:"pointer", fontFamily:"inherit" }}>
-                Cancel
-              </button>
-              <button onClick={confirmReplaceCart}
-                style={{ flex:1, padding:"11px", borderRadius:12, border:"none", background:C.primary,
-                  color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-                Yes, replace
-              </button>
-            </div>
           </div>
         </div>
       )}

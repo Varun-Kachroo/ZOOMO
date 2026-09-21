@@ -30,4 +30,18 @@ export class UsersService {
       data: { googleId },
     });
   }
+
+  // ✅ NEW — for the Account Settings page (edit name/phone)
+  update(id: string, data: { name?: string; phone?: string }) {
+    // Only include fields that were actually provided, so a blank/undefined
+    // field doesn't accidentally wipe out the existing value.
+    const cleanData: any = {};
+    if (data.name !== undefined && data.name !== "") cleanData.name = data.name;
+    if (data.phone !== undefined) cleanData.phone = data.phone;
+
+    return this.prisma.user.update({
+      where: { id },
+      data: cleanData,
+    });
+  }
 }

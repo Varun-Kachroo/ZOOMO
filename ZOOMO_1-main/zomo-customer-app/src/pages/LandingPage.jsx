@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import BottomNav from "../components/BottomNav";
 
 export function MascotLoader({ text = "Loading..." }) {
   return (
@@ -263,7 +264,7 @@ function Navbar({ address, onAddressClick, cartCount, user, navigate, onLogout, 
               >Sign up</button>
             </>
           )}
-          <button onClick={() => navigate("/cart")}
+          <button onClick={() => navigate("/bag")}
             style={{ position:"relative", width:36, height:36, borderRadius:999,
               border:`1.5px solid ${C.border}`, background:"transparent",
               display:"flex", alignItems:"center", justifyContent:"center",
@@ -432,7 +433,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div style={{ minHeight:"100vh", background:C.bg,
+    <div className="ze-landing-root" style={{ minHeight:"100vh", background:C.bg,
       fontFamily:"'Satoshi', system-ui, sans-serif", color:C.text, overflowX:"hidden" }}>
       <style>{`
         @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
@@ -441,6 +442,9 @@ export default function LandingPage() {
         html { overflow-x: hidden; }
         html.dark body { background: ${C.bg} !important; color: ${C.text} !important; }
         input::placeholder { color: #9CA3AF; }
+        @media (max-width: 860px) {
+          .ze-landing-root { padding-bottom: 68px; }
+        }
         .no-scroll { scrollbar-width: none; }
         .no-scroll::-webkit-scrollbar { display: none; }
         @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
@@ -869,6 +873,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <BottomNav />
     </div>
   );
 }

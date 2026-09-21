@@ -28,7 +28,7 @@ export class CartController {
   @Get()
   async getCart(@Req() req) {
     this.checkCustomer(req);
-    return this.cartService.getCart(req.user.id); // 👈 FIXED
+    return this.cartService.getCart(req.user.id);
   }
 
   /* ================= ADD ITEM ================= */
@@ -39,7 +39,7 @@ export class CartController {
     const quantity = body.quantity ?? 1;
     await this.cartService.addItem(req.user.id, body.dishId, quantity);
 
-    return this.cartService.getCart(req.user.id); // 👈 FIXED
+    return this.cartService.getCart(req.user.id);
   }
 
   /* ================= UPDATE ITEM ================= */
@@ -48,7 +48,7 @@ export class CartController {
     this.checkCustomer(req);
 
     await this.cartService.updateItem(id, body.quantity ?? 1);
-    return this.cartService.getCart(req.user.id); // 👈 FIXED
+    return this.cartService.getCart(req.user.id);
   }
 
   /* ================= REMOVE ITEM ================= */
@@ -57,7 +57,18 @@ export class CartController {
     this.checkCustomer(req);
 
     await this.cartService.removeItem(id);
-    return this.cartService.getCart(req.user.id); // 👈 FIXED
+    return this.cartService.getCart(req.user.id);
+  }
+
+  /* ================= CLEAR ONE RESTAURANT'S ITEMS ================= */
+  // ✅ NEW — used right after checkout completes for a single restaurant
+  // in the Bag, so only that restaurant's items disappear from the bag.
+  @Delete("restaurant/:restaurantId")
+  async clearRestaurantItems(@Req() req, @Param("restaurantId") restaurantId: string) {
+    this.checkCustomer(req);
+
+    await this.cartService.clearRestaurantItems(req.user.id, restaurantId);
+    return this.cartService.getCart(req.user.id);
   }
 
   /* ================= CLEAR CART ================= */
@@ -66,6 +77,6 @@ export class CartController {
     this.checkCustomer(req);
 
     await this.cartService.clearCart(req.user.id);
-    return this.cartService.getCart(req.user.id); // 👈 FIXED
+    return this.cartService.getCart(req.user.id);
   }
 }

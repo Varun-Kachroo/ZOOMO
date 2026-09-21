@@ -153,7 +153,7 @@ export default function Navbar() {
             </>
           )}
 
-          <button onClick={() => navigate("/cart")}
+          <button onClick={() => navigate("/bag")}
             style={{ position:"relative", width:38, height:38, borderRadius:10,
               border:`1.5px solid ${C.border}`, background:C.surface,
               display:"flex", alignItems:"center", justifyContent:"center",

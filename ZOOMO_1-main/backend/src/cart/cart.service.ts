@@ -9,29 +9,34 @@ import { PrismaService } from '../common/prisma.service';
 export class CartService {
   constructor(private prisma: PrismaService) {}
 
+  // Nested include used everywhere the cart is returned — each item now
+  // carries its dish AND that dish's restaurant, so the frontend can
+  // group items by restaurant (name, image) without extra API calls.
+  private readonly cartInclude = {
+    items: {
+      include: {
+        dish: { include: { restaurant: true } },
+      },
+    },
+  };
+
   /* ================= GET CART ================= */
   async getCart(userId: string) {
     if (!userId) throw new BadRequestException("❌ userId missing");
 
     let cart = await this.prisma.cart.findUnique({
       where: { userId },
-      include: {
-        items: {
-          include: { dish: true },
-        },
-      },
+      include: this.cartInclude,
     });
 
     if (!cart) {
       cart = await this.prisma.cart.create({
         data: { userId },
-        include: {
-          items: { include: { dish: true } },
-        },
+        include: this.cartInclude,
       });
     }
 
-    return { items: cart.items }; // 👈 RETURN ONLY ITEMS ARRAY!
+    return { items: cart.items };
   }
 
   /* ================= ADD ITEM ================= */
@@ -42,21 +47,14 @@ export class CartService {
     const dish = await this.prisma.dish.findUnique({ where: { id: dishId } });
     if (!dish) throw new NotFoundException("❌ Dish not found");
 
-    let cart = await this.ensureCart(userId);
+    const cart = await this.ensureCart(userId);
 
-    /* ============ RESTAURANT CONFLICT ============ */
-    if (cart.items.length > 0) {
-      const firstItem = cart.items[0];
-      const firstDish = firstItem
-        ? await this.prisma.dish.findUnique({ where: { id: firstItem.dishId } })
-        : null;
+    // ✅ FIX: previously this block wiped the ENTIRE cart the moment a
+    // dish from a different restaurant was added — that's what forced
+    // the old "replace cart?" confirmation flow. The Bag feature now
+    // supports multiple restaurants side by side, so items from
+    // different restaurants simply coexist. No wiping.
 
-      if (firstDish && firstDish.restaurantId !== dish.restaurantId) {
-        await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-      }
-    }
-
-    /* ============ ADD OR UPDATE ITEM ============ */
     const existing = await this.prisma.cartItem.findFirst({
       where: { cartId: cart.id, dishId },
     });
@@ -72,44 +70,42 @@ export class CartService {
       });
     }
 
-    return this.getCart(userId); // 👈 CONSISTENT RETURN
+    return this.getCart(userId);
   }
 
- /* ================= UPDATE QUANTITY ================= */
-async updateItem(id: string, quantity: number) {
-  if (!id) throw new BadRequestException("❌ item id missing");
+  /* ================= UPDATE QUANTITY ================= */
+  async updateItem(id: string, quantity: number) {
+    if (!id) throw new BadRequestException("❌ item id missing");
 
-  const item = await this.prisma.cartItem.findUnique({ where: { id } });
-  if (!item) throw new NotFoundException("Item not found");
+    const item = await this.prisma.cartItem.findUnique({ where: { id } });
+    if (!item) throw new NotFoundException("Item not found");
 
-  if (quantity <= 0) {
-    await this.prisma.cartItem.delete({ where: { id } });
-  } else {
-    await this.prisma.cartItem.update({
-      where: { id },
-      data: { quantity },
+    if (quantity <= 0) {
+      await this.prisma.cartItem.delete({ where: { id } });
+    } else {
+      await this.prisma.cartItem.update({
+        where: { id },
+        data: { quantity },
+      });
+    }
+
+    const cart = await this.prisma.cart.findUnique({
+      where: { id: item.cartId },
+      include: { user: true },
     });
+
+    if (!cart) {
+      throw new NotFoundException("⚠️ Cart not found — data inconsistency");
+    }
+
+    return this.getCart(cart.userId);
   }
 
-  // 🛠 load cart to get userId
-  const cart = await this.prisma.cart.findUnique({
-    where: { id: item.cartId },
-    include: { user: true },
-  });
-
-  if (!cart) {
-    throw new NotFoundException("⚠️ Cart not found — data inconsistency");
-  }
-
-  return this.getCart(cart.userId);
-}
-
-  /* ================= REMOVE ================= */
+  /* ================= REMOVE ONE ITEM ================= */
   async removeItem(itemId: string) {
     if (!itemId) throw new BadRequestException("❌ item id missing");
 
     const item = await this.prisma.cartItem.findUnique({ where: { id: itemId } });
-
     if (!item) return { items: [] };
 
     await this.prisma.cartItem.delete({ where: { id: itemId } });
@@ -118,14 +114,12 @@ async updateItem(id: string, quantity: number) {
       where: { id: item.cartId },
     });
 
-    if (!userCart || !userCart.userId) {
-      return { items: [] };
-    }
+    if (!userCart || !userCart.userId) return { items: [] };
 
     return this.getCart(userCart.userId);
   }
 
-  /* ================= CLEAR CART ================= */
+  /* ================= CLEAR WHOLE CART ================= */
   async clearCart(userId: string) {
     if (!userId) throw new BadRequestException("❌ userId missing");
 
@@ -133,6 +127,31 @@ async updateItem(id: string, quantity: number) {
     if (!cart) return { items: [] };
 
     await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    return this.getCart(userId);
+  }
+
+  /* ================= CLEAR ONE RESTAURANT'S ITEMS ================= */
+  // ✅ NEW — used after checking out with ONE restaurant from the Bag.
+  // Only removes that restaurant's items, leaving everything else in
+  // the bag untouched for the person to check out separately later.
+  async clearRestaurantItems(userId: string, restaurantId: string) {
+    if (!userId) throw new BadRequestException("❌ userId missing");
+    if (!restaurantId) throw new BadRequestException("❌ restaurantId missing");
+
+    const cart = await this.prisma.cart.findUnique({ where: { userId } });
+    if (!cart) return { items: [] };
+
+    // Find this restaurant's dish ids, then delete cart items matching them
+    const dishes = await this.prisma.dish.findMany({
+      where: { restaurantId },
+      select: { id: true },
+    });
+    const dishIds = dishes.map((d) => d.id);
+
+    await this.prisma.cartItem.deleteMany({
+      where: { cartId: cart.id, dishId: { in: dishIds } },
+    });
 
     return this.getCart(userId);
   }

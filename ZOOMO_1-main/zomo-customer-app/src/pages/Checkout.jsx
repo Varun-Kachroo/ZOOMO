@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -164,9 +164,18 @@ function Toggle({ checked, onChange }) {
 }
 
 export default function Checkout() {
-  const { cart, getSubtotal, clearCart } = useCart();
+  const { restaurantId } = useParams();
+  const { cart, clearRestaurantItems } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // ✅ Only this restaurant's items are relevant here — the bag may
+  // hold items from other restaurants too, but this checkout is scoped
+  // to whichever restaurant the person picked from the Bag page.
+  const restaurantItems = (cart?.items || []).filter(
+    i => i.dish?.restaurant?.id === restaurantId || i.dish?.restaurantId === restaurantId
+  );
+  const restaurantName = restaurantItems[0]?.dish?.restaurant?.name || "this restaurant";
 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -266,6 +275,7 @@ export default function Checkout() {
   }
 
   async function placeOrder() {
+    if (restaurantItems.length === 0) return alert("No items found for this restaurant in your bag.");
     if (orderType === "DELIVERY" && !selectedAddress) return alert("Select a delivery address");
     if (!paymentMethod) return alert("Select a payment method");
     if (orderType === "DELIVERY" && scheduleDelivery && (!scheduleDate || !scheduleTime)) return alert("Select a delivery date and time");
@@ -273,9 +283,9 @@ export default function Checkout() {
     setPlacing(true);
     try {
       await api.post("/orders", {
-        restaurantId: cart.items[0].dish.restaurantId,
+        restaurantId,
         addressId: orderType === "DELIVERY" ? selectedAddress : null,
-        items: cart.items.map(i => ({ dishId: i.dish.id, quantity: i.quantity })),
+        items: restaurantItems.map(i => ({ dishId: i.dish.id, quantity: i.quantity })),
         paymentMethod,
         orderType,
         promoCode: appliedPromo?.code ?? null,
@@ -287,7 +297,9 @@ export default function Checkout() {
           ? `${dineDate}T${dineTime}:00`
           : null,
       });
-      clearCart().catch(() => {});
+      // ✅ Only clear THIS restaurant's items — anything from other
+      // restaurants stays in the bag for a separate checkout later.
+      clearRestaurantItems(restaurantId).catch(() => {});
       setPlacing(false);
       setShowSuccess(true);
     } catch (err) {
@@ -300,7 +312,9 @@ export default function Checkout() {
   if (loading) return <MascotLoader text="Loading checkout..." />;
   if (placing) return <MascotLoader text="Placing your order... 🍔" />;
 
-  const subtotal = parseFloat(getSubtotal().toFixed(2));
+  const subtotal = parseFloat(
+    restaurantItems.reduce((sum, i) => sum + i.quantity * i.dish.price, 0).toFixed(2)
+  );
   const delivery = appliedPromo?.type === "ship" ? 0 : 29;
   const tax = parseFloat((subtotal * 0.05).toFixed(2));
   const tipAmount = showCustomTip && customTip ? parseFloat(parseFloat(customTip).toFixed(2)) || 0 : tip;
@@ -335,7 +349,7 @@ export default function Checkout() {
 
       <div style={{ maxWidth:680, margin:"0 auto", padding:"28px 20px" }}>
 
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:4 }}>
           <button onClick={() => navigate(-1)}
             style={{ width:38, height:38, borderRadius:12, border:`1.5px solid ${C.border}`,
               background:C.surface, display:"flex", alignItems:"center", justifyContent:"center",
@@ -344,6 +358,9 @@ export default function Checkout() {
           </button>
           <h1 style={{ fontSize:24, fontWeight:700, color:C.textMain, letterSpacing:"-0.015em" }}>Checkout</h1>
         </div>
+        <p style={{ fontSize:13, color:C.textMuted, marginBottom:20, marginLeft:50 }}>
+          Ordering from {restaurantName}
+        </p>
 
         {/* ── ORDER TYPE ── */}
         <Section title="How would you like this order?">
@@ -637,7 +654,7 @@ export default function Checkout() {
 
         {/* Order Summary */}
         <Section title="Order Summary">
-          {cart.items.map(i => (
+          {restaurantItems.map(i => (
             <div key={i.id} style={{ display:"flex", justifyContent:"space-between", fontSize:13, color:C.textSub }}>
               <span>{i.dish.name} × {i.quantity}</span>
               <span>₹{(i.dish.price * i.quantity).toFixed(2)}</span>
