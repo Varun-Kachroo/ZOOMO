@@ -1,12 +1,14 @@
 import {  Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import AppRoutes from "./routes/AppRoutes";
+import ClickFeedback from "./components/ClickFeedback";
 
 
 
 export default function App() {
   return (
-  
+    <>
+      <ClickFeedback />
           <Routes>
 
             {/* Landing page should be FULL WIDTH */}
@@ -23,6 +25,6 @@ export default function App() {
             />
 
           </Routes>
-  
+    </>
   );
 }

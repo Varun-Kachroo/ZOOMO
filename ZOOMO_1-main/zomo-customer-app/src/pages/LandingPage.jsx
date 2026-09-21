@@ -59,6 +59,11 @@ const SearchIcon = () => (
     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
   </svg>
 );
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+  </svg>
+);
 const ClockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -326,11 +331,15 @@ function SearchOverlay({ restaurants, onClose, navigate }) {
               style={{ border:"none", outline:"none", background:"transparent", flex:1,
                 fontSize:15, color:C.text, fontFamily:"'Satoshi', system-ui, sans-serif" }} />
           </div>
-          <button onClick={handleClose}
-            style={{ padding:"9px 18px", borderRadius:999, border:`1px solid ${C.border}`,
-              background:"transparent", fontSize:13, color:C.sub, cursor:"pointer", fontFamily:"inherit",
-              whiteSpace:"nowrap" }}>
-            Cancel
+          <button onClick={handleClose} aria-label="Close search"
+            style={{ width:38, height:38, flexShrink:0, borderRadius:"50%",
+              border:`1.5px solid ${C.border}`, background:C.bg, color:C.sub,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              cursor:"pointer", transition:"all 120ms" }}
+            onMouseEnter={e => { e.currentTarget.style.background = C.dark; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = C.dark; }}
+            onMouseLeave={e => { e.currentTarget.style.background = C.bg; e.currentTarget.style.color = C.sub; e.currentTarget.style.borderColor = C.border; }}
+          >
+            <CloseIcon />
           </button>
         </div>
 
