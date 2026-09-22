@@ -8,9 +8,10 @@ import { DriverOrdersService } from "./orders.service";
 import { AvailabilityModule } from './availability/availability.module';
 import { LocationModule } from './location/location.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 
 @Module({
-  imports: [PrismaModule, DriverAuthModule, AvailabilityModule, LocationModule, DashboardModule],
+  imports: [PrismaModule, DriverAuthModule, AvailabilityModule, LocationModule, DashboardModule, RealtimeModule],
   controllers: [
     DriverMeController,
     DriverOrdersController,

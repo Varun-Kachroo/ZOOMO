@@ -9,6 +9,7 @@ import {
 } from "../services/driverApi";
 import { useDriverAuth } from "../context/DriverAuthContext";
 import { useDriverLocation } from "../hooks/useDriverLocation";
+import { useOrderSocket } from "../hooks/useOrderSocket";
 import DriverMap from "../components/DriverMap";
 import { getDistanceMeters } from "../utils/distance";
 import {
@@ -40,6 +41,13 @@ export default function OrderDetails() {
   const [fetchError, setFetchError] = useState("");
 
   const isOnline = Boolean(driver?.isAvailable);
+
+  // ✅ NEW — pushes driverLocation over a live socket for this order,
+  // throttled, only while actually out for pickup/delivery. This is
+  // what makes the customer's tracking map move in real time — before
+  // this, DriverMap only ever rendered locally and never told the
+  // server (or the customer) where the driver actually was.
+  useOrderSocket(id, driverLocation, status);
 
   useEffect(() => {
     if (!isOnline) navigate("/home", { replace: true });
@@ -272,7 +280,6 @@ export default function OrderDetails() {
             </span>
           </div>
 
-          {/* COD CASH TOGGLE */}
           {isCOD && status === "OUT_FOR_DELIVERY" && (
             <button
               onClick={() => setCodPaymentConfirmed((prev) => !prev)}

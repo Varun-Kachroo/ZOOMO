@@ -18,10 +18,11 @@ import { DriverModule } from './driver/driver.module';
 import { AdminModule } from './admin/admin.module';
 import { UploadModule } from './upload/upload.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 
 @Module({
-  imports: [AuthModule, UsersModule,PrismaModule, RestaurantsModule, DishesModule, CartModule, OrdersModule, PaymentsModule, AddressModule, MerchantModule, DriverModule, AdminModule, UploadModule, ReviewsModule],
+  imports: [AuthModule, UsersModule,PrismaModule, RestaurantsModule, DishesModule, CartModule, OrdersModule, PaymentsModule, AddressModule, MerchantModule, DriverModule, AdminModule, UploadModule, ReviewsModule, RealtimeModule],
   controllers: [AppController],
   providers: [ AppService, PrismaService],
 })

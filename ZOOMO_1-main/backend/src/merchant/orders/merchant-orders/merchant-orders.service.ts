@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma.service';
 import { OrderStatus } from '@prisma/client';
+import { RealtimeGateway } from '../../../realtime/realtime.gateway';
 
 const STATUS_FLOW: Record<OrderStatus, OrderStatus | null> = {
-  SCHEDULED: OrderStatus.PENDING,        // ✅ ADDED
+  SCHEDULED: OrderStatus.PENDING,
   PENDING: OrderStatus.PREPARING,
   PREPARING: OrderStatus.READY_FOR_PICKUP,
   READY_FOR_PICKUP: OrderStatus.OUT_FOR_DELIVERY,
@@ -19,9 +20,14 @@ const STATUS_FLOW: Record<OrderStatus, OrderStatus | null> = {
 
 @Injectable()
 export class MerchantOrdersService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    // ✅ NEW — lets this service push a live update the moment a
+    // merchant changes an order's status, instead of the customer
+    // only finding out on their next manual refresh.
+    private realtimeGateway: RealtimeGateway,
+  ) { }
 
-  // 🔐 ensure restaurant belongs to merchant
   private async assertRestaurantOwnership(
     merchantId: string,
     restaurantId: string,
@@ -127,10 +133,15 @@ export class MerchantOrdersService {
       );
     }
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: nextStatus },
     });
+
+    // ✅ NEW — push the change live to anyone tracking this order
+    this.realtimeGateway.broadcastOrderStatus(orderId, nextStatus);
+
+    return updated;
   }
 
   // ✅ CANCEL ORDER
@@ -157,16 +168,21 @@ export class MerchantOrdersService {
 
     if (
       order.status !== OrderStatus.PENDING &&
-      order.status !== OrderStatus.SCHEDULED   // ✅ allow cancelling SCHEDULED too
+      order.status !== OrderStatus.SCHEDULED
     ) {
       throw new BadRequestException(
         'Only pending or scheduled orders can be cancelled',
       );
     }
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: OrderStatus.CANCELLED },
     });
+
+    // ✅ NEW
+    this.realtimeGateway.broadcastOrderStatus(orderId, 'CANCELLED');
+
+    return updated;
   }
 }

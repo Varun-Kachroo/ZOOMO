@@ -35,6 +35,8 @@ export class OrdersService {
 
   /* ===========================
      GET ORDER DETAILS
+     ✅ Now includes driver (with live lat/lng) and address — needed
+     for the live tracking map on the customer side.
   ============================ */
   async getOrderById(orderId: string, userId: string) {
     const order = await this.prisma.order.findUnique({
@@ -42,7 +44,11 @@ export class OrdersService {
       include: {
         items: { include: { dish: true } },
         restaurant: true,
+        address: true,
         payment: true,
+        driver: {
+          include: { user: { select: { name: true, phone: true } } },
+        },
       },
     });
 
@@ -54,37 +60,72 @@ export class OrdersService {
 
   /* ===========================
      CREATE ORDER + PAYMENT
+     ✅ FIX: this used to always use the ENTIRE cart (cart.items) and
+     derive the restaurant from whichever dish happened to be first in
+     it — completely ignoring the restaurantId and items the frontend
+     actually sent. That broke the multi-restaurant Bag: checking out
+     with one restaurant could silently pull in dishes from a totally
+     different one, and would wipe the ENTIRE bag afterward regardless
+     of which restaurant was checked out.
+     Now: uses data.restaurantId and data.items directly, validates
+     every dish actually belongs to that restaurant, prices are always
+     re-fetched from the DB (never trusts client-sent prices), and only
+     that restaurant's cart items are cleared — everything else in the
+     bag is left untouched.
   ============================ */
   async createOrder(userId: string, data: any) {
     const {
+      restaurantId,
       addressId,
+      items,
       specialInstructions,
       tip,
       paymentMethod,
       promoCode,
+      orderType,
+      guestCount,
       scheduledFor,
     } = data;
 
-    const cart = await this.prisma.cart.findUnique({
-      where: { userId },
-      include: { items: { include: { dish: true } } },
+    if (!restaurantId) throw new BadRequestException("restaurantId is required");
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new BadRequestException("No items provided for this order");
+    }
+
+    // ✅ Re-fetch every dish from the DB — never trust client-sent price,
+    // and reject any dish that doesn't actually belong to this restaurant
+    // (defends against a tampered request mixing restaurants together).
+    const dishIds = items.map((i: any) => i.dishId);
+    const dishes = await this.prisma.dish.findMany({
+      where: { id: { in: dishIds } },
     });
 
-    if (!cart || cart.items.length === 0) {
-      throw new BadRequestException("Cart is empty");
+    const dishMap = new Map(dishes.map((d) => [d.id, d]));
+
+    for (const item of items) {
+      const dish = dishMap.get(item.dishId);
+      if (!dish) throw new BadRequestException(`Dish ${item.dishId} not found`);
+      if (dish.restaurantId !== restaurantId) {
+        throw new BadRequestException(
+          "All items in an order must belong to the same restaurant",
+        );
+      }
     }
 
     /* ── Totals ── */
-    const subtotal = cart.items.reduce(
-      (sum, item) => sum + item.quantity * item.dish.price,
-      0
-    );
+    const subtotal = items.reduce((sum: number, item: any) => {
+      const dish = dishMap.get(item.dishId)!;
+      return sum + item.quantity * dish.price;
+    }, 0);
+
     const tipAmount = tip || 0;
     const tax = parseFloat((subtotal * 0.05).toFixed(2));
 
+    /* ── Delivery fee — none for dine-in/takeaway ── */
+    let deliveryFee = orderType === "DELIVERY" ? 29 : 0;
+
     /* ── Promo ── */
     let discount = 0;
-    let deliveryFee = 29;
     let validatedPromoCode: string | null = null;
 
     if (promoCode) {
@@ -94,28 +135,19 @@ export class OrdersService {
       if (promo.type === "percent") {
         discount = Math.min(
           parseFloat(((subtotal * promo.value) / 100).toFixed(2)),
-          promo.max ?? Infinity
+          promo.max ?? Infinity,
         );
       } else if (promo.type === "flat") {
         discount = Math.min(promo.value, subtotal);
-      } else if (promo.type === "ship") {
+      } else if (promo.type === "ship" && orderType === "DELIVERY") {
         deliveryFee = 0;
       }
     }
 
     const total = parseFloat(
-      (subtotal + deliveryFee + tax + tipAmount - discount).toFixed(2)
+      (subtotal + deliveryFee + tax + tipAmount - discount).toFixed(2),
     );
 
-    /* ── Restaurant ── */
-    const restaurantDish = await this.prisma.dish.findUnique({
-      where: { id: cart.items[0].dishId },
-      include: { restaurant: true },
-    });
-
-    if (!restaurantDish) throw new BadRequestException("Invalid restaurant");
-
-    /* ── Status ── */
     const orderStatus = scheduledFor
       ? OrderStatus.SCHEDULED
       : OrderStatus.PENDING;
@@ -125,8 +157,8 @@ export class OrdersService {
       const createdOrder = await tx.order.create({
         data: {
           userId,
-          restaurantId: restaurantDish.restaurantId,
-          addressId,
+          restaurantId,
+          addressId: addressId || null,
           subtotal,
           deliveryFee,
           tax,
@@ -138,12 +170,15 @@ export class OrdersService {
           specialInstructions,
           status: orderStatus,
           items: {
-            create: cart.items.map((item) => ({
-              dishId: item.dishId,
-              quantity: item.quantity,
-              price: item.dish.price,
-              specialInstructions: item.specialInstructions || null,
-            })),
+            create: items.map((item: any) => {
+              const dish = dishMap.get(item.dishId)!;
+              return {
+                dishId: item.dishId,
+                quantity: item.quantity,
+                price: dish.price,
+                specialInstructions: item.specialInstructions || null,
+              };
+            }),
           },
         },
       });
@@ -159,12 +194,20 @@ export class OrdersService {
         },
       });
 
-      return createdOrder;
-    });
+      // ✅ FIX: only clear THIS restaurant's cart items — anything from
+      // other restaurants in the bag stays put for a separate checkout.
+      const restaurantDishIds = (
+        await tx.dish.findMany({ where: { restaurantId }, select: { id: true } })
+      ).map((d) => d.id);
 
-    /* ── Clear cart ── */
-    await this.prisma.cartItem.deleteMany({
-      where: { cartId: cart.id },
+      await tx.cartItem.deleteMany({
+        where: {
+          cart: { userId },
+          dishId: { in: restaurantDishIds },
+        },
+      });
+
+      return createdOrder;
     });
 
     return order;

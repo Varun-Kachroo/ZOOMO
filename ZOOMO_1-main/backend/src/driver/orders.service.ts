@@ -5,10 +5,16 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
 import { OrderStatus } from "@prisma/client";
+import { RealtimeGateway } from "../realtime/realtime.gateway";
 
 @Injectable()
 export class DriverOrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // ✅ NEW — pushes a live update to the customer the instant a
+    // driver marks an order picked up or delivered.
+    private readonly realtimeGateway: RealtimeGateway,
+  ) {}
 
   /* ===========================
      RESOLVE DRIVER
@@ -27,7 +33,6 @@ export class DriverOrdersService {
 
   /* ===========================
      GET ASSIGNED ORDERS (LIST)
-     → Lightweight for orders screen
   ============================ */
   async getAssignedOrders(userId: string) {
     const driverId = await this.getDriverId(userId);
@@ -83,11 +88,16 @@ export class DriverOrdersService {
     if (order.status !== OrderStatus.READY_FOR_PICKUP)
       throw new ForbiddenException("Order not ready for pickup");
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: OrderStatus.OUT_FOR_DELIVERY },
       select: { id: true, status: true },
     });
+
+    // ✅ NEW
+    this.realtimeGateway.broadcastOrderStatus(orderId, OrderStatus.OUT_FOR_DELIVERY);
+
+    return updated;
   }
 
   /* ===========================
@@ -114,8 +124,7 @@ export class DriverOrdersService {
       throw new ForbiddenException("Order not out for delivery");
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      // 1️⃣ Update order
+    const result = await this.prisma.$transaction(async (tx) => {
       const updatedOrder = await tx.order.update({
         where: { id: orderId },
         data: {
@@ -124,7 +133,6 @@ export class DriverOrdersService {
         },
       });
 
-      // 2️⃣ Complete COD payment if needed
       if (
         order.payment &&
         order.payment.method === "COD" &&
@@ -138,11 +146,15 @@ export class DriverOrdersService {
 
       return updatedOrder;
     });
+
+    // ✅ NEW
+    this.realtimeGateway.broadcastOrderStatus(orderId, OrderStatus.DELIVERED);
+
+    return result;
   }
 
   /* ===========================
      GET ORDER DETAILS (DRIVER)
-     → FULL DATA FOR OrderDetails UI
   ============================ */
   async getOrderDetails(orderId: string, userId: string) {
     const driverId = await this.getDriverId(userId);
@@ -200,7 +212,6 @@ export class DriverOrdersService {
         method: order.payment?.method ?? "ONLINE",
       },
 
-      // 🔥 CRITICAL FIX — DO NOT CHANGE
       items: order.items.map((item) => ({
         id: item.id,
         quantity: item.quantity,
