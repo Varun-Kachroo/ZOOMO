@@ -44,9 +44,12 @@ export default function BottomNav() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   // ✅ Now mounted once globally (see App.jsx), so it would otherwise show
-  // on every route including auth/legal pages that shouldn't have it.
+  // on every route including auth/legal pages that shouldn't have it —
+  // and on /checkout it would sit at the same fixed bottom:0 position as
+  // Checkout's own sticky price bar (same z-index), completely covering
+  // the Place Order button.
   const HIDDEN_ON = ["/login", "/signup", "/privacy"];
-  if (HIDDEN_ON.includes(location.pathname)) return null;
+  if (HIDDEN_ON.includes(location.pathname) || location.pathname.startsWith("/checkout")) return null;
 
   const bagCount = user ? getTotalItemCount() : 0;
 
