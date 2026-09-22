@@ -19,6 +19,11 @@ const PROMO_CODES = {
   NEWUSER: { type:"flat", value:80, label:"₹80 off", max:null },
 };
 const TIP_OPTIONS = [0, 10, 20, 30, 50];
+const DROP_OFF_OPTIONS = [
+  { id:"MEET_AT_DOOR", label:"Meet at door", sub:"Hand it to me" },
+  { id:"LEAVE_AT_DOOR", label:"Leave at door", sub:"No contact" },
+  { id:"MEET_OUTSIDE", label:"Meet outside", sub:"I'll come to the gate" },
+];
 
 const Icon = {
   ArrowLeft: () => (
@@ -205,6 +210,12 @@ export default function Checkout() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
 
+  const [dropOff, setDropOff] = useState("MEET_AT_DOOR");
+  const [dropOffNote, setDropOffNote] = useState("");
+  const [needsCutlery, setNeedsCutlery] = useState(true);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState("");
+
   useEffect(() => {
     async function load() {
       try {
@@ -263,6 +274,40 @@ export default function Checkout() {
     localStorage.removeItem("ze_active_offer");
   }
 
+  async function useCurrentLocation() {
+    setLocateError("");
+    if (!navigator.geolocation) { setLocateError("Location isn't available in this browser."); return; }
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        if (!mapboxToken) {
+          setLocateError("Map isn't configured — enter your address manually.");
+          return;
+        }
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&types=address`
+        ).then(r => r.json());
+        const feature = res?.features?.[0];
+        if (!feature) { setLocateError("Couldn't find an address for your location."); return; }
+        const context = feature.context || [];
+        const city = context.find(c => c.id.startsWith("place"))?.text || "";
+        const state = context.find(c => c.id.startsWith("region"))?.text || "";
+        const zip = context.find(c => c.id.startsWith("postcode"))?.text || "";
+        setForm({ street: feature.text || feature.place_name, city, state, zipCode: zip, country: "India" });
+        setShowForm(true);
+      } catch {
+        setLocateError("Couldn't detect your location. Enter it manually below.");
+      } finally {
+        setLocating(false);
+      }
+    }, () => {
+      setLocateError("Location permission denied — enter your address manually.");
+      setLocating(false);
+    });
+  }
+
   async function saveAddress() {
     if (!form.street || !form.city || !form.state || !form.zipCode) return alert("Fill all fields");
     try {
@@ -282,15 +327,25 @@ export default function Checkout() {
     if ((orderType === "DINE_IN" || orderType === "TAKEAWAY") && (!dineDate || !dineTime)) return alert(`Select a date and time for your ${orderType === "DINE_IN" ? "dine-in" : "takeaway"}`);
     setPlacing(true);
     try {
+      const dropOffLabel = DROP_OFF_OPTIONS.find(d => d.id === dropOff)?.label;
+      const deliveryNote = orderType === "DELIVERY"
+        ? [dropOffLabel && `[${dropOffLabel}]`, dropOffNote.trim()].filter(Boolean).join(" ") || null
+        : null;
+
       await api.post("/orders", {
         restaurantId,
         addressId: orderType === "DELIVERY" ? selectedAddress : null,
-        items: restaurantItems.map(i => ({ dishId: i.dish.id, quantity: i.quantity })),
+        items: restaurantItems.map(i => ({
+          dishId: i.dish.id, quantity: i.quantity,
+          specialInstructions: i.specialInstructions || null,
+        })),
         paymentMethod,
         orderType,
         promoCode: appliedPromo?.code ?? null,
         tip: tip,
         guestCount: orderType === "DINE_IN" ? guestCount : null,
+        specialInstructions: deliveryNote,
+        needsCutlery,
         scheduledFor: orderType === "DELIVERY" && scheduleDelivery
           ? `${scheduleDate}T${scheduleTime}:00`
           : (orderType !== "DELIVERY")
@@ -342,7 +397,7 @@ export default function Checkout() {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:C.page, paddingBottom:40,
+    <div style={{ minHeight:"100vh", background:C.page, paddingBottom:110,
       fontFamily:"'Satoshi', system-ui, sans-serif" }}>
       <style>{`@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');`}</style>
 
@@ -427,6 +482,19 @@ export default function Checkout() {
 
         {/* Delivery Address — only shown for DELIVERY orders */}
         {orderType === "DELIVERY" && <Section title="Delivery Address">
+          <button onClick={useCurrentLocation} disabled={locating}
+            style={{ display:"flex", alignItems:"center", gap:10, padding:14, borderRadius:14,
+              border:`1.5px solid ${C.border}`, background:C.page, cursor: locating ? "wait" : "pointer",
+              textAlign:"left", fontFamily:"inherit" }}>
+            <Icon.MapPin color={C.accent} />
+            <div>
+              <p style={{ fontWeight:600, fontSize:13, color:C.textMain }}>
+                {locating ? "Finding your location…" : "Use current location"}
+              </p>
+              <p style={{ color:C.textMuted, fontSize:11 }}>We'll pin where you are right now</p>
+            </div>
+          </button>
+          {locateError && <p style={{ color:C.error, fontSize:12 }}>{locateError}</p>}
           {!showForm && addresses.map(a => (
             <label key={a.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:14,
               borderRadius:14, border:`1.5px solid ${selectedAddress === a.id ? C.accent : C.border}`,
@@ -514,6 +582,39 @@ export default function Checkout() {
             </>
           )}
         </Section>}
+
+        {/* Drop-off preference — only for delivery orders */}
+        {orderType === "DELIVERY" && <Section title="Drop-off">
+          {DROP_OFF_OPTIONS.map(opt => (
+            <label key={opt.id} onClick={() => setDropOff(opt.id)}
+              style={{ display:"flex", flexDirection:"column", gap:2, padding:14, borderRadius:14, cursor:"pointer",
+                border:`1.5px solid ${dropOff === opt.id ? C.accent : C.border}`,
+                background: dropOff === opt.id ? `${C.accent}0D` : C.page, transition:"all 120ms" }}>
+              <span style={{ fontWeight:600, fontSize:13, color:C.textMain }}>{opt.label}</span>
+              <span style={{ fontSize:11, color:C.textSub }}>{opt.sub}</span>
+            </label>
+          ))}
+          <input value={dropOffNote} onChange={e => setDropOffNote(e.target.value)}
+            placeholder="Gate code, floor, dog in yard..."
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = C.primary}
+            onBlur={e => e.target.style.borderColor = C.border} />
+        </Section>}
+
+        {/* Cutlery */}
+        <Section title={
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <span>🍴 Cutlery</span>
+          </div>
+        }>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div>
+              <p style={{ fontWeight:600, fontSize:13, color:C.textMain }}>Need cutlery?</p>
+              <p style={{ color:C.textMuted, fontSize:11 }}>Forks, spoons and napkins in the bag</p>
+            </div>
+            <Toggle checked={needsCutlery} onChange={() => setNeedsCutlery(v => !v)} />
+          </div>
+        </Section>
 
         {/* Tip */}
         <Section title={
@@ -638,16 +739,24 @@ export default function Checkout() {
                   <Icon.X size={11} /> {promoError}
                 </p>
               )}
-              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.06em", color:C.accent, marginTop:6 }}>
+                AVAILABLE FOR YOU
+              </p>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {Object.entries(PROMO_CODES).map(([code, info]) => (
-                  <button key={code} onClick={() => { setPromoInput(code); setPromoError(""); }}
-                    style={{ fontSize:10, padding:"5px 10px", borderRadius:10, border:`1px solid ${C.border}`,
-                      background:C.page, color:C.textMuted, cursor:"pointer", fontFamily:"inherit",
-                      transition:"all 120ms" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.primary; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}>
-                    {code} · {info.label}
-                  </button>
+                  <div key={code} style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                    gap:10, padding:"10px 14px", borderRadius:12, border:`1px solid ${C.border}`, background:C.page }}>
+                    <div style={{ minWidth:0 }}>
+                      <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.04em", color:C.accent }}>{code}</p>
+                      <p style={{ fontSize:13, fontWeight:600, color:C.textMain }}>{info.label}</p>
+                    </div>
+                    <button onClick={() => { setAppliedPromo({ code, ...info }); setShowPromoFlash(true); localStorage.setItem("ze_active_offer", code); }}
+                      style={{ flexShrink:0, padding:"7px 16px", borderRadius:999, border:`1.5px solid ${C.primary}`,
+                        background:"transparent", color:C.primary, fontSize:12, fontWeight:700,
+                        cursor:"pointer", fontFamily:"inherit" }}>
+                      Apply
+                    </button>
+                  </div>
                 ))}
               </div>
             </>
@@ -693,13 +802,24 @@ export default function Checkout() {
           </div>
         </Section>
 
+      </div>
+
+      {/* Sticky price bar — mirrors the reference checkout's bottom bar */}
+      <div style={{ position:"fixed", left:0, right:0, bottom:0, zIndex:60,
+        display:"flex", alignItems:"center", justifyContent:"space-between", gap:16,
+        padding:"14px 20px", background:C.primary, color:"#fff" }}>
+        <div style={{ fontSize:12, opacity:0.85, lineHeight:1.5 }}>
+          <div>
+            Cart ₹{subtotal.toFixed(0)}
+            {orderType === "DELIVERY" && ` + fee ₹${delivery.toFixed(0)}`}
+            {` + tax ₹${tax.toFixed(0)}`}
+          </div>
+          <div style={{ fontSize:16, fontWeight:700, opacity:1 }}>₹{total.toFixed(2)}</div>
+        </div>
         <button onClick={placeOrder}
-          style={{ width:"100%", padding:"16px", borderRadius:16, border:"none",
-            background:`linear-gradient(135deg, ${C.primary} 0%, ${C.hover} 100%)`,
-            color:"#fff", fontWeight:700, fontSize:15, cursor:"pointer", fontFamily:"inherit",
-            boxShadow:"0 4px 16px rgba(15,61,46,0.25)", transition:"box-shadow 120ms" }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 24px rgba(15,61,46,0.35)"}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(15,61,46,0.25)"}>
+          style={{ flexShrink:0, padding:"13px 22px", borderRadius:999, border:"none",
+            background:"#fff", color:C.primary, fontWeight:700, fontSize:14, cursor:"pointer",
+            fontFamily:"inherit", whiteSpace:"nowrap" }}>
           {orderType === "DINE_IN"
             ? `Book Dine-In · ₹${total.toFixed(2)}`
             : orderType === "TAKEAWAY"

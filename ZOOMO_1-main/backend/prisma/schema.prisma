@@ -143,6 +143,7 @@ model Order {
   discount              Float?      // ✅ NEW
   scheduledFor          DateTime?   // ✅ NEW
   specialInstructions   String?
+  needsCutlery          Boolean     @default(true)
   estimatedDeliveryTime DateTime?
   actualDeliveryTime    DateTime?
   createdAt             DateTime    @default(now())

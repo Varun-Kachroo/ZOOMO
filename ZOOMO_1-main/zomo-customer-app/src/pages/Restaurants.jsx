@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Search, X, Star, Clock, Tag, ChevronRight, Heart } from "lucide-react";
 import { api } from "../services/api";
 import { MascotLoader } from "./LandingPage";
 
@@ -10,41 +11,24 @@ const C = {
 
 const CATEGORIES = ["All","Pizza","Burgers","Indian","Chinese","Biryani","Desserts","Beverages","Healthy"];
 
-const Icon = {
-  Search: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-    </svg>
-  ),
-  X: ({ size=14 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <path d="M18 6 6 18M6 6l12 12"/>
-    </svg>
-  ),
-  Star: () => (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  ),
-  Clock: () => (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-    </svg>
-  ),
-  Tag: () => (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/>
-      <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>
-    </svg>
-  ),
-  ChevronRight: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m9 18 6-6-6-6"/>
-    </svg>
-  ),
-};
+// Only filters backed by real data (rating, coupon) — "Zoom 15" / "Pure veg"
+// would need new Restaurant fields we don't have yet, so left out rather
+// than faked.
+const QUICK_FILTERS = [
+  { id:"offers", label:"Offers" },
+  { id:"topRated", label:"4.5+" },
+];
 
-function RestaurantCard({ r, navigate }) {
+const FAVORITES_KEY = "ze_favorite_restaurants";
+function readFavorites() {
+  try { return new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY)) || []); }
+  catch { return new Set(); }
+}
+function writeFavorites(set) {
+  try { localStorage.setItem(FAVORITES_KEY, JSON.stringify([...set])); } catch {}
+}
+
+function RestaurantCard({ r, navigate, isFavorite, onToggleFavorite }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -68,29 +52,49 @@ function RestaurantCard({ r, navigate }) {
           <div style={{ position:"absolute", bottom:10, left:10, display:"flex", alignItems:"center", gap:4,
             background:"rgba(15,61,46,0.85)", backdropFilter:"blur(4px)", color:C.accent, fontSize:10,
             fontWeight:600, padding:"4px 8px", borderRadius:8, border:`1px solid ${C.accent}40` }}>
-            <Icon.Tag /> {r.coupon}
+            <Tag size={10} /> {r.coupon}
+          </div>
+        )}
+        {r.isNew && (
+          <div style={{ position:"absolute", top:10, left:10,
+            background:"rgba(255,255,255,0.92)", color:C.textMain, fontSize:10,
+            fontWeight:700, padding:"4px 9px", borderRadius:8 }}>
+            New
           </div>
         )}
         <div style={{ position:"absolute", top:10, right:10, display:"flex", alignItems:"center", gap:4,
           background:"rgba(0,0,0,0.70)", backdropFilter:"blur(4px)", color:"#fff", fontSize:11,
           fontWeight:600, padding:"4px 8px", borderRadius:8 }}>
-          <Icon.Star /> {r.rating}
+          <Star size={11} fill="#F59E0B" stroke="#F59E0B" /> {r.rating}
         </div>
       </div>
       <div style={{ padding:"14px 16px 16px" }}>
-        <h3 style={{ color:C.textMain, fontWeight:700, fontSize:15, marginBottom:3,
-          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.name}</h3>
-        <p style={{ color:C.textSub, fontSize:12, marginBottom:12,
-          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.cuisine}</p>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:8 }}>
+          <div style={{ minWidth:0, flex:1 }}>
+            <h3 style={{ color:C.textMain, fontWeight:700, fontSize:15, marginBottom:3,
+              overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.name}</h3>
+            <p style={{ color:C.textSub, fontSize:12,
+              overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.cuisine}</p>
+          </div>
+          <button
+            onClick={e => { e.stopPropagation(); onToggleFavorite(r.id); }}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            style={{ flexShrink:0, width:30, height:30, borderRadius:999, border:`1.5px solid ${C.border}`,
+              background:C.surface, display:"flex", alignItems:"center", justifyContent:"center",
+              cursor:"pointer", transition:"all 120ms" }}>
+            <Heart size={14} fill={isFavorite ? "#DC2626" : "none"}
+              stroke={isFavorite ? "#DC2626" : C.textMuted} />
+          </button>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:10 }}>
           <div style={{ display:"flex", alignItems:"center", gap:10, color:C.textMuted, fontSize:12 }}>
-            <span style={{ display:"flex", alignItems:"center", gap:4 }}><Icon.Clock /> {r.eta}</span>
+            <span style={{ display:"flex", alignItems:"center", gap:4 }}><Clock size={11} /> {r.eta}</span>
             <span>·</span>
             <span>₹{r.cost} for two</span>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:2, padding:"4px 10px",
             background:C.primary + "14", color:C.primary, fontSize:11, fontWeight:700, borderRadius:8 }}>
-            Order <Icon.ChevronRight />
+            Order <ChevronRight size={14} />
           </div>
         </div>
       </div>
@@ -111,12 +115,17 @@ export default function Restaurants() {
     async function load() {
       try {
         const res = await api.get("/restaurants");
-        const mapped = res.map(r => ({
-          id: r.id, name: r.name,
-          img: r.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
-          cuisine: r.cuisineType || "Various",
-          rating: r.rating?.toFixed(1) ?? "4.3", eta:"25-40 min", cost:250, coupon: r.coupon || null,
-        }));
+        const mapped = res.map(r => {
+          const ratingNum = r.rating ?? 4.3;
+          const ageMs = r.createdAt ? Date.now() - new Date(r.createdAt).getTime() : Infinity;
+          return {
+            id: r.id, name: r.name,
+            img: r.imageUrl || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
+            cuisine: r.cuisineType || "Various",
+            rating: ratingNum.toFixed(1), ratingNum, eta:"25-40 min", cost:250, coupon: r.coupon || null,
+            isNew: ageMs < 1000 * 60 * 60 * 24 * 21, // created within the last 21 days
+          };
+        });
         setRestaurants(mapped); setFiltered(mapped);
       } catch {
         setRestaurants([]); setFiltered([]);
@@ -125,12 +134,28 @@ export default function Restaurants() {
     load();
   }, []);
 
+  const [activeFilters, setActiveFilters] = useState(() => new Set());
+  const [favorites, setFavorites] = useState(readFavorites);
+  const toggleFavorite = (id) => setFavorites(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    writeFavorites(next);
+    return next;
+  });
+  const toggleQuickFilter = (id) => setActiveFilters(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
   useEffect(() => {
     let list = restaurants;
     if (category !== "All") list = list.filter(r => r.cuisine?.toLowerCase().includes(category.toLowerCase()) || r.name?.toLowerCase().includes(category.toLowerCase()));
     if (query.trim()) { const q = query.toLowerCase(); list = list.filter(r => r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q)); }
+    if (activeFilters.has("offers")) list = list.filter(r => r.coupon);
+    if (activeFilters.has("topRated")) list = list.filter(r => r.ratingNum >= 4.5);
     setFiltered(list);
-  }, [query, category, restaurants]);
+  }, [query, category, restaurants, activeFilters]);
 
   if (loading) return <MascotLoader text="Finding restaurants near you..." />;
 
@@ -151,7 +176,7 @@ export default function Restaurants() {
         {/* Search */}
         <div style={{ position:"relative", maxWidth:480, marginBottom:20 }}>
           <div style={{ position:"absolute", left:16, top:"50%", transform:"translateY(-50%)", color:C.textMuted }}>
-            <Icon.Search />
+            <Search size={16} />
           </div>
           <input
             value={query}
@@ -168,13 +193,13 @@ export default function Restaurants() {
             <button onClick={() => setQuery("")}
               style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)",
                 background:"none", border:"none", color:C.textMuted, cursor:"pointer", display:"flex" }}>
-              <Icon.X />
+              <X size={14} />
             </button>
           )}
         </div>
 
         {/* Categories */}
-        <div className="no-scrollbar" style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:4, marginBottom:28 }}>
+        <div className="no-scrollbar" style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:4, marginBottom:14 }}>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => setCategory(cat)}
               style={{ flexShrink:0, padding:"8px 18px", borderRadius:999, fontSize:13, fontWeight:600,
@@ -187,6 +212,24 @@ export default function Restaurants() {
               {cat}
             </button>
           ))}
+        </div>
+
+        {/* Quick filters */}
+        <div className="no-scrollbar" style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:4, marginBottom:28 }}>
+          {QUICK_FILTERS.map(f => {
+            const active = activeFilters.has(f.id);
+            return (
+              <button key={f.id} onClick={() => toggleQuickFilter(f.id)}
+                style={{ flexShrink:0, padding:"7px 16px", borderRadius:999, fontSize:12.5, fontWeight:600,
+                  cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap",
+                  border:`1.5px solid ${active ? C.accent : "transparent"}`,
+                  background: active ? C.accent + "1A" : "#EBF4EF",
+                  color: active ? C.primary : C.textSub,
+                  transition:"all 120ms ease-out" }}>
+                {f.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Grid */}
@@ -208,7 +251,10 @@ export default function Restaurants() {
           <>
             <p style={{ color:C.textMuted, fontSize:13, marginBottom:16 }}>{filtered.length} restaurants found</p>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
-              {filtered.map(r => <RestaurantCard key={r.id} r={r} navigate={navigate} />)}
+              {filtered.map(r => (
+                <RestaurantCard key={r.id} r={r} navigate={navigate}
+                  isFavorite={favorites.has(r.id)} onToggleFavorite={toggleFavorite} />
+              ))}
             </div>
           </>
         )}

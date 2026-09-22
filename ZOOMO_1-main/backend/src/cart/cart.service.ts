@@ -73,8 +73,8 @@ export class CartService {
     return this.getCart(userId);
   }
 
-  /* ================= UPDATE QUANTITY ================= */
-  async updateItem(id: string, quantity: number) {
+  /* ================= UPDATE QUANTITY / NOTE ================= */
+  async updateItem(id: string, quantity: number, specialInstructions?: string) {
     if (!id) throw new BadRequestException("❌ item id missing");
 
     const item = await this.prisma.cartItem.findUnique({ where: { id } });
@@ -85,7 +85,10 @@ export class CartService {
     } else {
       await this.prisma.cartItem.update({
         where: { id },
-        data: { quantity },
+        data: {
+          quantity,
+          ...(specialInstructions !== undefined && { specialInstructions }),
+        },
       });
     }
 

@@ -67,6 +67,11 @@ export default function CartProvider({ children }) {
     await loadCart();
   }
 
+  async function updateNote(item, note) {
+    await api.patch(`/cart/items/${item.id}`, { quantity: item.quantity, specialInstructions: note });
+    await loadCart();
+  }
+
   async function clearCart() {
     await api.delete("/cart");
     setCart(EMPTY_CART);
@@ -123,6 +128,7 @@ export default function CartProvider({ children }) {
         increaseQuantity,
         decreaseQuantity,
         removeItem,
+        updateNote,
         clearCart,
         clearRestaurantItems,
         getTotalItemCount,

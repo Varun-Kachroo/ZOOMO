@@ -85,6 +85,7 @@ export class OrdersService {
       orderType,
       guestCount,
       scheduledFor,
+      needsCutlery,
     } = data;
 
     if (!restaurantId) throw new BadRequestException("restaurantId is required");
@@ -168,6 +169,7 @@ export class OrdersService {
           discount,
           scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
           specialInstructions,
+          needsCutlery: needsCutlery ?? true,
           status: orderStatus,
           items: {
             create: items.map((item: any) => {

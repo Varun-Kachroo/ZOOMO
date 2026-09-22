@@ -114,12 +114,16 @@ const LogOutIcon = () => (
 
 // ── CATEGORY DATA ──────────────────────────────────────
 const CRAVINGS = [
-  { label:"Pizza",    img:"https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&h=200&fit=crop" },
-  { label:"Burgers",  img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop" },
-  { label:"Indian",   img:"https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&h=200&fit=crop" },
-  { label:"Chinese",  img:"https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&h=200&fit=crop" },
-  { label:"Healthy",  img:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop" },
-  { label:"Desserts", img:"https://images.unsplash.com/photo-1551024601-bec78aea704b?w=200&h=200&fit=crop" },
+  { label:"Pizza",      img:"https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&h=200&fit=crop" },
+  { label:"Burgers",    img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop" },
+  { label:"Pasta",      img:"https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=200&h=200&fit=crop" },
+  { label:"Momos",      img:"https://images.unsplash.com/photo-1625398407796-82650a8c135f?w=200&h=200&fit=crop" },
+  { label:"Coffee",     img:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop" },
+  { label:"Shakes",     img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop" },
+  { label:"Wraps",      img:"https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=200&h=200&fit=crop" },
+  { label:"Sandwiches", img:"https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=200&h=200&fit=crop" },
+  { label:"Chinese",    img:"https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&h=200&fit=crop" },
+  { label:"Desserts",   img:"https://images.unsplash.com/photo-1551024601-bec78aea704b?w=200&h=200&fit=crop" },
 ];
 
 const OFFERS = [
@@ -393,6 +397,7 @@ export default function LandingPage() {
   const [showAddressModal, setShowAddressModal] = useState(!localStorage.getItem("ze_address") && !user);
   const [searchOpen, setSearchOpen] = useState(false);
   const [restaurants, setRestaurants] = useState([]);
+  const [popularDishes, setPopularDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activatedOffer, setActivatedOffer] = useState(() => localStorage.getItem("ze_active_offer") || null);
   const restaurantRef = useRef(null);
@@ -420,6 +425,18 @@ export default function LandingPage() {
         eta: "20–35 min", cost: r.priceRange === "$" ? 200 : r.priceRange === "$$$" ? 500 : 350,
         coupon: r.coupon || null,
       })));
+
+      // "Popular dishes" rail — a couple of dishes from each restaurant,
+      // flattened. Each restaurant's dishes already come nested in this
+      // same response, so no extra API call is needed.
+      const dishes = list.flatMap(r =>
+        (r.dishes || []).slice(0, 2).map(d => ({
+          id: d.id, name: d.name, price: d.price, img: d.imageUrl,
+          isVeg: d.isVegetarian,
+          restaurantId: r.id, restaurantName: r.name,
+        }))
+      );
+      setPopularDishes(dishes.slice(0, 10));
     }).catch(() => setRestaurants([])).finally(() => setLoading(false));
   }, []);
 
@@ -561,39 +578,39 @@ export default function LandingPage() {
         <h2 style={{ fontSize:26, fontWeight:700, color:C.text, marginBottom:24, letterSpacing:"-0.02em" }}>
           Popular in {address || "your area"}
         </h2>
-        <div className="no-scroll" style={{ display:"flex", gap:14, overflowX:"auto", paddingRight:24 }}>
-          {[
-            { name:"Farm House",          rest:"I Love Pizza",   price:199, veg:true,  img:"https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=300&h=200&fit=crop" },
-            { name:"Cheese Burst",        rest:"I Love Pizza",   price:229, veg:true,  img:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop" },
-            { name:"Barn Smash",          rest:"Burger Barn",    price:249, veg:false, img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop" },
-            { name:"Hyderabadi Dum Biryani",rest:"Spice Route",  price:349, veg:false, img:"https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&h=200&fit=crop" },
-            { name:"Prawn Dumplings",     rest:"Dragon Wok",     price:269, veg:false, img:"https://images.unsplash.com/photo-1563245372-f21724e3856d?w=300&h=200&fit=crop" },
-          ].map((dish, i) => (
-            <div key={i} onClick={() => setSearchOpen(true)}
-              style={{ flexShrink:0, width:210, background:C.surface, borderRadius:16,
-                overflow:"hidden", cursor:"pointer", border:`1px solid ${C.border}`,
-                transition:"box-shadow 180ms, transform 180ms" }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow="0 8px 24px rgba(0,0,0,0.12)"; e.currentTarget.style.transform="translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}
-            >
-              <div style={{ height:140, overflow:"hidden" }}>
-                <img src={dish.img} alt={dish.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-              </div>
-              <div style={{ padding:"12px 14px" }}>
-                <p style={{ fontWeight:700, fontSize:14, color:C.text, marginBottom:2 }}>{dish.name}</p>
-                <p style={{ fontSize:11, color:C.sub, marginBottom:8 }}>{dish.rest}</p>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <span style={{ fontWeight:700, fontSize:13, color:C.text }}>₹{dish.price}</span>
-                  <span style={{ fontSize:10, fontWeight:600, color: dish.veg ? "#16A34A" : "#DC2626",
-                    padding:"2px 8px", borderRadius:4,
-                    border:`1px solid ${dish.veg ? "#16A34A" : "#DC2626"}` }}>
-                    {dish.veg ? "Veg" : "Non-veg"}
-                  </span>
+        {popularDishes.length === 0 ? (
+          <p style={{ color:C.sub, fontSize:13 }}>Nothing popular here yet — check back once restaurants add dishes.</p>
+        ) : (
+          <div className="no-scroll" style={{ display:"flex", gap:14, overflowX:"auto", paddingRight:24 }}>
+            {popularDishes.map(dish => (
+              <div key={dish.id} onClick={() => navigate(`/restaurant/${dish.restaurantId}`)}
+                style={{ flexShrink:0, width:210, background:C.surface, borderRadius:16,
+                  overflow:"hidden", cursor:"pointer", border:`1px solid ${C.border}`,
+                  transition:"box-shadow 180ms, transform 180ms" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow="0 8px 24px rgba(0,0,0,0.12)"; e.currentTarget.style.transform="translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}
+              >
+                <div style={{ height:140, overflow:"hidden", background:C.borderSoft }}>
+                  {dish.img && <img src={dish.img} alt={dish.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />}
+                </div>
+                <div style={{ padding:"12px 14px" }}>
+                  <p style={{ fontWeight:700, fontSize:14, color:C.text, marginBottom:2,
+                    overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{dish.name}</p>
+                  <p style={{ fontSize:11, color:C.sub, marginBottom:8,
+                    overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{dish.restaurantName}</p>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <span style={{ fontWeight:700, fontSize:13, color:C.text }}>₹{dish.price}</span>
+                    <span style={{ fontSize:10, fontWeight:600, color: dish.isVeg ? "#16A34A" : "#DC2626",
+                      padding:"2px 8px", borderRadius:4,
+                      border:`1px solid ${dish.isVeg ? "#16A34A" : "#DC2626"}` }}>
+                      {dish.isVeg ? "Veg" : "Non-veg"}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── OFFERS ── */}

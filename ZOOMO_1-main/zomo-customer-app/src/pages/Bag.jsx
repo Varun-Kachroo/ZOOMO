@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PenLine } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { MascotLoader } from "./LandingPage";
 
@@ -31,7 +33,9 @@ const Icon = {
 
 export default function Bag() {
   const navigate = useNavigate();
-  const { cart, loading, increaseQuantity, decreaseQuantity, removeItem, getRestaurantGroups } = useCart();
+  const { cart, loading, increaseQuantity, decreaseQuantity, removeItem, updateNote, getRestaurantGroups } = useCart();
+  const [openNoteFor, setOpenNoteFor] = useState(null);
+  const [noteDraft, setNoteDraft] = useState("");
 
   if (loading) return <MascotLoader text="Loading your bag..." />;
 
@@ -109,38 +113,69 @@ export default function Bag() {
               {/* Items */}
               <div style={{ padding:"12px 18px", display:"flex", flexDirection:"column", gap:10 }}>
                 {group.items.map(item => (
-                  <div key={item.id} style={{ display:"flex", alignItems:"center", gap:12 }}>
-                    <img src={item.dish?.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&h=120&fit=crop"}
-                      alt={item.dish?.name} style={{ width:46, height:46, borderRadius:10, objectFit:"cover", flexShrink:0 }} />
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <p style={{ fontWeight:600, fontSize:13, color:C.textMain,
-                        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                        {item.dish?.name}
-                      </p>
-                      <p style={{ color:C.primary, fontWeight:700, fontSize:13 }}>
-                        ₹{(item.dish?.price * item.quantity).toFixed(0)}
-                      </p>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
-                      <button onClick={() => decreaseQuantity(item)}
-                        style={{ width:24, height:24, borderRadius:7, background:C.page, border:`1px solid ${C.border}`,
-                          display:"flex", alignItems:"center", justifyContent:"center", color:C.textMain, cursor:"pointer" }}>
-                        <Icon.Minus />
+                  <div key={item.id}>
+                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <img src={item.dish?.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&h=120&fit=crop"}
+                        alt={item.dish?.name} style={{ width:46, height:46, borderRadius:10, objectFit:"cover", flexShrink:0 }} />
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontWeight:600, fontSize:13, color:C.textMain,
+                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                          {item.dish?.name}
+                        </p>
+                        <p style={{ color:C.primary, fontWeight:700, fontSize:13 }}>
+                          ₹{(item.dish?.price * item.quantity).toFixed(0)}
+                        </p>
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                        <button onClick={() => decreaseQuantity(item)}
+                          style={{ width:24, height:24, borderRadius:7, background:C.page, border:`1px solid ${C.border}`,
+                            display:"flex", alignItems:"center", justifyContent:"center", color:C.textMain, cursor:"pointer" }}>
+                          <Icon.Minus />
+                        </button>
+                        <span style={{ fontWeight:700, fontSize:12, color:C.textMain, width:14, textAlign:"center" }}>{item.quantity}</span>
+                        <button onClick={() => increaseQuantity(item)}
+                          style={{ width:24, height:24, borderRadius:7, background:C.primary, border:"none",
+                            display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", cursor:"pointer" }}>
+                          <Icon.Plus />
+                        </button>
+                      </div>
+                      <button onClick={() => removeItem(item.id)}
+                        style={{ padding:6, background:"none", border:"none", color:C.textMuted,
+                          cursor:"pointer", flexShrink:0, transition:"color 120ms" }}
+                        onMouseEnter={e => e.currentTarget.style.color = "#DC2626"}
+                        onMouseLeave={e => e.currentTarget.style.color = C.textMuted}>
+                        <Icon.Trash />
                       </button>
-                      <span style={{ fontWeight:700, fontSize:12, color:C.textMain, width:14, textAlign:"center" }}>{item.quantity}</span>
-                      <button onClick={() => increaseQuantity(item)}
-                        style={{ width:24, height:24, borderRadius:7, background:C.primary, border:"none",
-                          display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", cursor:"pointer" }}>
-                        <Icon.Plus />
-                      </button>
                     </div>
-                    <button onClick={() => removeItem(item.id)}
-                      style={{ padding:6, background:"none", border:"none", color:C.textMuted,
-                        cursor:"pointer", flexShrink:0, transition:"color 120ms" }}
-                      onMouseEnter={e => e.currentTarget.style.color = "#DC2626"}
-                      onMouseLeave={e => e.currentTarget.style.color = C.textMuted}>
-                      <Icon.Trash />
-                    </button>
+
+                    {/* Note — matches the reference site's per-item note */}
+                    <div style={{ marginLeft:58, marginTop:4 }}>
+                      {openNoteFor === item.id ? (
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          <input autoFocus value={noteDraft} onChange={e => setNoteDraft(e.target.value)}
+                            placeholder="e.g. no onions"
+                            onKeyDown={e => e.key === "Enter" && (updateNote(item, noteDraft), setOpenNoteFor(null))}
+                            style={{ flex:1, fontSize:12, padding:"6px 10px", borderRadius:8,
+                              border:`1px solid ${C.border}`, outline:"none", fontFamily:"inherit", color:C.textMain }} />
+                          <button onClick={() => { updateNote(item, noteDraft); setOpenNoteFor(null); }}
+                            style={{ fontSize:12, fontWeight:600, color:C.accent, background:"none", border:"none", cursor:"pointer" }}>
+                            Save
+                          </button>
+                        </div>
+                      ) : item.specialInstructions ? (
+                        <button onClick={() => { setOpenNoteFor(item.id); setNoteDraft(item.specialInstructions || ""); }}
+                          style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:C.textSub,
+                            background:"none", border:"none", cursor:"pointer", padding:0, fontFamily:"inherit" }}>
+                          <PenLine size={11} /> {item.specialInstructions}
+                        </button>
+                      ) : (
+                        <button onClick={() => { setOpenNoteFor(item.id); setNoteDraft(""); }}
+                          style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:C.textMuted,
+                            background:"none", border:"none", cursor:"pointer", padding:0, fontFamily:"inherit" }}>
+                          <PenLine size={11} /> Add a note
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
